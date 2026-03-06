@@ -1,0 +1,207 @@
+.container {
+  width: 100%;
+  padding: 60px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e2e2; /* Matching the subtle bottom line in screenshot */
+}
+
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+}
+
+.textContent {
+  flex: 1;
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 900; /* Extra bold */
+  margin: 0 0 12px 0;
+  letter-spacing: -0.8px;
+  color: #000;
+  font-family: var(--font-jakarta); /* Adjust to match your global font */
+}
+
+.description {
+  font-size: 18px;
+  font-weight: 400;
+  color: #333;
+  margin: 0;
+  line-height: 1.5;
+  font-family: var(--font-jakarta);
+}
+/* --- THE PILL SHAPE LOGIC --- */
+
+.formSide {
+  flex: 0.8;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pillContainer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 450px;
+  background: #fff;
+  border: 1px solid #000; /* The outer black ring */
+  border-radius: 100px;    /* Makes it a pill */
+  padding: 4px;           /* The gap between the border and the button */
+  height: 54px;           /* Fixed height for a clean look */
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0 20px;
+  font-size: 13px;
+  outline: none;
+  color: #000;
+}
+
+.input::placeholder {
+  color: #999;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.joinButton {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  height: 100%;           /* Fills the height of the pillContainer (minus padding) */
+  padding: 0 35px;
+  border-radius: 100px;    /* Matches the pill shape */
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: opacity 0.2s ease;
+}
+
+.joinButton:hover {
+  opacity: 0.8;
+}
+/* Responsive for Mobile */
+@media (max-width: 768px) {
+  .wrapper {
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+  }
+  
+  .form {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ========================= */
+/* Tablet (1024px) */
+/* ========================= */
+@media (max-width: 1024px) {
+
+  .wrapper {
+    gap: 30px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .description {
+    font-size: 16px;
+  }
+
+  .pillContainer {
+    max-width: 400px;
+  }
+
+}
+
+/* ========================= */
+/* Mobile (720px) */
+/* ========================= */
+@media (max-width: 720px) {
+
+  .wrapper {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap: 25px;
+  }
+
+  .textContent {
+    max-width: 500px;
+  }
+
+  .title {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+  }
+
+  .description {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .formSide {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pillContainer {
+    max-width: 420px;
+    height: 50px;
+  }
+
+  .input {
+    font-size: 12px;
+  }
+
+  .joinButton {
+    padding: 0 28px;
+    font-size: 11px;
+  }
+
+}
+
+/* ========================= */
+/* Small Mobile (460px) */
+/* ========================= */
+@media (max-width: 460px) {
+
+  .container {
+    padding: 50px 18px;
+  }
+
+  .title {
+    font-size: 22px;
+    line-height: 1.3;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  .pillContainer {
+    max-width: 100%;
+    height: 48px;
+  }
+
+  .input {
+    padding: 0 15px;
+  }
+
+  .joinButton {
+    padding: 0 24px;
+    font-size: 11px;
+  }
+
+}

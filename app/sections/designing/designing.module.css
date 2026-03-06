@@ -1,0 +1,218 @@
+.container {
+  padding: 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: rgba(248, 248, 248, 1);
+  font-family: var(--font-jakarta);
+}
+
+.header {
+  margin-bottom: 60px;
+}
+
+.subtext {
+  font-size: 14px;
+  letter-spacing: 4px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  justify-content: center;
+  font-family: var(--font-jakarta);
+}
+
+.badge {
+  background-color: #000;
+  color: #fff;
+  padding: 0 25px;
+  border-radius: 20px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  max-width: 1100px;
+  width: 100%;
+  margin-bottom: 60px;
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.iconWrapper {
+  background-color: #000;
+  color: #fff;
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.stepTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.stepDescription {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+  max-width: 250px;
+  font-weight: 400;
+}
+
+.ctaButton {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 20px 50px;
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.ctaButton:hover {
+  transform: scale(1.02);
+}
+@media (max-width: 1024px) {
+
+  .container{
+    padding:70px 25px;
+  }
+
+  .title{
+    font-size:52px;
+  }
+
+  .grid{
+    grid-template-columns: repeat(3,1fr);
+    gap:30px;
+  }
+
+  .stepDescription{
+    font-size:13px;
+  }
+
+}
+@media (max-width: 720px) {
+
+  .container{
+    padding:60px 20px;
+    background: rgba(246, 242, 242, 1);
+ /* same grey */
+  }
+
+  .header{
+    margin-bottom:50px;
+  }
+
+  .subtext{
+    font-size:12px;
+    letter-spacing:3px;
+  }
+
+  .title{
+    font-size:36px;
+    letter-spacing:-1px;
+    flex-direction:column;
+    gap:0px;
+  }
+
+  .badge{
+    height:55px;
+    padding:0 18px;
+    border-radius:16px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+    gap:70px;
+  }
+
+  .iconWrapper{
+    width:65px;
+    height:65px;
+    border-radius:14px;
+  }
+
+  .stepTitle{
+    font-size:18px;
+  }
+
+  .stepDescription{
+    font-size:15px;
+    max-width:320px;
+  }
+
+  .ctaButton{
+    padding:18px 40px;
+    font-size:14px;
+  }
+  .badge{
+    display:none;
+  }
+
+
+}
+@media (max-width: 460px) {
+
+  .container{
+    padding:50px 18px;
+  }
+
+  .title{
+    font-size:34px;
+    line-height:1.2;
+  }
+
+  .badge{
+    height:48px;
+    padding:0 15px;
+  }
+
+  .iconWrapper{
+    width:60px;
+    height:60px;
+  }
+
+  .stepTitle{
+    font-size:17px;
+  }
+
+  .stepDescription{
+    font-size:14px;
+  }
+
+  .ctaButton{
+    width:100%;
+    max-width:280px;
+    padding:16px;
+    font-size:13px;
+  }
+
+}

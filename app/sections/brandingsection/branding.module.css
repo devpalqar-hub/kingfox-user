@@ -1,0 +1,104 @@
+.brandingContainer {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 80px 20px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-jakarta);
+}
+
+.content {
+  max-width: 1200px;
+}
+
+.hashtag {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 30px;
+  margin-top: 0;
+}
+
+.description {
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  color: #cccccc;
+}
+
+.handle {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.linkText {
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #cccccc;
+}
+
+.link {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 600;
+}
+
+.link:hover {
+  color: #aaaaaa;
+}
+@media (max-width: 1024px) {
+
+  .brandingContainer {
+    padding: 70px 30px;
+  }
+
+  .hashtag {
+    font-size: 40px;
+  }
+
+  .description,
+  .linkText {
+    font-size: 13px;
+  }
+
+}
+@media (max-width: 720px) {
+
+  .brandingContainer {
+    padding: 60px 20px;
+  }
+
+  .hashtag {
+    font-size: 32px;
+    letter-spacing: 1.5px;
+  }
+
+  .description,
+  .linkText {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+}
+@media (max-width: 460px) {
+
+  .brandingContainer {
+    padding: 50px 15px;
+  }
+
+  .hashtag {
+    font-size: 26px;
+    letter-spacing: 1px;
+  }
+
+  .description,
+  .linkText {
+    font-size: 11px;
+  }
+
+}
