@@ -1,0 +1,270 @@
+.cardContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-jakarta);
+}
+
+.imageWrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  aspect-ratio: 3 / 4;
+}
+.newBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+
+  background-color: #b08968;
+  color: white;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  padding: 5px 10px;
+  border-radius: 6px;
+
+  z-index: 2;
+}
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.iconOverlay {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* The base circle button */
+.iconBtn {
+  background: white;
+  border: none;
+  border-radius: 50%; /* Perfect Circle */
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  /* Initial Icon Color */
+  color: #000000; 
+  
+  /* Shadow for depth */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  
+  /* Smooth transition for both background and icon color */
+  transition: all 0.3s ease;
+}
+
+/* The Hover State */
+.iconBtn:hover {
+  background: #000000; /* Circle turns black */
+  color: #ffffff;    /* Icon turns white */
+  transform: scale(1.1); /* Slight grow effect */
+}
+
+.iconBtn:hover svg {
+  transform: scale(1.1);
+}
+
+.addToCartBtn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: black;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  width: 80%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-family: var(--font-space);
+}
+
+.imageWrapper:hover .addToCartBtn {
+  opacity: 1;
+}
+
+.details {
+  padding: 12px 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.productName {
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0;
+  font-family: var(--font-jakarta);
+}
+
+.rating {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.price {
+  margin: 5px 0 0;
+  font-weight: 700;
+  font-size: 16px;
+}
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.starFilled {
+  color: #c28b5a;
+}
+
+.starEmpty {
+  color: #dddddd;
+}
+
+.reviewCount {
+  font-size: 11px;
+  color: #777;
+}
+
+.colorOptions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.colorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
+@media (max-width: 720px) {
+
+  .imageWrapper {
+    border-radius: 18px;
+  }
+
+  .iconOverlay {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  .iconBtn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .iconBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .addToCartBtn {
+    bottom: 12px;
+    width: 75%;
+    padding: 8px 0;
+    font-size: 11px;
+    border-radius: 10px;
+    letter-spacing: 2px;
+  }
+
+  .details {
+    padding-top: 10px;
+  }
+
+  .productName {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .price {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .rating {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .iconBtn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .iconBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  
+
+}
+
+@media (max-width: 460px) {
+
+  .productName {
+    font-size: 12px;
+  }
+
+  .price {
+    font-size: 14px;
+  }
+
+  .rating {
+    font-size: 11px;
+  }
+  .iconOverlay {
+    top: 8px;
+    right: 8px;
+    gap: 6px;
+  }
+
+  .iconBtn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .iconBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .addToCartBtn {
+    bottom: 10px;
+    padding: 6px 14px;
+    font-size: 10px;
+    width: 70%;
+    border-radius: 4px;
+  }
+
+
+}

@@ -1,0 +1,144 @@
+.container {
+  width: 100%;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.carouselContainer {
+  position: relative; /* This is the anchor for the arrow */
+  width: 100%;
+  max-width: 1200px;
+}
+
+.leftArrow {
+  position: absolute;
+  /* Exactly on the left edge */
+  left:-50px; 
+  /* Perfect vertical center relative to the cards */
+  top: 50%;
+  transform: translateY(-50%);
+  
+  z-index: 10;
+  /* UI Size: Usually 40px-48px for this design style */
+  width: 20px;
+  height:20px;
+  background-color: #1a1a1a;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.cardWrapper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+.cardWrapper::-webkit-scrollbar {
+  display: none;
+}
+.card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 40px;
+  overflow: hidden;
+}
+.card:hover {
+  transform: scale(1.02);
+}
+
+/* Pagination stays below the carouselContainer naturally */
+.pagination {
+  display: flex;
+  gap: 8px;
+  margin-top: 25px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background-color: #ccc;
+  border-radius: 50%;
+}
+
+.active {
+  background-color: #000;
+  border: 2px solid #000;
+  background-color: transparent;
+  width: 12px;
+  height: 12px;
+}
+
+/* ===================== */
+/* Tablet */
+/* ===================== */
+
+@media (max-width:1024px){
+
+.container{
+  padding:35px 18px;
+}
+
+.cardWrapper{
+  gap:18px;
+}
+
+.card{
+  border-radius:30px;
+}
+
+.leftArrow{
+  left:-35px;
+}
+
+}
+
+/* ===================== */
+/* Mobile */
+/* ===================== */
+
+@media (max-width:720px){
+
+.container{
+  padding:30px 15px;
+}
+
+.cardWrapper{
+  gap:15px;
+}
+
+.card{
+  border-radius:25px;
+}
+
+.leftArrow{
+  display:none;
+}
+
+}
+
+/* ===================== */
+/* Small Mobile */
+/* ===================== */
+
+@media (max-width:460px){
+
+.container{
+  padding:25px 12px;
+}
+
+.cardWrapper{
+  gap:12px;
+}
+
+.card{
+  border-radius:20px;
+}
+
+}

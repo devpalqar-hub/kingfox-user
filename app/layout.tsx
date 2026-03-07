@@ -1,6 +1,22 @@
+import "./globals.css";
+import React from "react";
+
 import Header from "@/components/layout/Header/Header";
 import Footer from "@/components/layout/Footer/Footer";
-import "./globals.css";
+
+import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300","400","500","600","700","800"],
+  variable: "--font-jakarta",
+});
+
+const space = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["300","400","500","600","700"],
+  variable: "--font-space",
+});
 
 export default function RootLayout({
   children,
@@ -9,14 +25,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-
+      <body className={`${jakarta.variable} ${space.variable}`}>
         <Header />
-
         {children}
-
         <Footer />
-
       </body>
     </html>
   );
