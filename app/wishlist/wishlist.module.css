@@ -1,0 +1,515 @@
+.container {
+  padding: 40px 5%;
+  font-family: 'Inter', sans-serif; /* or your preferred sans-serif */
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: var(--font-space);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.titleArea {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+}
+
+.titleArea h1 {
+  font-size: 40px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.itemCount {
+  color: #888;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.continueShopping {
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 15px;
+}
+
+.moveAllBtn {
+  background: black;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.clearBtn {
+  background: white;
+  border: 1px solid #000;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+/* Card Styles */
+.card {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+.card:hover {
+  transform: translateY(-10px); /* Moves the card up by 10 pixels */
+}
+
+/* Optional: Add a slight shadow on hover to make it pop even more */
+.card:hover .imageWrapper {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.imageWrapper {
+  position: relative;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  aspect-ratio: 1 / 1.1;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.imageWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wishlistIcon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: white;
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tag {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  background: black;
+  color: white;
+  font-size: 10px;
+  padding: 4px 8px;
+  left: 10px;
+  text-transform: uppercase;
+  border-radius: 5px;
+}
+
+.soldOutOverlay {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: #555;
+}
+
+.productInfo h3 {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sizeTag {
+  border: 1px solid #000;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.actionBtn {
+  width: 100%;
+  background: black;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.notifyBtn {
+  width: 100%;
+  background: #f0f0f0;
+  color: black;
+  border: 1px solid #ccc;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ... keep your existing styles ... */
+
+.recommendSection {
+  margin-top: 80px;
+  padding-top: 60px;
+}
+
+.recommendHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.recommendHeader h2 {
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.sliderControls {
+  display: flex;
+  gap: 10px;
+}
+
+.navBtn {
+  background: white;
+  border: 1px solid #000;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.navBtn:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* Updated Card Hover for the "Lift" effect */
+.card {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card:hover {
+  transform: translateY(-12px); /* This creates the lift */
+}
+
+/* Eye Icon for Recommendation section */
+.quickViewIcon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: black;
+  color: white;
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+}
+/* ================= 1024px ================= */
+@media (max-width: 1024px) {
+
+  .container {
+    padding: 30px 4%;
+  }
+
+  .titleArea h1 {
+    font-size: 32px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .headerButtons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .recommendSection .grid {
+    display: flex;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    gap: 16px;
+  }
+
+  .recommendSection .card {
+    flex: 0 0 calc(50% - 8px); /* shows 2 cards */
+  }
+
+
+
+  .recommendSection .card {
+    min-width: 260px;
+    flex: 0 0 auto;
+  }
+  .recommendHeader h2 {
+    font-size: 24px;
+  }
+}
+/* ================= 768px ================= */
+@media (max-width: 768px) {
+
+  .container {
+    padding: 30px 4%;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .titleArea {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .titleArea h1 {
+    font-size: 28px;
+  }
+
+  .itemCount {
+    font-size: 16px;
+  }
+.headerButtons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .moveAllBtn,
+  .clearBtn {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 10px;
+  }
+
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16pxpx;
+  }
+
+  .recommendHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .recommendSection .grid {
+  display: flex;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  gap: 16px;
+}
+
+.recommendSection .card {
+  flex: 0 0 calc(50% - 8px); /* 2 cards on mobile */
+}
+
+  .recommendHeader h2 {
+    font-size: 22px;
+  }
+
+  .sliderControls {
+    align-self: flex-end;
+  }
+
+  .productInfo h3 {
+    font-size: 13px;
+  }
+
+  .price {
+    font-size: 16px;
+  }
+
+}
+
+/* ================= 720px ================= */
+@media (max-width: 720px) {
+
+  .titleArea {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .titleArea h1 {
+    font-size: 26px;
+  }
+
+  .itemCount {
+    font-size: 16px;
+  }
+
+  .continueShopping {
+    font-size: 11px;
+  }
+
+  .headerButtons {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.moveAllBtn,
+.clearBtn {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 10px;
+}
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  .productInfo h3 {
+    font-size: 13px;
+  }
+
+  .price {
+    font-size: 16px;
+  }
+
+  .recommendSection {
+    margin-top: 60px;
+    padding-top: 40px;
+  }
+
+}
+
+
+/* ================= 460px ================= */
+@media (max-width: 460px) {
+
+  .container {
+    padding: 20px 4%;
+  }
+
+  .titleArea h1 {
+    font-size: 22px;
+  }
+
+  .itemCount {
+    font-size: 14px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .productInfo h3 {
+    font-size: 12px;
+  }
+
+  .price {
+    font-size: 14px;
+  }
+.headerButtons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+    gap: 5px;
+  }
+
+  .moveAllBtn,
+  .clearBtn {
+    width: auto;
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+  .imageWrapper {
+    aspect-ratio: 1 / 1.2;
+  }
+
+  
+  .recommendHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .sliderControls {
+    align-self: flex-end;
+  }
+
+}

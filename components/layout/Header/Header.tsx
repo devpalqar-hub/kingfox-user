@@ -71,16 +71,17 @@ const Header = () => {
         <div className={styles.iconActions}>
           <div className={styles.iconWrapper}><Search size={20} /></div>
 
-          <div className={styles.iconWrapper}>
-            <Heart size={20} />
-            <span className={styles.badge}>0</span>
-          </div>
+          <Link href="/wishlist" className={styles.wishlistLink}>
+            <div className={styles.iconWrapper}>
+              <Heart size={20} />
+              <span className={styles.badge}>0</span>
+            </div>
+          </Link>
 
-          <div className={styles.iconWrapper}>
+          <Link href="/cart" className={styles.iconWrapper}>
             <ShoppingCart size={20} />
             <span className={styles.badge}>3</span>
-          </div>
-
+          </Link>
           <div className={styles.iconWrapper}><User size={20} /></div>
         </div>
       </nav>
