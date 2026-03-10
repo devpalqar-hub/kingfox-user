@@ -1,0 +1,459 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 40px;
+  background-color: #fff;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 120px;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  font-family: var(--font-space);
+}
+
+.heroSub {
+  font-size:18px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  font-family: var(--font-space);
+}
+
+.contentGrid {
+  display: grid;
+  /* Adjusting the fraction so the image side is narrower than the text side */
+  grid-template-columns: 1fr 0.8fr; 
+  gap: 50px;
+  align-items: flex-start;
+  margin-top: 70px;
+}
+.imageContainer {
+  position: relative; /* Required for Next.js Image "fill" */
+  width: 100%;
+  /* This creates the tall vertical rectangle from your picture */
+  aspect-ratio: 4 / 5;
+  border-radius: 40px; /* Large rounded corners from the UI */
+  overflow: hidden; /* Clips the zoomed image to the rounded corners */
+}
+
+.mainImg {
+  /* This is what "zooms" and centers the image within the container */
+  object-fit: cover; 
+  object-position: 20% center;
+   /* Adjust to 'top' if you want to see more head/shoulders */
+  transform: scale(1); 
+  transition: object-position 0.3s ease; /* Optional: smooth zoom feel */
+}
+.rootedTitle {
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 40px;
+  font-family: var(--font-space);
+}
+
+.blackBox {
+  background-color: #000;
+  color: #fff;
+  padding: 10px 30px;
+  display: inline-block;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.brandName {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+  text-align: left;
+  font-family: var(--font-space);
+}
+.description {
+  /* This is the key: it makes every line of the paragraph 
+     stretch to the exact same width */
+  text-align: justify;
+  /* Hyphens prevent large awkward gaps when justifying text */
+  /* hyphens: auto;  */
+}
+
+.description p {
+  font-size: 1.06rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 25px;
+  letter-spacing: -0.02em;
+  font-family: var(--font-space);
+  max-width: 400px; /* Prevents text from stretching too wide */
+}
+
+.legacyText {
+
+  margin-top: 40px;
+  font-size: 1.106rem;
+  font-family: var(--font-space);
+}
+
+.bottomTag {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  font-weight: 700;
+  margin-top: 60px;
+  opacity: 0.8;
+  font-family: var(--font-space);
+}
+/* ... keep your existing CSS above ... */
+
+.valuesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cards in a row */
+  gap: 20px;
+  margin-top: 100px;
+  padding-bottom: 60px;
+}
+
+.valueCard {
+  background-color: #f7f7f7; /* Light gray background from the image */
+  padding: 40px 30px;
+  border-radius: 30px; /* Highly rounded corners */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  transition: transform 0.3s ease;
+}
+
+.valueCard:hover {
+  transform: translateY(-5px); /* Subtle lift effect */
+}
+
+.valueCard svg {
+  margin-bottom: 25px;
+  color: #000;
+}
+
+.valueCard h4 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-family: var(--font-space);
+}
+
+.valueCard p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #444;
+  font-family: var(--font-space);
+}
+.originStory {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #fff;
+  color: #000;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: var(--font-space);
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.originTitle {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 700;
+  margin-bottom: 40px;
+  text-transform: uppercase;
+  letter-spacing: -2px;
+  font-family: var(--font-space);
+}
+.specsGrid {
+  display: flex; /* Changed to flex for better centering control */
+  justify-content: center; /* Keeps the cards centered */
+  flex-wrap: wrap; /* Allows wrapping on mobile */
+  gap: 16px;
+  max-width: 800px; /* Reduced from 1100px to tighten the grouping */
+  margin: 0 auto 60px;
+}
+
+.specCard {
+  background: #f5f5f5;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  
+  /* This controls the width of the individual cards */
+  flex: 0 1 220px; 
+  min-width: 200px;
+}
+
+.specIcon {
+  background: #fff; /* Optional: adds a white circle behind icon for contrast */
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.specText span {
+  display: block;
+  font-size: 9px; /* Slightly smaller for the tighter card */
+  color: #666;
+  letter-spacing: 1px;
+  line-height: 1;
+  margin-bottom: 2px;
+  font-family: var(--font-space);
+}
+
+.specText strong {
+  display: block;
+  font-size: 14px; /* Scaled down slightly to fit the narrower width */
+  font-weight: 700;
+  font-family: var(--font-space);
+  text-transform: uppercase;
+  white-space: nowrap; /* Prevents text from breaking into two lines */
+}
+.originDescription {
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 500;
+  max-width: 900px;
+  margin: 0 auto;
+  text-transform: uppercase;
+  font-family: var(--font-space);
+}
+
+.topDivider{
+  width:100%;
+  height:1px;
+  background:#e5e5e5;
+  margin-bottom:50px;
+}
+
+.bottomDivider{
+  width:100%;
+  height:1px;
+  background:#e5e5e5;
+  margin-top:60px;
+}
+
+
+
+.legacySection {
+  padding: 100px 20px;
+  background-color: #fff;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.legacyTitle {
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+  font-family: var(--font-space);
+  margin-bottom: 40px;
+  letter-spacing: -3px;
+  color: #000;
+}
+
+.blackStatementBox {
+  background-color: #000;
+  color: #fff;
+  width: 100%;
+  max-width: 800px;
+  padding: 60px 40px;
+  border-radius: 24px; /* Matches the rounded look in screenshot */
+  margin-bottom: 40px;
+}
+
+.statementText {
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  font-family: var(--font-space);
+  letter-spacing: -1px;
+}
+
+.exploreButton {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 18px 48px;
+  border-radius: 8px;
+  font-family: var(--font-space);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  text-transform: uppercase;
+}
+
+.exploreButton:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+/* ================= 1024px ================= */
+@media (max-width: 1024px) {
+
+  .container{
+    padding:80px 30px;
+  }
+
+  .heroTitle{
+    font-size:2.4rem;
+  }
+
+  .contentGrid{
+    grid-template-columns:1fr;
+    gap:40px;
+  }
+
+  .imageContainer{
+    max-width:520px;
+    margin:0 auto;
+  }
+
+  .textContent{
+    text-align:center;
+  }
+
+  .description p{
+    max-width:100%;
+  }
+
+  .valuesGrid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+}
+
+
+/* ================= 768px ================= */
+@media (max-width: 768px) {
+
+  .hero{
+    margin-bottom:80px;
+  }
+
+  .heroTitle{
+    font-size:2rem;
+    line-height:1.3;
+  }
+
+  .heroSub{
+    font-size:16px;
+  }
+
+  .rootedTitle{
+    font-size:2.5rem;
+  }
+
+  .valuesGrid{
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+  }
+
+  .valueCard{
+    padding:30px 24px;
+  }
+
+  .originDescription{
+    font-size:18px;
+  }
+
+}
+
+
+/* ================= 720px ================= */
+@media (max-width: 720px) {
+
+  .container{
+    padding:60px 20px;
+  }
+
+  .heroTitle{
+    font-size:1.8rem;
+  }
+
+  .rootedTitle{
+    font-size:2.2rem;
+  }
+
+  .valuesGrid{
+    grid-template-columns:1fr;
+  }
+
+  .specsGrid{
+    gap:12px;
+  }
+
+  .specCard{
+    flex:1 1 100%;
+    max-width:320px;
+  }
+
+}
+
+
+/* ================= 460px ================= */
+@media (max-width: 460px) {
+
+  .heroTitle{
+    font-size:1.5rem;
+  }
+
+  .heroSub{
+    font-size:14px;
+  }
+
+  .rootedTitle{
+    font-size:1.9rem;
+  }
+
+  .blackBox{
+    padding:8px 18px;
+    font-size:0.9rem;
+  }
+
+  .valueCard{
+    padding:26px 20px;
+  }
+
+  .statementText{
+    font-size:2rem;
+  }
+
+  .blackStatementBox{
+    padding:40px 24px;
+  }
+
+  .exploreButton{
+    padding:14px 30px;
+    font-size:12px;
+  }
+
+}

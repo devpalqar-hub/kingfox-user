@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import styles from "./Header.module.css";
 import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
-
+import Link from "next/link";
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -44,12 +44,27 @@ const Header = () => {
         </div>
 
         {/* Nav Links */}
+        {/* Nav Links */}
         <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
-          <li data-text="HOME"><a href="/" onClick={() => setMenuOpen(false)}>HOME</a></li>
-          <li data-text="PRODUCTS"><a href="/products" onClick={() => setMenuOpen(false)}>PRODUCTS</a></li>
-          <li data-text="NEW ARRIVALS"><a href="#new-arrivals">NEW ARRIVALS</a></li>
-          <li data-text="CONTACT US"><a href="#contact">CONTACT US</a></li>
-          <li data-text="ABOUT US"><a href="#about">ABOUT US</a></li>
+          <li data-text="HOME">
+            <Link href="/" onClick={() => setMenuOpen(false)}>HOME</Link>
+          </li>
+
+          <li data-text="PRODUCTS">
+            <Link href="/products" onClick={() => setMenuOpen(false)}>PRODUCTS</Link>
+          </li>
+
+          <li data-text="NEW ARRIVALS">
+            <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>NEW ARRIVALS</Link>
+          </li>
+
+          <li data-text="CONTACT US">
+            <a href="/contact" onClick={() => setMenuOpen(false)}>CONTACT US</a>
+          </li>
+
+          <li data-text="ABOUT US">
+            <a href="/about" onClick={() => setMenuOpen(false)}>ABOUT US</a>
+          </li>
         </ul>
 
         {/* Icons */}
