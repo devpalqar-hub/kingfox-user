@@ -4,7 +4,10 @@ import styles from "./Header.module.css";
 import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
 import LoginModal from "@/app/auth/login/page";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { LogOut } from "lucide-react";
 const Header = () => {
+  const { user, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -84,12 +87,23 @@ const Header = () => {
             <ShoppingCart size={20} />
             <span className={styles.badge}>3</span>
           </Link>
-          <div
-            className={styles.iconWrapper}
-            onClick={() => setShowLogin(true)}
-          >
-            <User size={20} />
-          </div>
+          {user ? (
+            <div
+              className={styles.iconWrapper}
+              onClick={logout}
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </div>
+          ) : (
+            <div
+              className={styles.iconWrapper}
+              onClick={() => setShowLogin(true)}
+              title="Login"
+            >
+              <User size={20} />
+            </div>
+          )}
         </div>
       </nav>
       {/* LOGIN MODAL */}

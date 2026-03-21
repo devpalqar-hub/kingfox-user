@@ -1,5 +1,5 @@
 'use client'
-
+import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import styles from "./login.module.css";
 import { sendOtp, verifyOtp } from "@/services/auth.service";
@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function LoginModal({ isOpen, onClose }: Props) {
-
+    const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
@@ -37,28 +37,24 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   };
 
   // 👉 Verify OTP
-  const handleVerifyOtp = async () => {
-    try {
-      setLoading(true);
-      const res = await verifyOtp(email, otp);
+const handleVerifyOtp = async () => {
+  try {
+    setLoading(true);
+    const res = await verifyOtp(email, otp);
 
-      console.log(res);
+    // ✅ THIS IS THE KEY FIX
+    login(res.access_token, res.user);
 
-      alert("Login successful");
+    alert("Login successful");
+    onClose();
 
-      // Save token
-      localStorage.setItem("token", res.access_token);
-
-      onClose();
-
-    } catch (err) {
-      console.error(err);
-      alert("Invalid OTP");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  } catch (err) {
+    console.error(err);
+    alert("Invalid OTP");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>

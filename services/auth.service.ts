@@ -1,29 +1,56 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/v1/auth";
+import axiosInstance from "@/lib/axios";
 
-export const sendOtp = async (email: string) => {
-  const res = await fetch(`${BASE_URL}/otp/generate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
+// Base path only (axios already has baseURL)
+const BASE_URL = "/v1/auth";
 
-  if (!res.ok) throw new Error("Failed to send OTP");
 
-  return res.json();
+type SendOtpResponse = {
+  message: string;
+  otp?: string;
 };
 
-export const verifyOtp = async (email: string, otp: string) => {
-  const res = await fetch(`${BASE_URL}/otp/verify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, otp }),
-  });
+type VerifyOtpResponse = {
+  access_token: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  };
+};
 
-  if (!res.ok) throw new Error("Invalid OTP");
+// 👉 Send OTP
+export const sendOtp = async (email: string): Promise<SendOtpResponse> => {
+  try {
+    const res = await axiosInstance.post(`${BASE_URL}/otp/generate`, {
+      email,
+    });
 
-  return res.json();
+    return res.data;
+  } catch (error: any) {
+    console.error("Send OTP Error:", error.response?.data || error.message);
+    throw new Error(
+      error.response?.data?.message || "Failed to send OTP"
+    );
+  }
+};
+
+// 👉 Verify OTP
+export const verifyOtp = async (
+  email: string,
+  otp: string
+): Promise<VerifyOtpResponse> => {
+  try {
+    const res = await axiosInstance.post(`${BASE_URL}/otp/verify`, {
+      email,
+      otp,
+    });
+
+    return res.data;
+  } catch (error: any) {
+    console.error("Verify OTP Error:", error.response?.data || error.message);
+    throw new Error(
+      error.response?.data?.message || "Invalid OTP"
+    );
+  }
 };
