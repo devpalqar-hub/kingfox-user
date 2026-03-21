@@ -25,7 +25,7 @@ const ProductCard = ({ image, name, price, rating, reviews, colors, isNew }: Pro
           <button className={styles.iconBtn}><Eye size={18} /></button>
         </div>
 
-        <button className={styles.addToCartBtn}>ADD TO CART</button>
+        <button className={styles.viewBtn}><Eye size={18} />VIEW</button>
       </div>
 
       <div className={styles.details}>
