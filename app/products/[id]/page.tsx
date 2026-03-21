@@ -7,6 +7,10 @@ import { useParams } from "next/navigation";
 import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
 
+import { useAuth } from "@/context/AuthContext";
+import { addToGuestCart } from "@/lib/cart";
+import { addToCartAPI } from "@/services/cart.service";
+
 const ProductDetail = () => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('DESCRIPTION');
@@ -16,6 +20,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<ProductDetailType | null>(null);
   const metaSections = product?.metaInfo || [];
   const params = useParams();
+  const { token } = useAuth();
+
   useEffect(() => {
   const fetchProduct = async () => {
     try {
@@ -57,6 +63,35 @@ useEffect(() => {
   }
 }, [product]);
 
+
+const handleAddToCart = async () => {
+  if (!selectedVariant) {
+    alert("Please select size & color");
+    return;
+  }
+
+  const payload = {
+    variantId: selectedVariant.id,
+    quantity: 1,
+    productName: product.name,
+    productImage: product.images?.[0],
+    price: Number(selectedVariant.sellingPrice),
+    size: selectedVariant.size,
+    color: selectedVariant.color,
+  };
+
+  try {
+    if (token) {
+      await addToCartAPI(payload.variantId, payload.quantity);
+    } else {
+      addToGuestCart(payload);
+    }
+
+    alert("Added to cart 🛒");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
    if (!product) {
   return <div>Loading...</div>;
@@ -159,7 +194,9 @@ useEffect(() => {
 
         {/* Actions */}
         <div className={styles.actions}>
-          <button className={styles.addToCart}>ADD TO CART</button>
+          <button className={styles.addToCart} onClick={handleAddToCart}>
+            ADD TO CART
+          </button>
           <button className={styles.buyNow}>BUY IT NOW</button>
         </div>
 
