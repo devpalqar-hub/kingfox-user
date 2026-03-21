@@ -31,13 +31,7 @@ export const getProducts = async (params: {
 };
 
 export const getProductById = async (id: string) => {
-  const token = process.env.NEXT_PUBLIC_BEARER_TOKEN;
-
-  const res = await fetch(`${BASE_URL}/v1/user/products/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await fetch(`${BASE_URL}/v1/user/products/${id}`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch product");

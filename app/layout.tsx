@@ -1,6 +1,6 @@
 import "./globals.css";
 import React from "react";
-
+import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/layout/Header/Header";
 import Footer from "@/components/layout/Footer/Footer";
 
@@ -26,9 +26,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${jakarta.variable} ${space.variable}`}>
-        <Header />
-        {children}
-        <Footer />
+
+        {/* ✅ FIX: Wrap with AuthProvider */}
+        <AuthProvider>
+          <Header />
+          {children}
+          <Footer />
+        </AuthProvider>
+
       </body>
     </html>
   );
