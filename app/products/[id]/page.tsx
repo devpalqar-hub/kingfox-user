@@ -6,15 +6,19 @@ import { IoStarSharp } from "react-icons/io5";
 import { useParams } from "next/navigation";
 import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
-
+import { getWishList , addToWishlist } from "@/services/wishlist.service";
+import { FiHeart } from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
 const ProductDetail = () => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('DESCRIPTION');
-  
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductDetailType | null>(null);
   const metaSections = product?.metaInfo || [];
+  const { user } = useAuth();
   const params = useParams();
   useEffect(() => {
   const fetchProduct = async () => {
@@ -43,6 +47,45 @@ useEffect(() => {
   }
 }, [product]);
 
+useEffect(() => {
+  const checkWishlist = async () => {
+    if (!user || !product?.id) return;
+
+    try {
+      const data = await getWishList();
+
+      const exists = data.some(
+        (item: any) => item.productId === product.id
+      );
+
+      setIsWishlisted(exists);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  checkWishlist();
+}, [product, user]);
+
+const handleWishlist = async () => {
+  if (!user) {
+    alert("Please login first");
+    return;
+  }
+
+  if (!product?.id) return;
+
+  try {
+    await addToWishlist(product.id);
+    setIsWishlisted(true);
+  } catch (err: any) {
+    if (err.response?.status === 409) {
+      setIsWishlisted(true); // already exists
+    } else {
+      console.error(err);
+    }
+  }
+};
   const sizes = [...new Set(product?.variants?.map(v => v.size) || [])];
   const colors = [...new Set(product?.variants?.map(v => v.color) || [])];
   const selectedVariant = product?.variants.find(
@@ -80,10 +123,25 @@ useEffect(() => {
           ))}
         </div>
         <div className={styles.mainImage}>
-          {activeImg && (
-            <img src={activeImg} alt={product.name} />
-          )}
-        </div>
+  <img
+    src={activeImg || productImages[0]}
+    alt={product.name}
+  />
+
+  {/* ❤️ Wishlist */}
+  <button
+    className={`${styles.wishlistBtn} ${
+      isWishlisted ? styles.active : ""
+    }`}
+    onClick={handleWishlist}
+  >
+    {isWishlisted ? (
+      <FaHeart size={20} color="white" />
+    ) : (
+      <FiHeart size={20} color="black" />
+    )}
+  </button>
+</div>
       </div>
 
       {/* RIGHT: Product Info */}

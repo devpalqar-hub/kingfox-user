@@ -1,9 +1,17 @@
+"use client";
 import React from 'react';
 import Image from 'next/image';
 import styles from './productcard.module.css';
-import { Heart, Eye ,Star } from 'lucide-react'; // Or your preferred icon library
+import {  Eye ,Star } from 'lucide-react'; // Or your preferred icon library
+import { addToWishlist } from "@/services/wishlist.service";
+import { useAuth } from "@/context/AuthContext";
+import { useState, useEffect } from "react";  // ✅ FIX 1
+import { FaHeart } from "react-icons/fa";
+import { FiHeart } from "react-icons/fi";    // ✅ FIX 2
+import { getWishList } from "@/services/wishlist.service"; // ✅ FIX 3
 
 interface ProductCardProps {
+  id: number;
   image: string;
   name: string;
   price: string;
@@ -13,7 +21,48 @@ interface ProductCardProps {
   isNew?: boolean;
 }
 
-const ProductCard = ({ image, name, price, rating, reviews, colors, isNew }: ProductCardProps) => {
+const ProductCard = ({ id, image, name, price, rating, reviews, colors, isNew }: ProductCardProps) => {
+const { user } = useAuth();
+const [isWishlisted, setIsWishlisted] = useState(false);
+
+useEffect(() => {
+  const fetchWishlist = async () => {
+    try {
+      const data = await getWishList();
+
+      const exists = data.some(
+        (item: any) => item.productId === id
+      );
+
+      setIsWishlisted(exists);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (user) {
+    fetchWishlist();
+  }
+}, [user, id]);
+
+const handleWishlist = async () => {
+  if (!user) {
+    alert("Please login first");
+    return;
+  }
+
+  try {
+    await addToWishlist(id);
+    alert("Added to wishlist ❤️");
+  } catch (err: any) {
+    if (err.response?.status === 409) {
+      alert("Already in wishlist ❤️"); // ✅ handle 409
+    } else {
+      console.error(err);
+      alert("Failed to add to wishlist");
+    }
+  }
+};
   return (
     <div className={styles.cardContainer}>
       <div className={styles.imageWrapper}>
@@ -21,11 +70,20 @@ const ProductCard = ({ image, name, price, rating, reviews, colors, isNew }: Pro
         <img src={image} alt={name} className={styles.productImage} />
         
         <div className={styles.iconOverlay}>
-          <button className={styles.iconBtn}><Heart size={18} /></button>
-          <button className={styles.iconBtn}><Eye size={18} /></button>
-        </div>
+          {/* ❤️ Wishlist */}
+          <button className={styles.iconBtn} onClick={handleWishlist}>
+            {isWishlisted ? (
+              <FaHeart size={18} color="black" />
+            ) : (
+              <FiHeart size={18} />
+            )}
+          </button>
 
-        <button className={styles.viewBtn}><Eye size={18} />VIEW</button>
+          {/* 👁 View */}
+          <button className={styles.iconBtn}>
+            <Eye size={18} />
+          </button>
+        </div>
       </div>
 
       <div className={styles.details}>

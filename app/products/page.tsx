@@ -193,6 +193,7 @@ const [filterOpen, setFilterOpen] = useState(false);
             {products.map((product) => (
               <Link key={product.id} href={`/products/${product.id}`}>
                 <ProductCard
+                  id={product.id} 
                   name={product.name}
                   price={String(product.priceRange?.min || 0)}
                   rating={4}

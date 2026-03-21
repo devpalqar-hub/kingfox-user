@@ -39,3 +39,27 @@ export const getProductById = async (id: string) => {
 
   return res.json() as Promise<ProductDetail>;
 };
+
+export const getNewArrivals = async (params?: {
+  size?: string | null;
+  categoryId?: number | null;
+}) => {
+  const query = new URLSearchParams();
+
+  if (params?.size) query.append("size", params.size);
+  if (params?.categoryId) {
+    query.append("categoryId", params.categoryId.toString());
+  }
+
+  query.append("tags", "NEW ARRIVALS");
+
+  const res = await fetch(`${BASE_URL}/v1/products?${query}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch new arrivals");
+  }
+
+  return res.json();
+};
+
+

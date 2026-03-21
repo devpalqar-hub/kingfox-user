@@ -6,6 +6,7 @@
   color: #000;
 }
 
+
 /* Header Section */
 .title {
   font-size: 52px;
@@ -146,7 +147,14 @@
   flex-direction: column;
   gap: 8px;
 }
-
+.iconOverlay {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* 👈 increase this */
+}
 .iconBtn {
   width: 32px;
   height: 32px;
@@ -164,20 +172,40 @@
 .productInfo {
   padding: 15px 0;
 }
+.productRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
 
 .productName {
-  font-size: 13px;
-  font-weight: 800;
-  margin: 0 0 6px 0;
-  letter-spacing: 0.2px;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sizeBtn {
+  border: 1px solid #ddd;
+  background: white;
+  transition: 0.2s;
 }
 
+.sizeBtn:hover {
+  border-color: black;
+}
+
+.active {
+  background: black;
+  color: white;
+  border-color: black;
+}
 .price {
   font-size: 14px;
-  color: #666;
-  font-weight: 600;
-  margin: 0;
+  font-weight: 800;
+  color: #000;
 }
+
 
 .inclusiveText {
   font-size: 10px;

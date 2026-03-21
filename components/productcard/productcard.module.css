@@ -68,7 +68,7 @@
 
 /* The Hover State */
 .iconBtn:hover {
-  background: #000000; /* Circle turns black */
+  background: #ffffff; /* Circle turns black */
   color: #ffffff;    /* Icon turns white */
   transform: scale(1.1); /* Slight grow effect */
 }
@@ -126,7 +126,14 @@
   font-size: 12px;
   font-weight: 600;
 }
-
+.iconOverlay {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .price {
   margin: 5px 0 0;
   font-weight: 700;
