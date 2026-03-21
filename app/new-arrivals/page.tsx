@@ -15,6 +15,7 @@ const NewArrivals = () => {
     { id: 6, name: 'BOXY FIT JACKET', price: '₹1,499', image: '/newarrival2.png' },
   ];
   const [filterOpen, setFilterOpen] = useState(false);
+  
 
   return (
     <>

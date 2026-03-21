@@ -1,41 +1,66 @@
 'use client'
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 import styles from './productdetail.module.css';
 import { LuTruck, LuShieldCheck, LuRotateCcw, LuCircleCheck,LuBox, LuAward } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
+import { useParams } from "next/navigation";
+import { getProductById } from "@/services/product.service";
+import { ProductDetail as ProductDetailType } from "@/types/product";
 
 const ProductDetail = () => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('DESCRIPTION');
-  const tabContent = {
-  DESCRIPTION: {
-    title: "REDEFINING STREET SILHOUETTE",
-    text: "The Urban Plus Size Tee isn’t just a basic — it’s thoughtfully designed to celebrate curves with comfort and confidence. Crafted from premium stretch cotton, this tee offers a flattering fit that moves with your body while maintaining its shape wash after wash. Experience breathable softness and a smooth, heavyweight feel made for modern plus size streetwear.",
-    points: [
-      "240 GSM PREMIUM LOOP-KNIT COTTON",
-      "DOUBLE-STITCHED SEAMS FOR DURABILITY",
-      "BIO-WASHED FOR ZERO SHRINKAGE",
-      "RIBBED CREW NECK THAT HOLDS ITS SHAPE"
-    ],
-    image: "/description.png"
-  }
-};
   
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [product, setProduct] = useState<ProductDetailType | null>(null);
+  const metaSections = product?.metaInfo || [];
+  const params = useParams();
+  useEffect(() => {
+  const fetchProduct = async () => {
+    try {
+      const data = await getProductById(params.id as string);
+      setProduct(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (params.id) {
+    fetchProduct();
+  }
+}, [params.id]);
+
+useEffect(() => {
+  if (product) {
+    setSelectedColor(product.variants[0]?.color || null);
+    setSelectedSize(product.variants[0]?.size || null);
+  }
+}, [product]);
+useEffect(() => {
+  if (product?.metaInfo?.length) {
+    setActiveTab(product.metaInfo[0].title);
+  }
+}, [product]);
+
+  const sizes = [...new Set(product?.variants?.map(v => v.size) || [])];
+  const colors = [...new Set(product?.variants?.map(v => v.color) || [])];
+  const selectedVariant = product?.variants.find(
+  v => v.color === selectedColor && v.size === selectedSize
+);
   // Mock images - replace with your actual paths
-  const productImages = ['/main.png', '/thumb2.jpg', '/thumb3.jpg', '/thumb4.jpg'];
-  const [activeImg, setActiveImg] = useState(productImages[0]);
+  const productImages = product?.images || [];
+  const [activeImg, setActiveImg] = useState<string | null>(null);
+  useEffect(() => {
+  if (product?.images?.length) {
+    setActiveImg(product.images[0]);
+  }
+}, [product]);
 
-  const sizes = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL', '6XL', '7XL', '8XL', '9XL'];
-  const colors = [
-    { name: 'JET BLACK', hex: '#000000' },
-    { name: 'NAVY BLUE', hex: '#3b4754' },
-    { name: 'WHITE', hex: '#f0f4f7' },
-    { name: 'BOTTLE GREEN', hex: '#1a3d32' }
-  ];
 
-  const [selectedColor, setSelectedColor] = useState(colors[3]); 
-  const [selectedSize, setSelectedSize] = useState('6XL');
-
+   if (!product) {
+  return <div>Loading...</div>;
+}
   return (
      <>
     <div className={styles.container}>
@@ -43,9 +68,11 @@ const ProductDetail = () => {
       <div className={styles.gallery}>
         <div className={styles.thumbnails}>
           {productImages.map((img, i) => (
-            <div 
-              key={i} 
-              className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ''}`}
+            <div
+              key={i}
+              className={`${styles.thumbBox} ${
+                activeImg === img ? styles.activeThumb : ""
+              }`}
               onClick={() => setActiveImg(img)}
             >
               <img src={img} alt={`view ${i}`} />
@@ -53,16 +80,20 @@ const ProductDetail = () => {
           ))}
         </div>
         <div className={styles.mainImage}>
-          <img src={activeImg} alt="Urban Oversized Tee" />
+          {activeImg && (
+            <img src={activeImg} alt={product.name} />
+          )}
         </div>
       </div>
 
       {/* RIGHT: Product Info */}
       <div className={styles.details}>
-        <h1 className={styles.title}>URBAN OVERSIZED TEE</h1>
+        <h1 className={styles.title}>{product?.name}</h1>
         
         <div className={styles.priceRow}>
-          <span className={styles.price}>₹1,499</span>
+         <span className={styles.price}>
+            ₹{selectedVariant?.sellingPrice || product?.variants[0]?.sellingPrice}
+          </span>
           <div className={styles.divider}></div>
           <div className={styles.ratingBox}>
             <div className={styles.stars}>
@@ -73,25 +104,34 @@ const ProductDetail = () => {
         </div>
         
         <p className={styles.description}>
-          Heavyweight 240 GSM loop-knit cotton for the perfect street silhouette. 
-          Designed for maximum comfort and an effortless boxy fit.
+          {product?.description}
         </p>
 
         {/* Color Selection */}
         <div className={styles.section}>
-          <p className={styles.label}>COLOR: <span className={styles.colorName}>{selectedColor.name}</span></p>
+          <p className={styles.label}>
+            COLOR: <span className={styles.colorName}>{selectedColor}</span>
+          </p>
+
           <div className={styles.colorPicker}>
             {colors.map((color) => (
-              <div 
-                key={color.name} 
+              <button
+                key={color}
                 onClick={() => setSelectedColor(color)}
-                className={`${styles.colorCircle} ${selectedColor.name === color.name ? styles.activeColor : ''}`}
-                style={{ backgroundColor: color.hex }}
-              />
+                className={`${styles.colorItem} ${
+                  selectedColor === color ? styles.activeColor : ""
+                }`}
+              >
+                <span
+                  className={styles.colorDot}
+                  style={{ backgroundColor: color.toLowerCase() }}
+                ></span>
+
+                <span className={styles.colorText}>{color}</span>
+              </button>
             ))}
           </div>
         </div>
-
         {/* Size Selection */}
         <div className={styles.section}>
           <div className={styles.labelRow}>
@@ -100,8 +140,8 @@ const ProductDetail = () => {
           </div>
           <div className={styles.sizeGrid}>
             {sizes.map((size) => (
-              <button 
-                key={size} 
+              <button
+                key={size}
                 onClick={() => setSelectedSize(size)}
                 className={selectedSize === size ? styles.sizeBtnActive : styles.sizeBtn}
               >
@@ -143,124 +183,110 @@ const ProductDetail = () => {
       </div>
       </div>
      {/* Bottom Features Bar */}
-<div className={styles.featuresBar}>
+        <div className={styles.featuresBar}>
 
-  <div className={styles.featureItem}>
-    <div className={styles.featureIcon}>
-      <LuBox size={24} />
-    </div>
-    <h3>FREE SHIPPING</h3>
-    <p>Available India-wide on all orders</p>
-  </div>
+          <div className={styles.featureItem}>
+            <div className={styles.featureIcon}>
+              <LuBox size={24} />
+            </div>
+            <h3>FREE SHIPPING</h3>
+            <p>Available India-wide on all orders</p>
+          </div>
 
-  <div className={styles.featureItem}>
-    <div className={styles.featureIcon}>
-      <LuRotateCcw size={24} />
-    </div>
-    <h3>10-DAY EASY EXCHANGE</h3>
-    <p>No questions asked return policy</p>
-  </div>
+          <div className={styles.featureItem}>
+            <div className={styles.featureIcon}>
+              <LuRotateCcw size={24} />
+            </div>
+            <h3>10-DAY EASY EXCHANGE</h3>
+            <p>No questions asked return policy</p>
+          </div>
 
-  <div className={styles.featureItem}>
-    <div className={styles.featureIcon}>
-      <LuAward size={24} />
-    </div>
-    <h3>PREMIUM LOOP KNIT</h3>
-    <p>Superior quality 240 GSM cotton</p>
-  </div>
+          <div className={styles.featureItem}>
+            <div className={styles.featureIcon}>
+              <LuAward size={24} />
+            </div>
+            <h3>PREMIUM LOOP KNIT</h3>
+            <p>Superior quality 240 GSM cotton</p>
+          </div>
 
-</div>
+        </div>
 
-<div className={styles.tabsContainer}>
+      <div className={styles.tabsContainer}>
         {/* Tab Headers */}
         <div className={styles.tabHeader}>
-          {['DESCRIPTION', 'FABRIC & CARE', 'SIZE GUIDE', 'SHIPPING'].map((tab) => (
+          {metaSections.map((section, i) => (
             <button
-              key={tab}
-              className={`${styles.tabBtn} ${activeTab === tab ? styles.activeTabBtn : ''}`}
-              onClick={() => setActiveTab(tab)}
+              key={i}
+              className={`${styles.tabBtn} ${
+                activeTab === section.title ? styles.activeTabBtn : ""
+              }`}
+              onClick={() => setActiveTab(section.title)}
             >
-              {tab}
+              {section.title.toUpperCase()}
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
         <div className={styles.tabContentSection}>
-          {activeTab === 'DESCRIPTION' && (
-            <div className={styles.descriptionGrid}>
-              <div className={styles.descTextSide}>
-                <h2 className={styles.descTitle}>{tabContent.DESCRIPTION.title}</h2>
-                <p className={styles.descBody}>{tabContent.DESCRIPTION.text}</p>
-                <ul className={styles.descList}>
-                  {tabContent.DESCRIPTION.points.map((point, i) => (
-                    <li key={i}><span>○</span> {point}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className={styles.descImageSide}>
-                <div className={styles.textureCard}>
-                  <img src={tabContent.DESCRIPTION.image} alt="Texture" />
-                  <span className={styles.textureLabel}>FEEL THE LOOP KNIT TEXTURE</span>
+          {metaSections.map((section, i) => {
+            if (activeTab !== section.title) return null;
+
+            return (
+              <div key={i} className={styles.descriptionGrid}>
+                <div className={styles.descTextSide}>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: section.text }}
+                  />
                 </div>
+
+                {section.imageUrl && (
+                  <div className={styles.descImageSide}>
+                    <div className={styles.textureCard}>
+                      <img src={section.imageUrl} alt={section.title} />
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-          {/* Add conditional rendering for other tabs here */}
+            );
+          })}
         </div>
       </div>
-     <div className={styles.mobileAccordion}>
-  {['DESCRIPTION', 'FABRIC & CARE', 'SIZE GUIDE', 'SHIPPING'].map((tab) => (
-    <div key={tab} className={styles.accordionItem}>
+    <div className={styles.mobileAccordion}>
+  {metaSections.map((section, i) => (
+    <div key={i} className={styles.accordionItem}>
 
       <button
         className={styles.accordionHeader}
         onClick={() =>
-          setOpenAccordion(openAccordion === tab ? null : tab)
+          setOpenAccordion(openAccordion === section.title ? null : section.title)
         }
       >
-        {tab}
+        {section.title.toUpperCase()}
         <span className={styles.arrow}>
-          {openAccordion === tab ? "⌃" : "⌄"}
+          {openAccordion === section.title ? "⌃" : "⌄"}
         </span>
       </button>
 
-      {openAccordion === tab && (
+      {openAccordion === section.title && (
         <div className={styles.accordionContent}>
+          <div className={styles.descriptionGrid}>
 
-          {/* DESCRIPTION CONTENT */}
-          {tab === 'DESCRIPTION' && (
-            <div className={styles.descriptionGrid}>
-              <div className={styles.descTextSide}>
-                <h2 className={styles.descTitle}>
-                  {tabContent.DESCRIPTION.title}
-                </h2>
+            <div className={styles.descTextSide}>
+              <div
+                dangerouslySetInnerHTML={{ __html: section.text }}
+              />
+            </div>
 
-                <p className={styles.descBody}>
-                  {tabContent.DESCRIPTION.text}
-                </p>
-
-                <ul className={styles.descList}>
-                  {tabContent.DESCRIPTION.points.map((point, i) => (
-                    <li key={i}><span>○</span> {point}</li>
-                  ))}
-                </ul>
-              </div>
-
+            {section.imageUrl && (
               <div className={styles.descImageSide}>
                 <div className={styles.textureCard}>
-                  <img
-                    src={tabContent.DESCRIPTION.image}
-                    alt="Texture"
-                  />
-                  <span className={styles.textureLabel}>
-                    FEEL THE LOOP KNIT TEXTURE
-                  </span>
+                  <img src={section.imageUrl} alt={section.title} />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
+          </div>
         </div>
       )}
 

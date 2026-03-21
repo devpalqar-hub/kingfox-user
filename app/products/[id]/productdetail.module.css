@@ -5,7 +5,7 @@
   max-width: 1200px;
   margin: 40px auto;
   padding: 0 20px;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-jakarta);
   color: #000;
 }
 .gallery {
@@ -101,32 +101,48 @@
   display: block;
   letter-spacing: 0.5px;
 }
-
-.colorName { color: #000; font-weight: 800; }
-
 .colorPicker {
   display: flex;
   gap: 12px;
-  margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
-.colorCircle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid #eee;
+.colorItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  border: 1px solid #ddd;
+  background: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.colorItem:hover {
+  border-color: #222;
 }
 
 .activeColor {
-  outline: 2px solid #1a3d32;
-  outline-offset: 3px;
+  border: 2px solid #1f3d2b;
 }
 
+.colorDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
+
+.colorText {
+  font-size: 14px;
+  font-weight: 500;
+}
 .labelRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 10px; 
   margin-bottom: 12px;
 }
 
@@ -352,6 +368,67 @@
   align-items: center;
   gap: 10px;
     font-family: var(--font-jakarta);
+}
+/* Title */
+.descTextSide h1,
+.descTextSide h2,
+.descTextSide h3 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #111;
+}
+
+/* Paragraph */
+.descTextSide p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.descTextSide ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.descTextSide li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 10px;
+}
+
+.descTextSide li::before {
+  content: "○";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 14px;
+}
+.descTextSide li {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #444;
+}
+
+/* Table (for size guide) */
+.descTextSide table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.descTextSide th,
+.descTextSide td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.descTextSide th {
+  background: #f5f5f5;
+  font-weight: 600;
 }
 
 /* Texture Image Card */

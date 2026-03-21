@@ -2,8 +2,10 @@
 import React, { useState } from "react";
 import styles from "./Header.module.css";
 import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
+import LoginModal from "@/app/auth/login/page";
 import Link from "next/link";
 const Header = () => {
+  const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -82,9 +84,19 @@ const Header = () => {
             <ShoppingCart size={20} />
             <span className={styles.badge}>3</span>
           </Link>
-          <div className={styles.iconWrapper}><User size={20} /></div>
+          <div
+            className={styles.iconWrapper}
+            onClick={() => setShowLogin(true)}
+          >
+            <User size={20} />
+          </div>
         </div>
       </nav>
+      {/* LOGIN MODAL */}
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+      />
     </header>
   );
 };
