@@ -5,9 +5,8 @@ import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
 import LoginModal from "@/app/auth/login/page";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut } from "lucide-react";
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -27,7 +26,7 @@ const Header = () => {
             <span className={styles.digit}>0</span>
           </div>
 
-          <span>VOUCHERS LEFT. GRAB YOURS BEFORE THEY'RE GONE!</span>
+          <span>VOUCHERS LEFT. GRAB YOURS BEFORE THEY&apos;RE GONE!</span>
         </div>
       </div>
 
@@ -88,21 +87,16 @@ const Header = () => {
             <span className={styles.badge}>3</span>
           </Link>
           {user ? (
-            <div
-              className={styles.iconWrapper}
-              onClick={logout}
-              title="Logout"
-            >
-              <LogOut size={20} />
-            </div>
-          ) : (
-            <div
-              className={styles.iconWrapper}
-              onClick={() => setShowLogin(true)}
-              title="Login"
-            >
+            <Link href="/profile" className={styles.iconWrapper} title="Profile">
               <User size={20} />
-            </div>
+            </Link>
+          ) : (
+            <button
+              className={styles.loginBtn}
+              onClick={() => setShowLogin(true)}
+            >
+              LOGIN
+            </button>
           )}
         </div>
       </nav>
