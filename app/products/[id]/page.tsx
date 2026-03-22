@@ -6,6 +6,10 @@ import { IoStarSharp } from "react-icons/io5";
 import { useParams } from "next/navigation";
 import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
+
+
+import { addToGuestCart } from "@/lib/cart";
+import { addToCartAPI } from "@/services/cart.service";
 import { getWishList , addToWishlist } from "@/services/wishlist.service";
 import { FiHeart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
@@ -20,6 +24,8 @@ const ProductDetail = () => {
   const metaSections = product?.metaInfo || [];
   const { user } = useAuth();
   const params = useParams();
+  const { token } = useAuth();
+
   useEffect(() => {
   const fetchProduct = async () => {
     try {
@@ -100,6 +106,35 @@ const handleWishlist = async () => {
   }
 }, [product]);
 
+
+const handleAddToCart = async () => {
+  if (!selectedVariant) {
+    alert("Please select size & color");
+    return;
+  }
+
+  const payload = {
+    variantId: selectedVariant.id,
+    quantity: 1,
+    productName: product?.name,
+    productImage: product?.images?.[0],
+    price: Number(selectedVariant.sellingPrice),
+    size: selectedVariant.size,
+    color: selectedVariant.color,
+  };
+
+  try {
+    if (token) {
+      await addToCartAPI(payload.variantId, payload.quantity);
+    } else {
+      addToGuestCart(payload);
+    }
+
+    alert("Added to cart 🛒");
+  } catch (err) {
+    console.error(err);
+  }
+};
 
    if (!product) {
   return <div>Loading...</div>;
@@ -217,7 +252,9 @@ const handleWishlist = async () => {
 
         {/* Actions */}
         <div className={styles.actions}>
-          <button className={styles.addToCart}>ADD TO CART</button>
+          <button className={styles.addToCart} onClick={handleAddToCart}>
+            ADD TO CART
+          </button>
           <button className={styles.buyNow}>BUY IT NOW</button>
         </div>
 
