@@ -19,12 +19,10 @@ const ProductCard = ({ image, name, price, rating, reviews, colors, isNew }: Pro
       <div className={styles.imageWrapper}>
         {isNew && <span className={styles.newBadge}>NEW ARRIVAL</span>}
         <img src={image} alt={name} className={styles.productImage} />
-        
+
         <div className={styles.iconOverlay}>
           <button className={styles.iconBtn}><Heart size={18} /></button>
-          <button className={styles.iconBtn}><Eye size={18} /></button>
         </div>
-
         <button className={styles.viewBtn}><Eye size={18} />VIEW</button>
       </div>
 
