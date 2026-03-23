@@ -3,13 +3,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import styles from "./login.module.css";
 import { sendOtp, verifyOtp } from "@/services/auth.service";
-
+import { useRouter } from "next/navigation";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
 export default function LoginModal({ isOpen, onClose }: Props) {
+  const router = useRouter();
     const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -42,11 +43,21 @@ const handleVerifyOtp = async () => {
     setLoading(true);
     const res = await verifyOtp(email, otp);
 
-    // ✅ THIS IS THE KEY FIX
-    login(res.access_token, res.user);
+    if (res.isNew) {
+      // 👉 Go to register page
+      router.push(`/auth/register?email=${email}&token=${res.access_token}`);
+    } else {
+      // 👉 Normal login
+      const user = {
+        id: 1,
+        name: "User",
+        email: email,
+        role: "customer",
+      };
 
-    alert("Login successful");
-    onClose();
+      login(res.access_token, user);
+      onClose();
+    }
 
   } catch (err) {
     console.error(err);
