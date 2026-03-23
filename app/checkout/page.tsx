@@ -33,25 +33,6 @@ const handlePlaceOrder = async () => {
   return (
     <div className={styles.container}>
       <div className={styles.mainContent}>
-        {/* Express Checkout Section */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <MdFlashOn /> EXPRESS CHECKOUT
-          </h2>
-          <div className={styles.expressButtons}>
-            <button className={styles.upiBtn}>
-              <MdPayments /> PAY VIA UPI
-            </button>
-            <div className={styles.razorpayPowered}>
-              <span>POWERED BY</span>
-              <span className={styles.razorpayBrand}>Razorpay</span>
-            </div>
-          </div>
-          <div className={styles.divider}>
-            <span>OR CONTINUE WITH SHIPPING</span>
-          </div>
-        </section>
-
         {/* Shipping Details */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>

@@ -584,7 +584,20 @@
 .writeReviewBtn:hover {
   opacity: 0.8;
 }
+.wishlistBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: white;
+  border-radius: 50%;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
 
+.active {
+  background: black;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
