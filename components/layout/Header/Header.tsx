@@ -6,10 +6,10 @@ import LoginModal from "@/app/auth/login/page";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 const Header = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth(); // ✅ ADD loading
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+   if (loading) return null;
   return (
     <header className={styles.headerContainer}>
       

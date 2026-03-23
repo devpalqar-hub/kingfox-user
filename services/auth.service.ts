@@ -1,28 +1,24 @@
 import axiosInstance from "@/lib/axios";
 
-// Base path only (axios already has baseURL)
-const BASE_URL = "/v1/auth";
+// Base path
+const BASE_URL = "/v1/customer-auth";
 
-
+// 👉 Types
 type SendOtpResponse = {
   message: string;
   otp?: string;
+  isNew?: boolean;
 };
 
 type VerifyOtpResponse = {
   access_token: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-  };
+  isNew: boolean;
 };
 
 // 👉 Send OTP
 export const sendOtp = async (email: string): Promise<SendOtpResponse> => {
   try {
-    const res = await axiosInstance.post(`${BASE_URL}/otp/generate`, {
+    const res = await axiosInstance.post(`${BASE_URL}/request-otp`, {
       email,
     });
 
@@ -41,7 +37,7 @@ export const verifyOtp = async (
   otp: string
 ): Promise<VerifyOtpResponse> => {
   try {
-    const res = await axiosInstance.post(`${BASE_URL}/otp/verify`, {
+    const res = await axiosInstance.post(`${BASE_URL}/verify-otp`, {
       email,
       otp,
     });
@@ -53,4 +49,21 @@ export const verifyOtp = async (
       error.response?.data?.message || "Invalid OTP"
     );
   }
+};
+
+export const completeProfile = async (
+  token: string,
+  data: { name: string; phone: string }
+) => {
+  const res = await axiosInstance.patch(
+    "/v1/customer-auth/complete-profile",
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return res.data;
 };
