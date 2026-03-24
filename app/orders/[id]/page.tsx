@@ -186,53 +186,7 @@ const OrderDetailsPage = () => {
             ))}
             </div>
 
-          {order?.shipments?.length > 0 && (
-          <div className={styles.shipmentCard}>
-            
-            <div className={styles.shipmentHeader}>
-              <MdLocalShipping className={styles.shipIcon} />
-              <h3>SHIPMENT DETAILS</h3>
-            </div>
-
-            {order.shipments.map((ship) => (
-              <div key={ship.id} className={styles.shipmentGrid}>
-
-                {/* PROVIDER NAME */}
-                <div className={styles.shipItem}>
-                  <span className={styles.label}>CARRIER</span>
-                  <p className={styles.value}>
-                    {ship.providerName || "N/A"}
-                  </p>
-                </div>
-
-                {/* TRACKING ID */}
-                <div className={styles.shipItem}>
-                  <span className={styles.label}>TRACKING ID</span>
-                  <p className={styles.value}>
-                    {ship.trackingId}
-                    <MdContentCopy
-                      className={styles.copyIcon}
-                      onClick={() =>
-                        navigator.clipboard.writeText(ship.trackingId)
-                      }
-                    />
-                  </p>
-                </div>
-
-                {/* SHIPPED DATE */}
-                <div className={styles.shipItem}>
-                  <span className={styles.label}>SHIPPED AT</span>
-                  <p className={styles.value}>
-                    {ship.shippedAt
-                      ? new Date(ship.shippedAt).toISOString().split("T")[0]
-                      : "—"}
-                  </p>
-                </div>
-
-              </div>
-            ))}
-          </div>
-        )}
+          
         </div>
 
         {/* RIGHT */}
