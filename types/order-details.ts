@@ -35,6 +35,7 @@ export interface OrderDetailsResponse {
   shippingAddress: string;
 
   createdAt: string;
+  updatedAt: string; 
 
   items: OrderDetailsItem[];
 
