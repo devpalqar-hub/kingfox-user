@@ -120,7 +120,7 @@ const handleWishlist = async () => {
 
 
 const handleAddToCart = async () => {
-  if (!selectedVariant) {
+  if (!product || !selectedVariant) {
     alert("Please select size & color");
     return;
   }
@@ -128,8 +128,8 @@ const handleAddToCart = async () => {
   const payload = {
     variantId: selectedVariant.id,
     quantity: 1,
-    productName: product?.name,
-    productImage: product?.images?.[0],
+    productName: product.name,
+    productImage: product.images?.[0] || "",
     price: Number(selectedVariant.sellingPrice),
     size: selectedVariant.size,
     color: selectedVariant.color,
