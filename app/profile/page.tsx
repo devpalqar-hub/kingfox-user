@@ -9,16 +9,19 @@ import { getOrdersAPI } from "@/services/order-history.service";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { LuLogOut } from "react-icons/lu";
+import { ProfileResponse } from "@/types/profile";
+import { CartItem, CartResponse } from "@/types/cart";
+import { OrderHistoryItem, OrderHistoryResponse } from "@/types/order-history";
 
 const ProfilePage = () => {
 
   const { logout } = useAuth();
   const router = useRouter();
 
-  const [profile, setProfile] = useState<any>(null);
-  const [cartItems, setCartItems] = useState<any[]>([]);
-  const [cartTotal, setCartTotal] = useState(0);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [profile, setProfile] = useState<ProfileResponse | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartTotal, setCartTotal] = useState<number>(0);
+  const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-IN", {
@@ -29,20 +32,21 @@ const ProfilePage = () => {
 
   useEffect(() => {
   const loadData = async () => {
-    try {
-      const profileData = await getProfileAPI();
-      setProfile(profileData);
+  try {
+    const profileData = await getProfileAPI();
+    setProfile(profileData);
 
-      const cartData = await getCartAPI();
-      setCartItems(cartData.items);
-      setCartTotal(cartData.finalAmount);
+    const cartData: CartResponse = await getCartAPI();
+    setCartItems(cartData.items);
+    setCartTotal(cartData.finalAmount);
 
-      const ordersData = await getOrdersAPI();
-      setOrders(ordersData.data.slice(0, 3)); // 🔥 only 3
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    const ordersData: OrderHistoryResponse = await getOrdersAPI();
+    setOrders(ordersData.data.slice(0, 3));
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   loadData();
 }, []);
