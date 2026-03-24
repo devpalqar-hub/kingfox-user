@@ -1,11 +1,58 @@
 'use client';
-import React, { useState } from 'react';
+
+import { useState } from 'react';
 import styles from './Contact.module.css';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import { Mail, MessageSquare, Instagram, MapPin } from 'lucide-react';
 import { ChevronRight, Truck } from 'lucide-react';
+import { sendContactForm } from '@/services/contact.service';
+import { FaCheckCircle } from "react-icons/fa";
+
 const ContactPage = () => {
+
+  const [formData, setFormData] = useState({
+  name: '',
+  email: '',
+  subject: 'Order Status Update',
+  message: '',
+});
+
+const [loading, setLoading] = useState(false);
+const [modalMessage, setModalMessage] = useState('');
+const [showModal, setShowModal] = useState(false);
+
+
+const handleChange = (e: any) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const res = await sendContactForm(formData);
+
+    setModalMessage(res.message);
+    setShowModal(true);
+
+    // reset form
+    setFormData({
+      name: '',
+      email: '',
+      subject: 'Order Status Update',
+      message: '',
+    });
+
+  } catch (err: any) {
+    setModalMessage('Something went wrong. Please try again.');
+    setShowModal(true);
+  } finally {
+    setLoading(false);
+  }
+};
   const contactDetails = [
     {
       icon: <Mail size={24} />,
@@ -99,44 +146,75 @@ const ContactPage = () => {
           
           {/* Left Side: Contact Form */}
           <div className={styles.formContent}>
-            <h2 className={styles.formTitle}>DROP US A LINE</h2>
-            <p className={styles.formSubtitle}>
-              Fields marked with * are required for our team to process your request.
-            </p>
-            
-            <form className={styles.contactForm}>
-              <div className={styles.inputRow}>
-                <div className={styles.inputGroup}>
-                  <label>FULL NAME *</label>
-                  <input type="text" placeholder="John Doe" required />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>EMAIL ADDRESS *</label>
-                  <input type="email" placeholder="john@example.com" required />
-                </div>
-              </div>
-              
-              <div className={styles.inputGroup}>
-                <label>SUBJECT</label>
-                <div className={styles.selectWrapper}>
-                  <select className={styles.selectInput}>
-                    <option>Order Status Update</option>
-                    <option>Returns & Exchanges</option>
-                    <option>Sizing Help</option>
-                  </select>
-                </div>
-              </div>
+  <h2 className={styles.formTitle}>DROP US A LINE</h2>
+  <p className={styles.formSubtitle}>
+    Fields marked with * are required for our team to process your request.
+  </p>
 
-              <div className={styles.inputGroup}>
-                <label>YOUR MESSAGE *</label>
-                <textarea placeholder="Tell us what's on your mind..." rows={6} required></textarea>
-              </div>
+  {/* ✅ ONLY ONE FORM + onSubmit */}
+  <form className={styles.contactForm} onSubmit={handleSubmit}>
+    
+    <div className={styles.inputRow}>
+      <div className={styles.inputGroup}>
+        <label>FULL NAME *</label>
+        <input
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          type="text"
+          required
+        />
+      </div>
 
-              <button type="submit" className={styles.submitButton}>
-                SEND MESSAGE
-              </button>
-            </form>
-          </div>
+      <div className={styles.inputGroup}>
+        <label>EMAIL ADDRESS *</label>
+        <input
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          type="email"
+          required
+        />
+      </div>
+    </div>
+
+    <div className={styles.inputGroup}>
+      <label>SUBJECT</label>
+      <div className={styles.selectWrapper}>
+        <select
+            className={styles.selectInput}   // ✅ ADD THIS
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+          >
+          <option>Order Status Update</option>
+          <option>Returns & Exchanges</option>
+          <option>Sizing Help</option>
+        </select>
+      </div>
+    </div>
+
+    <div className={styles.inputGroup}>
+      <label>YOUR MESSAGE *</label>
+      <textarea
+        name="message"
+        value={formData.message}
+        onChange={handleChange}
+        rows={5}
+        required
+      />
+    </div>
+
+    <button
+      type="submit"
+      className={styles.submitButton}
+      disabled={loading}
+    >
+      {loading ? "Sending..." : "SEND MESSAGE"}
+    </button>
+
+  </form>
+</div>
 
           {/* Right Side: Sidebar & Map */}
           <div className={styles.sidebar}>
@@ -190,7 +268,30 @@ const ContactPage = () => {
           ))}
         </div>
       </section>
-    
+    {showModal && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modalBox}>
+      
+      <div className={styles.modalIcon}>
+        <FaCheckCircle />
+      </div>
+
+      <h3 className={styles.modalTitle}>Message Sent!</h3>
+
+      <p className={styles.modalText}>
+        {modalMessage}
+      </p>
+
+      <button
+        className={styles.modalBtn}
+        onClick={() => setShowModal(false)}
+      >
+        OK
+      </button>
+
+    </div>
+  </div>
+)}
 </>
     
   );

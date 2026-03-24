@@ -1,21 +1,131 @@
 'use client';
 import React, { useState } from 'react';
 import styles from './New-Arrivals.module.css';
-import { LuHeart, LuEye, LuLayers, LuShieldCheck, LuRuler } from "react-icons/lu";
+import {LuLayers, LuShieldCheck, LuRuler } from "react-icons/lu";
+import { FiHeart } from "react-icons/fi"; // outline
+import { FaHeart } from "react-icons/fa"; // filled
+import { FiEye } from "react-icons/fi";
+import { useEffect } from "react";
+import { 
+  addToWishlist, 
+  removeFromWishlist, 
+  getWishList 
+} from "@/services/wishlist.service";
+import { getNewArrivals } from "@/services/product.service";
+
 const NewArrivals = () => {
-  const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '8XL', '10XL'];
-  const inStockSizes = ['5XL', '6XL', '8XL', '10XL'];
   
-  const products = [
-    { id: 1, name: 'OVERSIZED HEAVY TEE', price: '₹1,499', image: '/hero1.png' },
-    { id: 2, name: 'URBAN CARGO PANTS', price: '₹1,499', image: '/newarrival2.png' },
-    { id: 3, name: 'URBAN CARGO PANTS', price: '₹1,499', image: '/newarrival2.png' },
-    { id: 4, name: 'BOXY FIT JACKET', price: '₹1,499', image: '/newarrival2.png' },
-    { id: 5, name: 'BOXY FIT JACKET', price: '₹1,499', image: '/newarrival2.png' },
-    { id: 6, name: 'BOXY FIT JACKET', price: '₹1,499', image: '/newarrival2.png' },
-  ];
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  
+  const inStockSizes = ['5XL', '6XL', '8XL', '10XL'];
   const [filterOpen, setFilterOpen] = useState(false);
 
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [categories, setCategories] = useState<
+  { id: number; name: string }[]
+>([]);
+
+  const formatName = (name: string) => {
+  return name
+    ?.split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+  
+useEffect(() => {
+  const fetchWishlist = async () => {
+    try {
+      const res = await getWishList();
+
+      // extract product IDs
+      const ids = res.map((item: any) => item.productId);
+
+      setWishlist(ids);
+    } catch (err) {
+      console.error("Failed to fetch wishlist", err);
+    }
+  };
+
+  fetchWishlist();
+}, []);
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await getNewArrivals({
+        size: selectedSize,
+        categoryId: selectedCategory,
+      });
+
+      const data = Array.isArray(res) ? res : res.data;
+      setProducts(data);
+    } catch (err) {
+      console.error("Failed to fetch new arrivals", err);
+    }
+  };
+
+  fetchData();
+}, [selectedSize, selectedCategory]);// 👈 IMPORTANT // 👈 IMPORTANT
+
+
+useEffect(() => {
+  const sizesSet = new Set<string>();
+
+  products.forEach((product) => {
+    product.variants?.forEach((variant: any) => {
+      if (variant.size) {
+        sizesSet.add(variant.size);
+      }
+    });
+  });
+
+  setAvailableSizes(Array.from(sizesSet));
+}, [products]);
+
+useEffect(() => {
+  if (!products || products.length === 0) {
+    setCategories([]);
+    return;
+  }
+
+  const map = new Map<number, { id: number; name: string }>();
+
+  products.forEach((product) => {
+    if (product.category) {
+      map.set(product.category.id, product.category);
+    }
+  });
+
+  setCategories(Array.from(map.values()));
+}, [products]);
+
+
+const handleWishlist = async (id: number) => {
+  try {
+    if (wishlist.includes(id)) {
+      // 👉 REMOVE
+      await removeFromWishlist(id);
+
+      setWishlist((prev) => prev.filter((i) => i !== id));
+    } else {
+      // 👉 ADD
+      await addToWishlist(id);
+
+      setWishlist((prev) => [...prev, id]);
+    }
+  } catch (err: any) {
+    // ⚠️ handle duplicate case (409)
+    if (err?.response?.status === 409) {
+      setWishlist((prev) => [...prev, id]);
+    } else {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  }
+};
   return (
     <>
     <div className={styles.container}>
@@ -45,28 +155,45 @@ const NewArrivals = () => {
           <div className={styles.filterSection}>
             <h3 className={styles.filterTitle}>SIZE FILTER</h3>
             <div className={styles.sizeGrid}>
-              {sizes.map((size) => {
-                const isInStock = inStockSizes.includes(size);
-                const isSelected = size === '10XL';
-                return (
-                  <button 
-                    key={size} 
-                    className={`${styles.sizeBtn} ${isInStock ? styles.inStock : ''} ${isSelected ? styles.active : ''}`}
-                  >
-                    <span className={styles.sizeLabel}>{size}</span>
-                    {isInStock && <span className={styles.stockLabel}>IN STOCK</span>}
-                  </button>
-                );
-              })}
+              {availableSizes.length === 0 ? (
+                <p>No sizes available</p> // 👈 TEMP DEBUG
+              ) : (
+                availableSizes.map((size) => {
+                  const isSelected = selectedSize === size;
+
+                  return (
+                    <button
+                      key={size}
+                      onClick={() =>
+                        setSelectedSize((prev) => (prev === size ? null : size))
+                      }
+                      className={`${styles.sizeBtn} ${isSelected ? styles.active : ''}`}
+                    >
+                      {size}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
           <div className={styles.filterSection}>
             <h3 className={styles.filterTitle}>CATEGORY</h3>
             <div className={styles.categoryList}>
-              <label className={styles.checkboxLabel}><input type="checkbox" /> Oversized Tees</label>
-              <label className={styles.checkboxLabel}><input type="checkbox" /> Heavy Hoodies</label>
-              <label className={styles.checkboxLabel}><input type="checkbox" /> Cargo Pants</label>
+              {categories.map((cat) => (
+                <label key={cat.id} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={selectedCategory === cat.id}
+                    onChange={() =>
+                      setSelectedCategory((prev) =>
+                        prev === cat.id ? null : cat.id
+                      )
+                    }
+                  />
+                  {cat.name}
+                </label>
+              ))}
             </div>
           </div>
         </aside>
@@ -75,15 +202,39 @@ const NewArrivals = () => {
           {products.map((product) => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.imageWrapper}>
-                <img src={product.image} alt={product.name} />
+                <img
+                  src={product.images?.[0] || "/fallback.png"}
+                  alt={product.name}
+                />
                 <div className={styles.iconActions}>
-                   <button className={styles.iconBtn}>♡</button>
-                   <button className={styles.iconBtn}>👁</button>
+                <div className={styles.iconOverlay}>
+                  <button
+                    className={styles.iconBtn}
+                    onClick={() => handleWishlist(product.id)}
+                  >
+                    {wishlist.includes(product.id) ? (
+                      <FaHeart size={16} color="#000" />
+                    ) : (
+                      <FiHeart size={16} />
+                    )}
+                  </button>
+
+                  <button className={styles.iconBtn}>
+                    <FiEye size={16} />
+                  </button>
+                </div>
                 </div>
               </div>
               <div className={styles.productInfo}>
-                <h4 className={styles.productName}>{product.name}</h4>
-                <p className={styles.price}>{product.price}</p>
+                <div className={styles.productRow}>
+                    <h4 className={styles.productName}>
+                      {formatName(product.name)}
+                    </h4>
+
+                    <p className={styles.price}>
+                      ₹{product.variants?.[0]?.sellingPrice || 0}
+                    </p>
+                  </div>
                 <p className={styles.inclusiveText}>INCLUSIVE SIZING (UP TO 10XL)</p>
               </div>
             </div>

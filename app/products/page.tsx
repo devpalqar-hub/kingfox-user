@@ -1,23 +1,90 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import ProductCard from '@/components/productcard/productcard';
 import styles from './Products.module.css';
 import Link from 'next/link';
+import { getProducts } from '@/services/product.service';
+import { Product } from '@/types/product';
 
-const PRODUCTS_DATA = Array.from({ length: 12 }).map((_, index) => ({
-  id: index + 1,
-  name: "Phantom Boxy Tee",
-  price: "1,499",
-  rating: 4,
-  reviews: 42,
-  colors: ["#c4ff00", "#777", "#000"],
-  image: "/product1.png",
-  isNew: index < 4
-}));
 
+Link
 const ProductsPage = () => {
-  const [filterOpen, setFilterOpen] = useState(false);
+const [products, setProducts] = useState<Product[]>([]);
+const [totalProducts, setTotalProducts] = useState(0);
+const [page, setPage] = useState(1);
+const [color, setColor] = useState<string | null>(null);
+const [size, setSize] = useState<string | null>(null);
+const [minPrice, setMinPrice] = useState<number | null>(null);
+const [maxPrice, setMaxPrice] = useState<number | null>(null);
+const [categoryId, setCategoryId] = useState<number | null>(null);
+const [availableColors, setAvailableColors] = useState<string[]>([]);
+const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+const [availableCategories, setAvailableCategories] = useState<{id:number,name:string}[]>([]);
+const [loading, setLoading] = useState(true);
+const [sortBy, setSortBy] = useState<"newly_arrived" | "low_to_high" | "high_to_low" | null>(null);
+const [filterOpen, setFilterOpen] = useState(false);
 
+
+ useEffect(() => {
+  const loadProducts = async () => {
+  try {
+    const data = await getProducts({
+      page,
+      limit: 8,
+      size: size || undefined,
+      color: color || undefined,
+      minPrice: minPrice || undefined,
+      maxPrice: maxPrice || undefined,
+      categoryId: categoryId || undefined,
+      sortBy: sortBy || undefined,
+    });
+
+    if (page === 1) {
+      setProducts(data.items);
+    } else {
+      setProducts((prev) => [...prev, ...data.items]);
+    }
+
+    setTotalProducts(data.pagination.total);
+
+    // ---------- Extract filters from API ----------
+    const colorsSet = new Set<string>();
+    const sizesSet = new Set<string>();
+    const categoryMap = new Map<number,string>();
+
+    data.items.forEach((product) => {
+
+      product.colors?.forEach((c) => colorsSet.add(c));
+
+      product.sizes?.forEach((s) => sizesSet.add(s));
+
+      if (product.category) {
+        categoryMap.set(product.category.id, product.category.name);
+      }
+
+    });
+
+    setAvailableColors(Array.from(colorsSet));
+    setAvailableSizes(Array.from(sizesSet));
+    setAvailableCategories(
+      Array.from(categoryMap, ([id,name]) => ({id,name}))
+    );
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+  loadProducts();
+}, [page, size, color, minPrice, maxPrice, categoryId, sortBy]);
+  const handleClearFilters = () => {
+    setSize(null);
+    setColor(null);
+    setMinPrice(null);
+    setMaxPrice(null);
+    setCategoryId(null);
+    setSortBy(null);
+    setPage(1);
+  };
   return (
     <section className={styles.pageWrapper}>
 
@@ -42,10 +109,23 @@ const ProductsPage = () => {
           </button>
 
           <div className={styles.sortBox}>
-            <select className={styles.sortSelect}>
-              <option>Sort by: New Arrival</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
+            <select
+              className={styles.sortSelect}
+              value={sortBy || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSortBy(
+                  value === ""
+                    ? null
+                    : (value as "newly_arrived" | "low_to_high" | "high_to_low")
+                );
+                setPage(1);
+              }}
+            >
+              <option value="">Sort By</option>
+              <option value="newly_arrived">New Arrival</option>
+              <option value="low_to_high">Price: Low to High</option>
+              <option value="high_to_low">Price: High to Low</option>
             </select>
           </div>
 
@@ -57,12 +137,18 @@ const ProductsPage = () => {
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>SIZE</p>
               <div className={styles.sizeGrid}>
-                {['S','M','L','XL','XXL','3XL','4XL','5XL','6XL','7XL','8XL','9XL'].map(size => (
+                {availableSizes.map((s) => (
                   <button
-                    key={size}
-                    className={size === '7XL' ? styles.sizeBtnActive : styles.sizeBtn}
+                    key={s}
+                    className={`${styles.sizeBtn} ${
+                      size === s ? styles.activeSize : ""
+                    }`}
+                    onClick={() => {
+                      setSize((prev) => (prev === s ? null : s));
+                      setPage(1);
+                    }}
                   >
-                    {size}
+                    {s}
                   </button>
                 ))}
               </div>
@@ -71,14 +157,21 @@ const ProductsPage = () => {
             {/* COLOR */}
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>COLOR</p>
+
               <div className={styles.colorRow}>
-                {['#000','#D1D5DB','#374151','#064E3B','#991B1B','#FFF'].map((color, i) => (
-                  <span
-                    key={i}
-                    className={styles.colorCircle}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
+                {availableColors.map((c) => (
+                    <span
+                      key={c}
+                      className={`${styles.colorCircle} ${
+                        color === c ? styles.activeColor : ""
+                      }`}
+                      style={{ backgroundColor: c.toLowerCase() }}
+                      onClick={() => {
+                        setColor((prev) => (prev === c ? null : c));
+                        setPage(1);
+                      }}
+                    />
+                  ))}
               </div>
             </div>
 
@@ -87,9 +180,12 @@ const ProductsPage = () => {
               <p className={styles.filterLabel}>PRICE RANGE</p>
               <input
                 type="range"
-                className={styles.rangeInput}
-                min="499"
-                max="2999"
+                min="100"
+                max="5000"
+                onChange={(e) => {
+                  setMaxPrice(Number(e.target.value));
+                  setPage(1);
+                }}
               />
               <div className={styles.priceRangeLabels}>
                 <span>₹499</span>
@@ -99,24 +195,30 @@ const ProductsPage = () => {
 
             {/* FIT */}
             <div className={styles.filterGroup}>
-              <p className={styles.filterLabel}>FIT</p>
+              <p className={styles.filterLabel}>CATEGORY</p>
 
-              <div className={styles.fitOptionActive}>
-                <span className={styles.checkIcon}>✓</span>
-                <span>Oversized</span>
-              </div>
-
-              <div className={styles.fitOption}>
-                <span className={styles.circle}></span>
-                <span>Boxy</span>
-              </div>
-
-              <div className={styles.fitOption}>
-                <span className={styles.circle}></span>
-                <span>Relaxed</span>
-              </div>
+              {availableCategories.map((cat) => (
+                <div
+                  key={cat.id}
+                  className={`${styles.fitOption} ${
+                    categoryId === cat.id ? styles.fitOptionActive : ""
+                  }`}
+                  onClick={() => {
+                    setCategoryId((prev) => (prev === cat.id ? null : cat.id));
+                    setPage(1);
+                  }}
+                >
+                  {cat.name}
+                </div>
+              ))}
 
             </div>
+            <button
+              className={styles.clearBtn}
+              onClick={handleClearFilters}
+            >
+              CLEAR FILTERS
+            </button>
           </div>
         </aside>
 
@@ -124,40 +226,56 @@ const ProductsPage = () => {
         <main className={styles.mainContent}>
           <div className={styles.productGrid}>
 
-            {PRODUCTS_DATA.map((product) => (
-              <Link key={product.id} href="/products/productdetails">
+            {products.map((product) => (
                 <ProductCard
+                  key={product.id}
+                  id={product.id} 
                   name={product.name}
-                  price={product.price}
-                  rating={product.rating}
-                  reviews={product.reviews}
+                  price={String(product.priceRange?.min || 0)}
+                  rating={4}
+                  reviews={product.variantCount}
                   colors={product.colors}
-                  image={product.image}
-                  isNew={product.isNew}
+                  image={
+                    product.images && product.images.length > 0
+                      ? product.images[0]
+                      : "/placeholder-product.png"
+                  }
+                  isNew={false}
                 />
-              </Link>
             ))}
 
           </div>
 
           {/* PAGINATION */}
-          <div className={styles.paginationArea}>
-            <p className={styles.showingText}>
-              SHOWING 8 OF 124 PRODUCTS
-            </p>
+          {products.length > 0 && (
+            <div className={styles.paginationArea}>
 
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: '40%' }}
-              />
+              <p className={styles.showingText}>
+                SHOWING {products.length} OF {totalProducts || products.length} PRODUCTS
+              </p>
+
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: totalProducts
+                      ? `${(products.length / totalProducts) * 100}%`
+                      : "0%"
+                  }}
+                />
+              </div>
+
+              {products.length < totalProducts && (
+                <button
+                  className={styles.loadMoreBtn}
+                  onClick={() => setPage((prev) => prev + 1)}
+                >
+                  LOAD MORE PRODUCTS
+                </button>
+              )}
+
             </div>
-
-            <button className={styles.loadMoreBtn}>
-              LOAD MORE PRODUCTS
-            </button>
-
-          </div>
+          )}
         </main>
 
       </div>

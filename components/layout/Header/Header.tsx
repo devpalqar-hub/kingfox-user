@@ -2,10 +2,14 @@
 import React, { useState } from "react";
 import styles from "./Header.module.css";
 import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
+import LoginModal from "@/app/auth/login/page";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 const Header = () => {
+  const { user, loading } = useAuth(); // ✅ ADD loading
+  const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+   if (loading) return null;
   return (
     <header className={styles.headerContainer}>
       
@@ -22,7 +26,7 @@ const Header = () => {
             <span className={styles.digit}>0</span>
           </div>
 
-          <span>VOUCHERS LEFT. GRAB YOURS BEFORE THEY'RE GONE!</span>
+          <span>VOUCHERS LEFT. GRAB YOURS BEFORE THEY&apos;RE GONE!</span>
         </div>
       </div>
 
@@ -82,9 +86,25 @@ const Header = () => {
             <ShoppingCart size={20} />
             <span className={styles.badge}>3</span>
           </Link>
-          <div className={styles.iconWrapper}><User size={20} /></div>
+          {user ? (
+            <Link href="/profile" className={styles.iconWrapper} title="Profile">
+              <User size={20} />
+            </Link>
+          ) : (
+            <button
+              className={styles.loginBtn}
+              onClick={() => setShowLogin(true)}
+            >
+              LOGIN
+            </button>
+          )}
         </div>
       </nav>
+      {/* LOGIN MODAL */}
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+      />
     </header>
   );
 };

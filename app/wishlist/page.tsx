@@ -2,12 +2,8 @@
 import styles from './wishlist.module.css';
 import { Heart, ShoppingCart, Bell,ChevronLeft, ChevronRight, Eye } from 'lucide-react'; // Using Lucide for icons
 import React, { useRef } from "react";
-const WISHLIST_DATA = [
-  { id: 1, name: "Urban Oversized Tee", price: "₹1,499", size: "L", tag: "NEW DROP", img: "/wishlist1.png", inStock: true },
-  { id: 2, name: "Vortex Graphic Hoodie", price: "₹2,999", size: "M", tag: null, img: "/wishlist2.png", inStock: true },
-  { id: 3, name: "Stealth Cargo Joggers", price: "₹2,499", size: "L", tag: null, img: "/wishlist3.png", inStock: false },
-  { id: 4, name: "Cyber Street Overshirt", price: "₹3,299", size: "L", tag: null, img: "/wishlist4.png", inStock: true },
-];
+import { getWishList,removeFromWishlist } from "@/services/wishlist.service";
+import { useEffect, useState } from "react";
 const RECOMMENDED_DATA = [
   { id: 5, name: "Urban Oversized Tee", price: "₹1,499", img: "/wishlist1.png", tag: "NEW DROP" },
   { id: 6, name: "Vortex Graphic Hoodie", price: "₹2,999", img: "/wishlist2.png" },
@@ -16,7 +12,21 @@ const RECOMMENDED_DATA = [
 ];
 export default function WishlistPage() {
  const sliderRef = useRef<HTMLDivElement | null>(null);
+ const [wishlist, setWishlist] = useState<any[]>([]);
+ useEffect(() => {
+  const fetchWishlist = async () => {
+    try {
+      const data = await getWishList();
+      setWishlist(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchWishlist();
+}, []);
 const scrollLeft = () => {
+
   if (!sliderRef.current) return;
 
   sliderRef.current.scrollBy({
@@ -33,6 +43,21 @@ const scrollRight = () => {
     behavior: "smooth",
   });
 };
+
+const handleRemove = async (productId: number) => {
+  try {
+    await removeFromWishlist(productId);
+
+    // ✅ update UI instantly (important)
+    setWishlist((prev) =>
+      prev.filter((item) => item.productId !== productId)
+    );
+    if (!confirm("Remove from wishlist?")) return;
+
+  } catch (err) {
+    console.error(err);
+  }
+};
   return (
     <>
     <div className={styles.container}>
@@ -40,7 +65,7 @@ const scrollRight = () => {
       <header className={styles.header}>
         <div className={styles.titleArea}>
           <h1>Your Wishlist</h1>
-          <span className={styles.itemCount}>(4 ITEMS)</span>
+          <span className={styles.itemCount}>({wishlist.length} ITEMS)</span>
           <span className={styles.continueShopping}>Continue Shopping</span>
         </div>
         
@@ -54,34 +79,46 @@ const scrollRight = () => {
 
       {/* Grid Section */}
       <div className={styles.grid}>
-        {WISHLIST_DATA.map((item) => (
-          <div key={item.id} className={styles.card}>
-            <div className={styles.imageWrapper}>
-              <img src={item.img} alt={item.name} style={{ opacity: item.inStock ? 1 : 0.6 }} />
-              <div className={styles.wishlistIcon}>
-                <Heart size={18} fill="black" />
-              </div>
-              {item.tag && <div className={styles.tag}>{item.tag}</div>}
-              {!item.inStock && <div className={styles.soldOutOverlay}>SOLD OUT</div>}
-            </div>
+        {wishlist.map((item) => {
+  const product = item.product;
 
-            <div className={styles.productInfo}>
-              <h3 style={{ color: item.inStock ? 'black' : '#999' }}>{item.name}</h3>
-              <div className={styles.priceRow}>
-                <span className={styles.price}>{item.price}</span>
-                <span className={styles.sizeTag}>SIZE: {item.size}</span>
-              </div>
-            </div>
+  return (
+    <div key={item.id} className={styles.card}>
+      <div className={styles.imageWrapper}>
+        <img
+          src={product.images?.[0] || "/fallback.png"}
+          alt={product.name}
+        />
 
-            {item.inStock ? (
-              <button className={styles.actionBtn}>Move To Cart</button>
-            ) : (
-              <button className={styles.notifyBtn}>
-                <Bell size={16} /> Notify Me
-              </button>
-            )}
-          </div>
-        ))}
+        <div
+          className={styles.wishlistIcon}
+          onClick={() => handleRemove(item.productId)}
+          style={{ cursor: "pointer" }}
+        >
+          <Heart size={18} fill="black" />
+        </div>
+      </div>
+
+      <div className={styles.productInfo}>
+        <h3>{product.name}</h3>
+
+        <div className={styles.priceRow}>
+          <span className={styles.price}>
+            ₹{product.priceRange?.min || 0}
+          </span>
+
+          <span className={styles.sizeTag}>
+            {product.brand?.name}
+          </span>
+        </div>
+      </div>
+
+      <button className={styles.actionBtn}>
+        Move To Cart
+      </button>
+    </div>
+  );
+})}
       </div>
       <section className={styles.recommendSection}>
         <div className={styles.recommendHeader}>
