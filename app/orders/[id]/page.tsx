@@ -186,7 +186,35 @@ const OrderDetailsPage = () => {
             ))}
             </div>
 
-          
+          {/* <div className={styles.shipmentCard}>
+            
+            <div className={styles.shipmentHeader}>
+              <MdLocalShipping className={styles.shipIcon} />
+              <h3>SHIPMENT DETAILS</h3>
+            </div>
+
+            <div className={styles.shipmentGrid}>
+
+              <div className={styles.shipItem}>
+                <span className={styles.label}>CARRIER</span>
+                <p className={styles.value}>DELHIVERY</p>
+              </div>
+
+              <div className={styles.shipItem}>
+                <span className={styles.label}>TRACKING ID</span>
+                <p className={styles.value}>
+                  DL123456 
+                  <MdContentCopy className={styles.copyIcon} />
+                </p>
+              </div>
+
+              <div className={styles.shipItem}>
+                <span className={styles.label}>SHIPPED AT</span>
+                <p className={styles.value}>2026-03-23</p>
+              </div>
+
+            </div>
+          </div> */}
         </div>
 
         {/* RIGHT */}
