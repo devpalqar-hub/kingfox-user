@@ -95,16 +95,28 @@ const handleWishlist = async () => {
   const sizes = [...new Set(product?.variants?.map(v => v.size) || [])];
   const colors = [...new Set(product?.variants?.map(v => v.color) || [])];
   const selectedVariant = product?.variants.find(
-  v => v.color === selectedColor && v.size === selectedSize
-);
+    v => v.color === selectedColor && v.size === selectedSize
+  );
+  // Available sizes based on selected color
+  const availableSizes = product?.variants
+    .filter(v => v.color === selectedColor)
+    .map(v => v.size) || [];
+
+  // Available colors based on selected size
+  const availableColors = product?.variants
+    .filter(v => v.size === selectedSize)
+    .map(v => v.color) || [];
+
   // Mock images - replace with your actual paths
   const productImages = product?.images || [];
   const [activeImg, setActiveImg] = useState<string | null>(null);
   useEffect(() => {
-  if (product?.images?.length) {
-    setActiveImg(product.images[0]);
-  }
-}, [product]);
+    if (product?.images?.length) {
+      setActiveImg(product.images[0]);
+    }
+  }, [product]);
+
+
 
 
 const handleAddToCart = async () => {
@@ -207,13 +219,33 @@ const handleAddToCart = async () => {
           </p>
 
           <div className={styles.colorPicker}>
-            {colors.map((color) => (
+          {colors.map((color) => {
+            const isAvailable = availableColors.includes(color);
+
+            return (
               <button
                 key={color}
-                onClick={() => setSelectedColor(color)}
+                onClick={() => {
+                  if (!product) return;
+
+                  const matchingVariant = product.variants.find(
+                    v => v.color === color && v.size === selectedSize
+                  );
+
+                  if (matchingVariant) {
+                    setSelectedColor(color);
+                  } else {
+                    const fallback = product.variants.find(v => v.color === color);
+
+                    if (fallback) {
+                      setSelectedColor(color);
+                      setSelectedSize(fallback.size);
+                    }
+                  }
+                }}
                 className={`${styles.colorItem} ${
                   selectedColor === color ? styles.activeColor : ""
-                }`}
+                } ${!isAvailable ? styles.disabled : ""}`}
               >
                 <span
                   className={styles.colorDot}
@@ -222,8 +254,9 @@ const handleAddToCart = async () => {
 
                 <span className={styles.colorText}>{color}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
+        </div>
         </div>
         {/* Size Selection */}
         <div className={styles.section}>
@@ -232,15 +265,42 @@ const handleAddToCart = async () => {
             <span className={styles.sizeGuide}>SIZE GUIDE</span>
           </div>
           <div className={styles.sizeGrid}>
-            {sizes.map((size) => (
-              <button
-                key={size}
-                onClick={() => setSelectedSize(size)}
-                className={selectedSize === size ? styles.sizeBtnActive : styles.sizeBtn}
-              >
-                {size}
-              </button>
-            ))}
+            {sizes.map((size) => {
+              const isAvailable = availableSizes.includes(size);
+
+              return (
+                <button
+                  key={size}
+                  onClick={() => {
+                    if (!product) return;
+
+                    const matchingVariant = product.variants.find(
+                      v => v.size === size && v.color === selectedColor
+                    );
+
+                    if (matchingVariant) {
+                      // valid combo
+                      setSelectedSize(size);
+                    } else {
+                      // find any variant with this size
+                      const fallback = product.variants.find(v => v.size === size);
+
+                      if (fallback) {
+                        setSelectedSize(size);
+                        setSelectedColor(fallback.color);
+                      }
+                    }
+                  }}
+                  className={
+                    selectedSize === size
+                      ? styles.sizeBtnActive
+                      : `${styles.sizeBtn} ${!isAvailable ? styles.disabled : ""}`
+                  }
+                >
+                  {size}
+                </button>
+              );
+            })}
           </div>
         </div>
 

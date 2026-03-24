@@ -12,12 +12,15 @@ import {
 import { getCartAPI, removeCartItemAPI, updateCartItemAPI } from "@/services/cart.service";
 import { CartResponse, CartItem } from "@/types/cart";
 import { useEffect, useState } from "react";
+import { OrderPreviewResponse } from '@/types/order';
+import { previewOrderAPI } from '@/services/order.service';
 
 const CartPage = () => {
   const { token } = useAuth();
   const [cartData, setCartData] = useState<CartResponse | null>(null);
   const [guestCart, setGuestCart] = useState<CartItem[]>([]);
   const router = useRouter();
+  const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
 
   const guestItemCount = guestCart.reduce(
     (acc, item) => acc + item.quantity,
@@ -29,22 +32,51 @@ const CartPage = () => {
     0
   );
 
-  useEffect(() => {
-    const loadCart = async () => {
-      try {
-        if (token) {
-          const data = await getCartAPI();
-          setCartData(data);
-        } else {
-          setGuestCart(getGuestCart());
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
 
-    loadCart();
-  }, [token]);
+  const loadPreview = async (guest?: CartItem[]) => {
+  try {
+    if (token) {
+      const res = await previewOrderAPI({
+        isCartPurchase: true,
+      });
+      setPreview(res);
+    } else if (guest && guest.length > 0) {
+      const res = await previewOrderAPI({
+        customerEmail: "guest@test.com",
+        isCartPurchase: false,
+        items: guest.map((item) => ({
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+      });
+      setPreview(res);
+    } else {
+      setPreview(null);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+useEffect(() => {
+  const loadCart = async () => {
+    try {
+      if (token) {
+        const cart = await getCartAPI();
+        setCartData(cart);
+        await loadPreview();
+      } else {
+        const guest = getGuestCart();
+        setGuestCart(guest);
+        await loadPreview(guest);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCart();
+}, [token]);
 
   return (
     <div className={styles.container}>
@@ -78,6 +110,7 @@ const CartPage = () => {
                           await updateCartItemAPI(item.variantId, item.quantity - 1);
                           const data = await getCartAPI();
                           setCartData(data);
+                          await loadPreview();
                         }
                       }}
                     >
@@ -89,6 +122,7 @@ const CartPage = () => {
                         await updateCartItemAPI(item.variantId, item.quantity + 1);
                         const data = await getCartAPI();
                         setCartData(data);
+                        await loadPreview();
                       }}
                     >
                       <Plus size={16} />
@@ -100,6 +134,7 @@ const CartPage = () => {
                       await removeCartItemAPI(item.variantId);
                       const data = await getCartAPI();
                       setCartData(data);
+                      await loadPreview();
                     }}
                   >
                     <Trash2 size={18} />
@@ -121,10 +156,12 @@ const CartPage = () => {
 
                   <div className={styles.quantity}>
                     <button
-                      onClick={() => {
+                      onClick={async() => {
                         if (item.quantity > 1) {
                           updateGuestCart(item.variantId, item.quantity - 1);
-                          setGuestCart(getGuestCart());
+                          const updated = getGuestCart();
+                          setGuestCart(updated);
+                          await loadPreview(updated);
                         }
                       }}
                     >
@@ -134,9 +171,11 @@ const CartPage = () => {
                     <span>{item.quantity}</span>
 
                     <button
-                      onClick={() => {
+                      onClick={async() => {
                         updateGuestCart(item.variantId, item.quantity + 1);
-                        setGuestCart(getGuestCart());
+                        const updated = getGuestCart();
+                        setGuestCart(updated);
+                        await loadPreview(updated);
                       }}
                     >
                       <Plus size={16} />
@@ -145,9 +184,11 @@ const CartPage = () => {
 
                   <button
                     className={styles.removeBtn}
-                    onClick={() => {
+                    onClick={async() => {
                       removeGuestCartItem(item.variantId);
-                      setGuestCart(getGuestCart());
+                      const updated = getGuestCart();
+                      setGuestCart(updated);
+                      await loadPreview(updated);
                     }}
                   >
                     <Trash2 size={18} />
@@ -165,34 +206,42 @@ const CartPage = () => {
                 <div className={styles.summaryRow}>
                 <span>Subtotal</span>
                 <span className={styles.summaryValue}>
-                  ₹{token ? cartData?.subtotal || 0 : guestTotal}
+                  ₹{preview?.subtotal || 0}
                 </span>
                 </div>
                 
                 <div className={styles.summaryRow}>
                 <span>Shipping</span>
-                <span className={styles.summaryValue}>$5.00</span>
+                <span className={styles.summaryValue}>₹{preview?.shippingCharge || 0}</span>
                 </div>
                 
-                <div className={styles.summaryRow}>
+                {/* <div className={styles.summaryRow}>
                 <span>Tax</span>
                 <span className={styles.summaryValue}>
                   ₹{token ? cartData?.gstAmount || 0 : 0}
                 </span>
-                </div>
+                </div> */}
 
                 <div className={styles.divider}></div>
 
                 <div className={`${styles.summaryRow} ${styles.totalRow}`}>
                 <span>TOTAL</span>
                 <span className={styles.totalValue}>
-                  ₹{token ? cartData?.finalAmount || 0 : guestTotal}
+                  ₹{preview?.finalAmount || 0}
                 </span>
                 </div>
 
                 <button 
                     className={styles.checkoutBtn}
-                    onClick={() => router.push("/checkout")}
+                    onClick={() => {
+                      localStorage.setItem("checkout_preview", JSON.stringify(preview));
+
+                      if (!token) {
+                        localStorage.setItem("checkout_items", JSON.stringify(guestCart));
+                      }
+
+                      router.push("/checkout");
+                    }}
                     >
                     PROCEED TO CHECKOUT <ArrowRight size={20} strokeWidth={2.5} />
                 </button>
@@ -209,15 +258,23 @@ const CartPage = () => {
             </aside>
             </div>
                <div className={styles.mobileCheckout}>
-                    <span className={styles.mobileTotal}>
-                      ₹{token ? cartData?.finalAmount || 0 : guestTotal}
-                    </span>
+                  <span className={styles.mobileTotal}>
+                    ₹{preview?.finalAmount || 0}
+                  </span>
 
-                    <button
-                        className={styles.mobileCheckoutBtn}
-                        onClick={() => router.push("/checkout")}
-                        >
-                        Checkout
+                  <button
+                      className={styles.mobileCheckoutBtn}
+                      onClick={() => {
+                        localStorage.setItem("checkout_preview", JSON.stringify(preview));
+
+                        if (!token) {
+                          localStorage.setItem("checkout_items", JSON.stringify(guestCart));
+                        }
+
+                        router.push("/checkout");
+                      }}
+                      >
+                      Checkout
             </button>
         </div>
     </div>

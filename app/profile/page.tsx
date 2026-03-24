@@ -2,27 +2,51 @@
 
 import VoucherCard from "@/components/vouchercard/VoucherCard";
 import styles from "./profile.module.css";
+import { useEffect, useState } from "react";
+import { getProfileAPI } from "@/services/profile.service";
+import { getCartAPI } from "@/services/cart.service";
+import { getOrdersAPI } from "@/services/order-history.service";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { LuLogOut } from "react-icons/lu";
 
 const ProfilePage = () => {
-  const user = {
-    name: "ALEXANDER VOID",
-    email: "VOID@KINGFOX.TECH",
-    phone: "+1 (555) 090-KFOX",
-    address: "742 NEON DISTRICT, KINETIC CITY BUILDING 04, SECTOR 9",
+
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const [profile, setProfile] = useState<any>(null);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [cartTotal, setCartTotal] = useState(0);
+  const [orders, setOrders] = useState<any[]>([]);
+
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+
+  useEffect(() => {
+  const loadData = async () => {
+    try {
+      const profileData = await getProfileAPI();
+      setProfile(profileData);
+
+      const cartData = await getCartAPI();
+      setCartItems(cartData.items);
+      setCartTotal(cartData.finalAmount);
+
+      const ordersData = await getOrdersAPI();
+      setOrders(ordersData.data.slice(0, 3)); // 🔥 only 3
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const cart = [
-    {
-      name: 'KF-01 "NIGHTHAWK"',
-      size: "11",
-      image: "/shoe.png",
-    },
-    {
-      name: "NEON OVERSIZED HOODIE",
-      size: "L",
-      image: "/hoodie.png",
-    },
-  ];
+  loadData();
+}, []);
+
 
   const wishlist = [
     { name: "KF-VEST GEN. 2", price: "$210.00", image: "/wishlist1.png" },
@@ -30,26 +54,14 @@ const ProfilePage = () => {
     { name: "GHOST LOGO TEE", price: "$65.00", image: "/wishlist3.png" },
   ];
 
-  const orders = [
-    {
-      id: "#KF-882910",
-      date: "OCT 12, 2024",
-      items: "3 ITEMS",
-      total: "$1,240.00",
-      status: "DELIVERED",
-    },
-    {
-      id: "#KF-882745",
-      date: "SEP 28, 2024",
-      items: "1 ITEM",
-      total: "$85.00",
-      status: "DELIVERED",
-    },
-  ];
-
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>USER PROFILE</h1>
+      <div className={styles.containerheader}>
+        <div className={styles.title}>USER PROFILE</div>
+        <div className={styles.logout}>
+          <button onClick={logout}><LuLogOut/> LOGOUT</button>
+        </div>
+      </div>
 
       {/* TOP SECTION */}
       <div className={styles.topSection}>
@@ -64,49 +76,69 @@ const ProfilePage = () => {
           <div className={styles.grid}>
             <div>
               <p className={styles.label}>FULL NAME</p>
-              <p>{user.name}</p>
+              <strong>{profile?.name}</strong>
             </div>
 
             <div>
               <p className={styles.label}>EMAIL ADDRESS</p>
-              <p>{user.email}</p>
-            </div>
-
-            <div>
-              <p className={styles.label}>PRIMARY SHIPPING</p>
-              <p>{user.address}</p>
+              <strong>{profile?.email}</strong>
             </div>
 
             <div>
               <p className={styles.label}>PHONE</p>
-              <p>{user.phone}</p>
+              <strong>{profile?.phone}</strong>
             </div>
           </div>
         </div>
 
         {/* CART */}
         <div className={styles.cartCard}>
-          <h3>CURRENT CART</h3>
+        <h3>CURRENT CART</h3>
 
-          {cart.map((item, i) => (
-            <div key={i} className={styles.cartItem}>
-              <img src={item.image} />
-              <div>
-                <p>{item.name}</p>
-                <span>QTY:1 / SIZE: {item.size}</span>
-              </div>
-            </div>
-          ))}
-
-          <div className={styles.cartFooter}>
-            <span>SUBTOTAL</span>
-            <h2>$485.00</h2>
+        {cartItems.length === 0 ? (
+          <div className={styles.emptyCart}>
+            <p>Your cart is empty</p>
+            <button onClick={() => router.push("/products")}>
+              SHOP NOW
+            </button>
           </div>
+        ) : (
+          <>
+            {cartItems.slice(0, 2).map((item, i) => (
+              <div key={i} className={styles.cartItem}>
+                <img src={item.productImage} />
+                <div>
+                  <p>{item.productName}</p>
+                  <span>
+                    QTY:{item.quantity} / SIZE: {item.size}
+                  </span>
+                </div>
+              </div>
+            ))}
 
-          <button className={styles.checkoutBtn}>
-            CHECKOUT NOW
-          </button>
-        </div>
+            {cartItems.length > 2 && (
+              <div
+                className={styles.moreItems}
+                onClick={() => router.push("/cart")}
+              >
+                +{cartItems.length - 2} more items →
+              </div>
+            )}
+
+            <div className={styles.cartFooter}>
+              <span>SUBTOTAL</span>
+              <h2>₹{cartTotal}</h2> {/* ✅ dynamic */}
+            </div>
+
+            <button
+              className={styles.checkoutBtn}
+              onClick={() => router.push("/cart")} // ✅ FIXED
+            >
+              VIEW CART
+            </button>
+          </>
+        )}
+      </div>
       </div>
 
       {/* VOUCHERS */}
@@ -114,22 +146,44 @@ const ProfilePage = () => {
         <h3>VOUCHER COLLECTION</h3>
 
         <div className={styles.voucherGrid}>
-          <VoucherCard/>
-          <VoucherCard/>
+          {profile?.activeVouchers?.length ? (
+            profile.activeVouchers.map((v) => (
+              <VoucherCard
+                key={v.id}
+                code={v.voucherCode}
+                title={v.campaign.name}
+                validTill={formatDate(v.campaign.validUntil)}
+              />
+            ))
+          ) : (
+            <p className={styles.emptyText}>No vouchers available</p>
+          )}
         </div>
       </div>
 
       {/* ORDERS */}
       <div className={styles.orders}>
-        <h3>ORDER HISTORY</h3>
+        <div className={styles.ordersHeader}>
+          <h3>ORDER HISTORY</h3>
+          <button onClick={() => router.push("/orders")}>
+            VIEW ALL
+          </button>
+        </div>
 
         <div className={styles.table}>
-          {orders.map((o, i) => (
-            <div key={i} className={styles.row}>
-              <span>{o.id}</span>
-              <span>{o.date}</span>
-              <span>{o.items}</span>
-              <span>{o.total}</span>
+          <div className={styles.row}>
+            <span className={styles.tablehead}>ORDER ID</span>
+            <span className={styles.tablehead}>DATE</span>
+            <span className={styles.tablehead}>ITEMS</span>
+            <span className={styles.tablehead}>TOTAL</span>
+            <span className={styles.tablehead}>STATUS</span>
+          </div>
+          {orders.map((o) => (
+            <div key={o.id} className={styles.row}>
+              <span>{o.orderNumber}</span>
+              <span>{new Date(o.createdAt).toDateString()}</span>
+              <span>{o.items.length} ITEMS</span>
+              <span>₹{o.finalAmount}</span>
               <span className={styles.status}>{o.status}</span>
             </div>
           ))}
@@ -137,7 +191,7 @@ const ProfilePage = () => {
       </div>
 
       {/* WISHLIST */}
-      <div className={styles.wishlist}>
+      {/* <div className={styles.wishlist}>
         <h3>WISHLIST FAVORITES</h3>
 
         <div className={styles.wishlistGrid}>
@@ -151,7 +205,7 @@ const ProfilePage = () => {
 
           <div className={styles.moreCard}>+</div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

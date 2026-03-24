@@ -176,6 +176,18 @@
   border-color: #000;
 }
 
+.disabled {
+  opacity: 0.4;
+}
+
+.sizeBtn:disabled {
+  opacity: 0.4;
+}
+
+.colorItem:disabled {
+  opacity: 0.4;
+}
+
 /* Shipping */
 .shippingBar {
   background: #f3f3f3;
