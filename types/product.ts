@@ -25,6 +25,7 @@ export interface Variant {
   sellingPrice: string;
   image: string | null;
   isAddedInCart?: boolean;
+  totalStock?: number;
 }
 export interface ProductDetail {
   id: number;
