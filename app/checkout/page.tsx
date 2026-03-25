@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { checkoutAPI } from "@/services/order.service";
 import { useAuth } from "@/context/AuthContext";
 import React from 'react';
+import { useToast } from "@/context/ToastContext";
 import styles from './checkout.module.css';
 import { 
   MdLocalShipping, 
@@ -27,6 +28,7 @@ const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
 const [profile, setProfile] = useState<ProfileResponse | null>(null);
 const [paymentMethod, setPaymentMethod] = useState<"COD">("COD");
 const [items, setItems] = useState<CartItem[]>([]);
+const { showToast } = useToast();
 
 const [form, setForm] = useState({
   firstName: "",
@@ -126,19 +128,33 @@ const updateGuestItem = (variantId: number, qty: number) => {
 };
 
 const handlePlaceOrder = async () => {
+  if (isPending) return;
+
+  // 🔥 VALIDATION (VERY IMPORTANT)
+  if (!form.firstName || !form.address || !form.phone) {
+    showToast("Please fill all required fields", "error");
+    return;
+  }
+
+  if (!/^\d{10}$/.test(form.phone)) {
+    showToast("Enter valid 10-digit phone number", "error");
+    return;
+  }
+
   setIsPending(true);
 
   try {
     let response;
 
     const fullName = `${form.firstName} ${form.lastName}`.trim();
-
     const fullAddress = `${form.address}${
       form.pincode ? ` - ${form.pincode}` : ""
     }`;
 
+    // 🔄 Loading feedback
+    showToast("Placing your order...", "info", 1500);
+
     if (token) {
-      // 🔥 LOGGED USER
       response = await checkoutAPI({
         isCartPurchase: true,
         customerName: fullName,
@@ -148,7 +164,6 @@ const handlePlaceOrder = async () => {
         shippingAddress: fullAddress,
       });
     } else {
-      // 👤 GUEST USER
       const guestCart: CartItem[] = JSON.parse(
         localStorage.getItem("guest_cart") || "[]"
       );
@@ -169,14 +184,25 @@ const handlePlaceOrder = async () => {
 
     console.log("Order Success:", response);
 
+    // 🧹 Clear guest cart
     if (!token) {
       localStorage.removeItem("guest_cart");
     }
 
-    router.push("/profile");
+    // ✅ SUCCESS TOAST
+    showToast("Order placed successfully", "success", 2500);
+
+    // 🔥 Delay navigation for better UX
+    setTimeout(() => {
+      router.replace("/profile");
+    }, 1200);
+
   } catch (err) {
     console.error(err);
-    alert("Order failed");
+
+    // ❌ ERROR TOAST
+    showToast("Order failed. Please try again", "error", 3000);
+
   } finally {
     setIsPending(false);
   }

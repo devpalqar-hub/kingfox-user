@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useToast } from "@/context/ToastContext";
 
 type User = {
   id: number;
@@ -20,6 +21,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { showToast } = useToast();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -51,15 +53,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // 👉 Logout
-  const logout = () => {
+const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 
   setToken(null);
   setUser(null);
 
-  alert("Logged out successfully"); // ✅
-  router.push("/");
+  showToast("Logged out successfully", "success", 2000);
+
+  setTimeout(() => {
+    router.push("/");
+  }, 800); // allow toast to show
 };
 
   // ⛔ Prevent rendering until auth is ready
