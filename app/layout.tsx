@@ -29,13 +29,15 @@ export default function RootLayout({
       <body className={`${jakarta.variable} ${space.variable}`}>
 
         {/* ✅ FIX: Wrap with AuthProvider */}
-        <AuthProvider>
+        
           <ToastProvider>
+            <AuthProvider>
             <Header />
             {children}
             <Footer />
+    </AuthProvider>
           </ToastProvider>
-        </AuthProvider>
+        
 
       </body>
     </html>
