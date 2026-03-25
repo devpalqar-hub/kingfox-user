@@ -12,15 +12,16 @@ const ProductsPage = () => {
 const [products, setProducts] = useState<Product[]>([]);
 const [totalProducts, setTotalProducts] = useState(0);
 const [page, setPage] = useState(1);
-const [color, setColor] = useState<string>();
-const [size, setSize] = useState<string>();
-const [minPrice, setMinPrice] = useState<number>();
-const [maxPrice, setMaxPrice] = useState<number>();
-const [categoryId, setCategoryId] = useState<number>();
+const [color, setColor] = useState<string | null>(null);
+const [size, setSize] = useState<string | null>(null);
+const [minPrice, setMinPrice] = useState<number | null>(null);
+const [maxPrice, setMaxPrice] = useState<number | null>(null);
+const [categoryId, setCategoryId] = useState<number | null>(null);
 const [availableColors, setAvailableColors] = useState<string[]>([]);
 const [availableSizes, setAvailableSizes] = useState<string[]>([]);
 const [availableCategories, setAvailableCategories] = useState<{id:number,name:string}[]>([]);
 const [loading, setLoading] = useState(true);
+const [sortBy, setSortBy] = useState<"newly_arrived" | "low_to_high" | "high_to_low" | null>(null);
 const [filterOpen, setFilterOpen] = useState(false);
 
 
@@ -30,11 +31,12 @@ const [filterOpen, setFilterOpen] = useState(false);
     const data = await getProducts({
       page,
       limit: 8,
-      size,
-      color,
-      minPrice,
-      maxPrice,
-      categoryId
+      size: size || undefined,
+      color: color || undefined,
+      minPrice: minPrice || undefined,
+      maxPrice: maxPrice || undefined,
+      categoryId: categoryId || undefined,
+      sortBy: sortBy || undefined,
     });
 
     if (page === 1) {
@@ -73,7 +75,16 @@ const [filterOpen, setFilterOpen] = useState(false);
   }
 };
   loadProducts();
-}, [page, size,color, minPrice, maxPrice, categoryId]);
+}, [page, size, color, minPrice, maxPrice, categoryId, sortBy]);
+  const handleClearFilters = () => {
+    setSize(null);
+    setColor(null);
+    setMinPrice(null);
+    setMaxPrice(null);
+    setCategoryId(null);
+    setSortBy(null);
+    setPage(1);
+  };
   return (
     <section className={styles.pageWrapper}>
 
@@ -98,10 +109,23 @@ const [filterOpen, setFilterOpen] = useState(false);
           </button>
 
           <div className={styles.sortBox}>
-            <select className={styles.sortSelect}>
-              <option>Sort by: New Arrival</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
+            <select
+              className={styles.sortSelect}
+              value={sortBy || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSortBy(
+                  value === ""
+                    ? null
+                    : (value as "newly_arrived" | "low_to_high" | "high_to_low")
+                );
+                setPage(1);
+              }}
+            >
+              <option value="">Sort By</option>
+              <option value="newly_arrived">New Arrival</option>
+              <option value="low_to_high">Price: Low to High</option>
+              <option value="high_to_low">Price: High to Low</option>
             </select>
           </div>
 
@@ -113,16 +137,18 @@ const [filterOpen, setFilterOpen] = useState(false);
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>SIZE</p>
               <div className={styles.sizeGrid}>
-                {availableSizes.map((size) => (
+                {availableSizes.map((s) => (
                   <button
-                    key={size}
-                    className={styles.sizeBtn}
+                    key={s}
+                    className={`${styles.sizeBtn} ${
+                      size === s ? styles.activeSize : ""
+                    }`}
                     onClick={() => {
-                      setSize(size);
+                      setSize((prev) => (prev === s ? null : s));
                       setPage(1);
                     }}
                   >
-                    {size}
+                    {s}
                   </button>
                 ))}
               </div>
@@ -136,10 +162,12 @@ const [filterOpen, setFilterOpen] = useState(false);
                 {availableColors.map((c) => (
                     <span
                       key={c}
-                      className={styles.colorCircle}
+                      className={`${styles.colorCircle} ${
+                        color === c ? styles.activeColor : ""
+                      }`}
                       style={{ backgroundColor: c.toLowerCase() }}
                       onClick={() => {
-                        setColor(c);
+                        setColor((prev) => (prev === c ? null : c));
                         setPage(1);
                       }}
                     />
@@ -172,9 +200,11 @@ const [filterOpen, setFilterOpen] = useState(false);
               {availableCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className={styles.fitOption}
+                  className={`${styles.fitOption} ${
+                    categoryId === cat.id ? styles.fitOptionActive : ""
+                  }`}
                   onClick={() => {
-                    setCategoryId(cat.id);
+                    setCategoryId((prev) => (prev === cat.id ? null : cat.id));
                     setPage(1);
                   }}
                 >
@@ -183,6 +213,12 @@ const [filterOpen, setFilterOpen] = useState(false);
               ))}
 
             </div>
+            <button
+              className={styles.clearBtn}
+              onClick={handleClearFilters}
+            >
+              CLEAR FILTERS
+            </button>
           </div>
         </aside>
 
@@ -191,8 +227,8 @@ const [filterOpen, setFilterOpen] = useState(false);
           <div className={styles.productGrid}>
 
             {products.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`}>
                 <ProductCard
+                  key={product.id}
                   id={product.id} 
                   name={product.name}
                   price={String(product.priceRange?.min || 0)}
@@ -206,7 +242,6 @@ const [filterOpen, setFilterOpen] = useState(false);
                   }
                   isNew={false}
                 />
-              </Link>
             ))}
 
           </div>

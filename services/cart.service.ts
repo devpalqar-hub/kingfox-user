@@ -14,7 +14,7 @@ export const getCartAPI = async (): Promise<CartResponse> => {
 };
 
 export const updateCartItemAPI = (variantId: number, quantity: number) => {
-  return axiosInstance.put(`/v1/user/cart/items/${variantId}`, {
+  return axiosInstance.patch(`/v1/user/cart/items/${variantId}`, {
     quantity,
   });
 };

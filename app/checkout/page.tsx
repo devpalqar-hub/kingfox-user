@@ -1,57 +1,217 @@
 "use client"; // Required for hooks
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { checkoutAPI } from "@/services/order.service";
+import { useAuth } from "@/context/AuthContext";
 import React from 'react';
+import { useToast } from "@/context/ToastContext";
 import styles from './checkout.module.css';
 import { 
-  SiRazorpay 
-} from 'react-icons/si';
-import { 
-  MdFlashOn, 
   MdLocalShipping, 
   MdOutlinePayment, 
   MdLocationOn, 
-  MdCreditCard, 
-  MdAccountBalance, 
   MdPayments, 
   MdLock 
 } from 'react-icons/md';
-import Image from "next/image";
+import { OrderPreviewResponse } from '@/types/order';
+import { CartItem } from '@/types/cart';
+import { ProfileResponse } from '@/types/profile';
+import { getProfileAPI } from '@/services/profile.service';
+import { getCartAPI, updateCartItemAPI} from "@/services/cart.service";
+import { previewOrderAPI } from "@/services/order.service";
 
 export default function CheckoutPage() {
 const router = useRouter();
 const [isPending, setIsPending] = useState(false);
+const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
+const [profile, setProfile] = useState<ProfileResponse | null>(null);
+const [paymentMethod, setPaymentMethod] = useState<"COD">("COD");
+const [items, setItems] = useState<CartItem[]>([]);
+const { showToast } = useToast();
+
+const [form, setForm] = useState({
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  address: "",
+  pincode: "",
+});
+const { token } = useAuth();
+
+
+useEffect(() => {
+  const loadCart = async () => {
+    try {
+      if (token) {
+        // 🔥 LOGGED USER CART
+        const data = await getCartAPI();
+        setItems(data.items);
+      } else {
+        // 👤 GUEST CART
+        const guest = JSON.parse(localStorage.getItem("guest_cart") || "[]");
+        setItems(guest);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCart();
+}, [token]);
+
+useEffect(() => {
+  const loadPreview = async () => {
+    try {
+      if (token) {
+        // 🔥 Logged user → use cart
+        const res = await previewOrderAPI({
+          isCartPurchase: true,
+        });
+        setPreview(res);
+      } else {
+        // 👤 Guest → send items
+        const guest = JSON.parse(localStorage.getItem("guest_cart") || "[]");
+
+        const res = await previewOrderAPI({
+          isCartPurchase: false,
+          customerEmail: "guest@test.com",
+          items: guest.map((item: CartItem) => ({
+            variantId: item.variantId,
+            quantity: item.quantity,
+          })),
+        });
+
+        setPreview(res);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadPreview();
+}, [items, token]);
+
+useEffect(() => {
+  const loadProfile = async () => {
+    if (!token) return;
+
+    try {
+      const data = await getProfileAPI();
+      setProfile(data);
+
+      const [first, ...rest] = data.name.split(" ");
+
+      setForm((prev) => ({
+        ...prev,
+        firstName: first || "",
+        lastName: rest.join(" ") || "",
+        email: data.email,
+        phone: data.phone,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadProfile();
+}, [token]);
+
+const updateGuestItem = (variantId: number, qty: number) => {
+  const updated = items.map((i) =>
+    i.variantId === variantId ? { ...i, quantity: qty } : i
+  );
+
+  setItems(updated);
+  localStorage.setItem("guest_cart", JSON.stringify(updated));
+};
+
 const handlePlaceOrder = async () => {
+  if (isPending) return;
+
+  // 🔥 VALIDATION (VERY IMPORTANT)
+  if (!form.firstName || !form.address || !form.phone) {
+    showToast("Please fill all required fields", "error");
+    return;
+  }
+
+  if (!/^\d{10}$/.test(form.phone)) {
+    showToast("Enter valid 10-digit phone number", "error");
+    return;
+  }
+
   setIsPending(true);
 
-  // simulate order processing
-  setTimeout(() => {
-    router.push("/orderplaced");
-  }, 1500);
+  try {
+    let response;
+
+    const fullName = `${form.firstName} ${form.lastName}`.trim();
+    const fullAddress = `${form.address}${
+      form.pincode ? ` - ${form.pincode}` : ""
+    }`;
+
+    // 🔄 Loading feedback
+    showToast("Placing your order...", "info", 1500);
+
+    if (token) {
+      response = await checkoutAPI({
+        isCartPurchase: true,
+        customerName: fullName,
+        customerEmail: form.email,
+        customerPhone: form.phone,
+        paymentMethod,
+        shippingAddress: fullAddress,
+      });
+    } else {
+      const guestCart: CartItem[] = JSON.parse(
+        localStorage.getItem("guest_cart") || "[]"
+      );
+
+      response = await checkoutAPI({
+        isCartPurchase: false,
+        items: guestCart.map((item) => ({
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+        customerName: fullName,
+        customerEmail: form.email,
+        customerPhone: form.phone,
+        paymentMethod,
+        shippingAddress: fullAddress,
+      });
+    }
+
+    console.log("Order Success:", response);
+
+    // 🧹 Clear guest cart
+    if (!token) {
+      localStorage.removeItem("guest_cart");
+    }
+
+    // ✅ SUCCESS TOAST
+    showToast("Order placed successfully", "success", 2500);
+
+    // 🔥 Delay navigation for better UX
+    setTimeout(() => {
+      router.replace("/profile");
+    }, 1200);
+
+  } catch (err) {
+    console.error(err);
+
+    // ❌ ERROR TOAST
+    showToast("Order failed. Please try again", "error", 3000);
+
+  } finally {
+    setIsPending(false);
+  }
 };
+
+
   return (
     <div className={styles.container}>
       <div className={styles.mainContent}>
-        {/* Express Checkout Section */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <MdFlashOn /> EXPRESS CHECKOUT
-          </h2>
-          <div className={styles.expressButtons}>
-            <button className={styles.upiBtn}>
-              <MdPayments /> PAY VIA UPI
-            </button>
-            <div className={styles.razorpayPowered}>
-              <span>POWERED BY</span>
-              <span className={styles.razorpayBrand}>Razorpay</span>
-            </div>
-          </div>
-          <div className={styles.divider}>
-            <span>OR CONTINUE WITH SHIPPING</span>
-          </div>
-        </section>
-
         {/* Shipping Details */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
@@ -60,26 +220,62 @@ const handlePlaceOrder = async () => {
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>FIRST NAME</label>
-              <input type="text" placeholder="ALEX" />
+              <input
+                type="text"
+                value={form.firstName}
+                disabled={!!profile}
+                onChange={(e) =>
+                  setForm({ ...form, firstName: e.target.value })
+                }
+              />
             </div>
             <div className={styles.inputGroup}>
               <label>LAST NAME</label>
-              <input type="text" placeholder="FOX" />
+              <input
+                type="text"
+                value={form.lastName}
+                disabled={!!profile}
+                onChange={(e) =>
+                  setForm({ ...form, lastName: e.target.value })
+                }
+              />
             </div>
           </div>
           <div className={styles.inputGroup}>
             <label>EMAIL ADDRESS</label>
-            <input type="email" placeholder="ALEX@KINGFOX.COM" />
+           <input
+            type="email"
+            placeholder="ALEX@KINGFOX.COM"
+            value={form.email}
+            disabled={!!profile}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
+          />
           </div>
           <div className={styles.inputGroup}>
             <label>SHIPPING ADDRESS</label>
-            <input type="text" placeholder="STREET NAME, HOUSE/APARTMENT NO." />
+            <input
+              type="text"
+              placeholder="STREET NAME, HOUSE/APARTMENT NO."
+              value={form.address}
+              onChange={(e) =>
+                setForm({ ...form, address: e.target.value })
+              }
+            />
           </div>
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>PIN CODE</label>
               <div className={styles.inputWithIcon}>
-                <input type="text" defaultValue="560001" />
+                <input
+                  type="text"
+                  placeholder='560001'
+                  value={form.pincode}
+                  onChange={(e) =>
+                    setForm({ ...form, pincode: e.target.value })
+                  }
+                />
                 <span className={styles.locationTag}><MdLocationOn /> BENGALURU, KA</span>
               </div>
             </div>
@@ -87,7 +283,14 @@ const handlePlaceOrder = async () => {
               <label>PHONE NUMBER</label>
               <div className={styles.phoneInput}>
                 <span className={styles.countryCode}>+91</span>
-                <input type="text" placeholder="98765 43210" />
+                <input
+                  type="text"
+                  placeholder="98765 43210"
+                  value={form.phone}
+                  onChange={(e) =>
+                    setForm({ ...form, phone: e.target.value })
+                  }
+                />
               </div>
             </div>
           </div>
@@ -107,8 +310,8 @@ const handlePlaceOrder = async () => {
           <h2 className={styles.sectionTitle}>
             <MdOutlinePayment /> PAYMENT METHOD
           </h2>
-          <div className={styles.paymentCardActive}>
-            <input type="radio" checked readOnly />
+          {/* <div className={styles.paymentCard}>
+            <input type="radio" />
             <div className={styles.paymentInfo}>
               <strong>RAZORPAY SECURE</strong>
               <p>CARDS, NETBANKING, WALLET, UPI</p>
@@ -116,9 +319,12 @@ const handlePlaceOrder = async () => {
             <div className={styles.paymentIcons}>
               <MdCreditCard /> <MdAccountBalance />
             </div>
-          </div>
-          <div className={styles.paymentCard}>
-            <input type="radio" />
+          </div> */}
+          <div
+            className={styles.paymentCardActive}
+            onClick={() => setPaymentMethod("COD")}
+          >
+            <input type="radio" checked={paymentMethod === "COD" } onChange={() => setPaymentMethod("COD")}/>
             <div className={styles.paymentInfo}>
               <strong>CASH ON DELIVERY (COD)</strong>
               <p>PAY WHEN YOUR ORDER ARRIVES</p>
@@ -132,43 +338,81 @@ const handlePlaceOrder = async () => {
       <aside className={styles.sidebar}>
         <div className={styles.summaryCard}>
           <h3>ORDER SUMMARY</h3>
-          <div className={styles.productRow}>
-            <div className={styles.productImg}>
-            <Image
-                src="/wishlist1.png"
-                alt="Urban Oversized Tee"
-                width={85}
-                height={95}
-            />
-            </div>
-            <div className={styles.productDetails}>
-              <h4>THE URBAN OVERSIZED TEE</h4>
-              <p>SIZE: XL | COLOR: MIDNIGHT BLACK</p>
-              <div className={styles.priceRow}>
-                <span className={styles.price}>₹1,499.00</span>
-                <div className={styles.quantity}>
-                  <button>-</button>
-                  <span>2</span>
-                  <button>+</button>
+          {items.map((item) => (
+            <div key={item.variantId} className={styles.productRow}>
+              <div className={styles.productImg}>
+                <img
+                  src={item.productImage || "/placeholder-product.png"}
+                  alt={item.productName}
+                />
+              </div>
+
+              <div className={styles.productDetails}>
+                <h4>{item.productName}</h4>
+                <p>
+                  SIZE: {item.size} | COLOR: {item.color}
+                </p>
+
+                <div className={styles.priceRow}>
+                  <span className={styles.price}>₹{item.price}</span>
+
+                  <div className={styles.quantity}>
+                    <button
+                      onClick={async () => {
+                        if (item.quantity > 1) {
+                          if (token) {
+                            await updateCartItemAPI(item.variantId, item.quantity - 1);
+                            const data = await getCartAPI();
+                            setItems(data.items);
+                          } else {
+                            updateGuestItem(item.variantId, item.quantity - 1);
+                          }
+                        }
+                      }}
+                    >
+                      -
+                    </button>
+
+                    <span>{item.quantity}</span>
+
+                    <button
+                      onClick={async () => {
+                        if (token) {
+                          await updateCartItemAPI(item.variantId, item.quantity + 1);
+                          const data = await getCartAPI();
+                          setItems(data.items);
+                        } else {
+                          updateGuestItem(item.variantId, item.quantity + 1);
+                        }
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ))}
 
           <hr className={styles.summaryDivider} />
           
           <div className={styles.summaryLine}>
             <span>SUBTOTAL</span>
-            <span>₹1,499.00</span>
+            <span>₹{preview?.subtotal || 0}</span>
           </div>
+
           <div className={styles.summaryLine}>
             <span>SHIPPING</span>
-            <span className={styles.freeBadge}>FREE SHIPPING</span>
+            {preview?.shippingCharge === 0 ? (
+              <span className={styles.freeBadge}>FREE SHIPPING</span>
+            ) : (
+              <span>₹{preview?.shippingCharge}</span>
+            )}
           </div>
-          
+
           <div className={styles.totalLine}>
             <span>TOTAL</span>
-            <span>₹1,499.00</span>
+            <span>₹{preview?.finalAmount || 0}</span>
           </div>
 
           <button 

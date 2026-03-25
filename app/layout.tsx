@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header/Header";
 import Footer from "@/components/layout/Footer/Footer";
 
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { ToastProvider } from "@/context/ToastContext";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -28,11 +29,15 @@ export default function RootLayout({
       <body className={`${jakarta.variable} ${space.variable}`}>
 
         {/* ✅ FIX: Wrap with AuthProvider */}
-        <AuthProvider>
-          <Header />
-          {children}
-          <Footer />
-        </AuthProvider>
+        
+          <ToastProvider>
+            <AuthProvider>
+            <Header />
+            {children}
+            <Footer />
+    </AuthProvider>
+          </ToastProvider>
+        
 
       </body>
     </html>

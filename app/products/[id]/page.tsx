@@ -1,20 +1,23 @@
 'use client'
-import { useEffect,useState } from 'react';
+import { useEffect,useMemo,useState } from 'react';
 import styles from './productdetail.module.css';
-import { LuTruck, LuShieldCheck, LuRotateCcw, LuCircleCheck,LuBox, LuAward } from "react-icons/lu";
+import { LuShieldCheck, LuRotateCcw, LuCircleCheck,LuBox, LuAward } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
 import { useParams } from "next/navigation";
 import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
+import { useRouter } from "next/navigation";
 
 
 import { addToGuestCart } from "@/lib/cart";
 import { addToCartAPI } from "@/services/cart.service";
-import { getWishList , addToWishlist } from "@/services/wishlist.service";
+import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
 import { FiHeart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from '@/context/ToastContext';
 const ProductDetail = () => {
+  const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('DESCRIPTION');
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -25,6 +28,7 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const params = useParams();
   const { token } = useAuth();
+  const { showToast } = useToast();
 
   useEffect(() => {
   const fetchProduct = async () => {
@@ -42,11 +46,20 @@ const ProductDetail = () => {
 }, [params.id]);
 
 useEffect(() => {
-  if (product) {
-    setSelectedColor(product.variants[0]?.color || null);
-    setSelectedSize(product.variants[0]?.size || null);
+  if (product?.variants?.length) {
+    const firstSize = product.variants[0].size;
+
+    setSelectedSize(firstSize);
+
+    // pick first color of that size
+    const firstColorForSize = product.variants.find(
+      v => v.size === firstSize
+    )?.color;
+
+    setSelectedColor(firstColorForSize || null);
   }
 }, [product]);
+
 useEffect(() => {
   if (product?.metaInfo?.length) {
     setActiveTab(product.metaInfo[0].title);
@@ -54,24 +67,10 @@ useEffect(() => {
 }, [product]);
 
 useEffect(() => {
-  const checkWishlist = async () => {
-    if (!user || !product?.id) return;
-
-    try {
-      const data = await getWishList();
-
-      const exists = data.some(
-        (item: any) => item.productId === product.id
-      );
-
-      setIsWishlisted(exists);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  checkWishlist();
-}, [product, user]);
+  if (product) {
+    setIsWishlisted(product.isWishlisted ?? false);
+  }
+}, [product]);
 
 const handleWishlist = async () => {
   if (!user) {
@@ -82,55 +81,135 @@ const handleWishlist = async () => {
   if (!product?.id) return;
 
   try {
-    await addToWishlist(product.id);
-    setIsWishlisted(true);
+    if (isWishlisted) {
+      await removeFromWishlist(product.id);
+      setIsWishlisted(false);
+    } else {
+      await addToWishlist(product.id);
+      setIsWishlisted(true);
+    }
   } catch (err: any) {
-    if (err.response?.status === 409) {
-      setIsWishlisted(true); // already exists
+    if (err?.response?.status === 409) {
+      setIsWishlisted(true);
     } else {
       console.error(err);
     }
   }
 };
   const sizes = [...new Set(product?.variants?.map(v => v.size) || [])];
-  const colors = [...new Set(product?.variants?.map(v => v.color) || [])];
-  const selectedVariant = product?.variants.find(
-  v => v.color === selectedColor && v.size === selectedSize
-);
+  const colors = [
+    ...new Set(
+      product?.variants
+        ?.filter(v => v.size === selectedSize)
+        .map(v => v.color) || []
+    )
+  ];
+  const selectedVariant = useMemo(() => {
+    return product?.variants.find(
+      (v) =>
+        v.color?.toLowerCase() === selectedColor?.toLowerCase() &&
+        v.size === selectedSize
+    );
+  }, [product, selectedColor, selectedSize]);
+
+
   // Mock images - replace with your actual paths
   const productImages = product?.images || [];
   const [activeImg, setActiveImg] = useState<string | null>(null);
   useEffect(() => {
-  if (product?.images?.length) {
-    setActiveImg(product.images[0]);
-  }
-}, [product]);
+    if (product?.images?.length) {
+      setActiveImg(product.images[0]);
+    }
+  }, [product]);
+
+
+const isInCart = selectedVariant?.isAddedInCart ?? false;
+const isOutOfStock = selectedVariant?.totalStock === 0;
 
 
 const handleAddToCart = async () => {
-  if (!selectedVariant) {
+  if (!product || !selectedVariant) {
     alert("Please select size & color");
     return;
   }
 
-  const payload = {
-    variantId: selectedVariant.id,
-    quantity: 1,
-    productName: product?.name,
-    productImage: product?.images?.[0],
-    price: Number(selectedVariant.sellingPrice),
-    size: selectedVariant.size,
-    color: selectedVariant.color,
-  };
+  try {
+    if (token) {
+      await addToCartAPI(selectedVariant.id, 1);
+    } else {
+      addToGuestCart({
+        variantId: selectedVariant.id,
+        quantity: 1,
+        productName: product.name,
+        productImage: product.images?.[0] || "",
+        price: Number(selectedVariant.sellingPrice),
+        size: selectedVariant.size,
+        color: selectedVariant.color,
+      });
+    }
+
+    setProduct((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        variants: prev.variants.map((v) =>
+          v.id === selectedVariant.id
+            ? { ...v, isAddedInCart: true }
+            : v
+        ),
+      };
+    });
+
+    showToast("Added to cart", "success");
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const handleBuyNow = async () => {
+  if (!product || !selectedVariant) {
+    alert("Please select size & color");
+    return;
+  }
+
+  // ❌ Prevent if out of stock
+  if (selectedVariant.totalStock === 0) {
+    showToast("Out of stock", "error");
+    return;
+  }
 
   try {
     if (token) {
-      await addToCartAPI(payload.variantId, payload.quantity);
+      await addToCartAPI(selectedVariant.id, 1);
     } else {
-      addToGuestCart(payload);
+      addToGuestCart({
+        variantId: selectedVariant.id,
+        quantity: 1,
+        productName: product.name,
+        productImage: product.images?.[0] || "",
+        price: Number(selectedVariant.sellingPrice),
+        size: selectedVariant.size,
+        color: selectedVariant.color,
+      });
     }
 
-    alert("Added to cart 🛒");
+    // ✅ update UI state
+    setProduct((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        variants: prev.variants.map((v) =>
+          v.id === selectedVariant.id
+            ? { ...v, isAddedInCart: true }
+            : v
+        ),
+      };
+    });
+
+    router.push("/cart");
+
   } catch (err) {
     console.error(err);
   }
@@ -207,36 +286,47 @@ const handleAddToCart = async () => {
           </p>
 
           <div className={styles.colorPicker}>
-            {colors.map((color) => (
-              <button
-                key={color}
-                onClick={() => setSelectedColor(color)}
-                className={`${styles.colorItem} ${
-                  selectedColor === color ? styles.activeColor : ""
-                }`}
-              >
-                <span
-                  className={styles.colorDot}
-                  style={{ backgroundColor: color.toLowerCase() }}
-                ></span>
+          {colors.map((color) => (
+            <button
+              key={color}
+              onClick={() => setSelectedColor(color)}
+              className={`${styles.colorItem} ${
+                selectedColor === color ? styles.activeColor : ""
+              }`}
+            >
+              <span
+                className={styles.colorDot}
+                style={{ backgroundColor: color.toLowerCase() }}
+              ></span>
 
-                <span className={styles.colorText}>{color}</span>
-              </button>
-            ))}
-          </div>
+              <span className={styles.colorText}>{color}</span>
+            </button>
+          ))}
+        </div>
         </div>
         {/* Size Selection */}
         <div className={styles.section}>
           <div className={styles.labelRow}>
             <span className={styles.label}>SELECT SIZE</span>
-            <span className={styles.sizeGuide}>SIZE GUIDE</span>
           </div>
           <div className={styles.sizeGrid}>
             {sizes.map((size) => (
               <button
                 key={size}
-                onClick={() => setSelectedSize(size)}
-                className={selectedSize === size ? styles.sizeBtnActive : styles.sizeBtn}
+                onClick={() => {
+                  setSelectedSize(size);
+
+                  const firstColor = product?.variants.find(
+                    v => v.size === size
+                  )?.color;
+
+                  setSelectedColor(firstColor || null);
+                }}
+                className={
+                  selectedSize === size
+                    ? styles.sizeBtnActive
+                    : styles.sizeBtn
+                }
               >
                 {size}
               </button>
@@ -244,18 +334,35 @@ const handleAddToCart = async () => {
           </div>
         </div>
 
-        {/* Shipping Pill */}
-        <div className={styles.shippingBar}>
-          <LuTruck size={18} /> 
-          <span>DELIVERING TO <span className={styles.location}>MUMBAI</span> — GET IT BY <strong>FRIDAY</strong></span>
-        </div>
-
         {/* Actions */}
         <div className={styles.actions}>
-          <button className={styles.addToCart} onClick={handleAddToCart}>
-            ADD TO CART
+          {isInCart ? (
+            <button
+              className={styles.addToCart}
+              onClick={() => router.push("/cart")}
+            >
+              GO TO CART
+            </button>
+          ) : isOutOfStock ? (
+            <button className={styles.addToCart} disabled>
+              OUT OF STOCK
+            </button>
+          ) : (
+            <button
+              className={styles.addToCart}
+              onClick={handleAddToCart}
+            >
+              ADD TO CART
+            </button>
+          )}
+
+          <button
+            className={styles.buyNow}
+            onClick={handleBuyNow}
+            disabled={selectedVariant?.totalStock === 0}
+          >
+            BUY IT NOW
           </button>
-          <button className={styles.buyNow}>BUY IT NOW</button>
         </div>
 
         {/* Trust Badges */}

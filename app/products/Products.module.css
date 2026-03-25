@@ -24,6 +24,7 @@
 }
 
 .sortSelect {
+  height: 50px;
   width: 100%;
   padding: 16px 18px;
   background-color: #111;
@@ -103,6 +104,15 @@
   margin-bottom: 12px;
   cursor: pointer;
 }
+.fitOptionActive {
+  color: #000;
+  font-weight: 700;
+}
+
+.fitOptionActive::before {
+  content: "✔";
+  margin-right: 8px;
+}
 
 /* circle for unselected */
 .circle {
@@ -116,6 +126,17 @@
 .checkIcon {
   font-size: 14px;
   font-weight: bold;
+}
+
+.activeSize {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.activeColor {
+  border: 2px solid #000;
+  transform: scale(1.1);
 }
 
 /* selected text */
@@ -148,6 +169,23 @@
   margin-bottom: 8px;
   cursor: pointer;
 }
+.clearBtn {
+  margin-top: 15px;
+  padding: 10px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* .clearBtn:hover {
+  background: #fff;
+  color: #000;
+} */
 
 /* Product Grid Styles */
 .mainContent {
