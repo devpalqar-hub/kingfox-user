@@ -1,8 +1,12 @@
+'use client';
+
 import React from "react";
 import Image from "next/image";
 import styles from "./collection.module.css";
+import { useRouter } from 'next/navigation';
 
 const Collections = () => {
+  const router = useRouter();
   return (
     <section className={styles.wrapper}>
       <div className={styles.blackContainer}>
@@ -85,7 +89,7 @@ const Collections = () => {
         {/* Button */}
         <div className={styles.bottomTabContainer}>
           <div className={styles.footerTab}>
-            <button className={styles.viewBtn}>VIEW ALL PRODUCTS</button>
+            <button onClick={() => router.push('/products')} className={styles.viewBtn}>VIEW ALL PRODUCTS</button>
             <div className={styles.curveLeftBottom}></div>
             <div className={styles.curveRightBottom}></div>
           </div>

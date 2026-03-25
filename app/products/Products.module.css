@@ -24,6 +24,7 @@
 }
 
 .sortSelect {
+  height: 50px;
   width: 100%;
   padding: 16px 18px;
   background-color: #111;
