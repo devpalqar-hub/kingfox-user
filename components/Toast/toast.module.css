@@ -1,0 +1,87 @@
+.container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff;
+  color: #000;
+  position: relative;
+  overflow: hidden;
+
+  animation: slideIn 0.3s ease;
+}
+
+.iconBox {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* TYPES */
+.success .iconBox {
+  background: rgb(255, 215, 0.15);
+  color: #000;
+}
+
+.error .iconBox {
+  background: rgba(255, 59, 59, 0.15);
+  color: #ff3b3b;
+}
+
+.info .iconBox {
+  background: rgba(0, 170, 255, 0.15);
+  color: #00aaff;
+}
+
+.message {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* PROGRESS BAR */
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: #FFD700;
+  animation: progressAnim linear forwards;
+}
+
+@keyframes progressAnim {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ENTRY */
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

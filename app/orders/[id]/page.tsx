@@ -43,6 +43,10 @@ const OrderDetailsPage = () => {
     return "inactive";
   };
 
+  if (!order) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className={styles.container}>
       
@@ -139,7 +143,7 @@ const OrderDetailsPage = () => {
                 <h3>ORDERED ITEMS (1)</h3>
             </div>
 
-            {order?.items.map((item) => (
+            {order.items.map((item) => (
               <div key={item.id} className={styles.itemCard}>
                 
                 <div className={styles.imageBox}>
@@ -186,35 +190,53 @@ const OrderDetailsPage = () => {
             ))}
             </div>
 
-          {/* <div className={styles.shipmentCard}>
-            
-            <div className={styles.shipmentHeader}>
-              <MdLocalShipping className={styles.shipIcon} />
-              <h3>SHIPMENT DETAILS</h3>
+          {order.shipments.length > 0 && (
+            <div className={styles.shipmentCard}>
+              
+              <div className={styles.shipmentHeader}>
+                <MdLocalShipping className={styles.shipIcon} />
+                <h3>SHIPMENT DETAILS</h3>
+              </div>
+
+              {order.shipments.map((ship) => (
+                <div key={ship.id} className={styles.shipmentGrid}>
+
+                  {/* PROVIDER NAME */}
+                  <div className={styles.shipItem}>
+                    <span className={styles.label}>CARRIER</span>
+                    <p className={styles.value}>
+                      {ship.providerName || "N/A"}
+                    </p>
+                  </div>
+
+                  {/* TRACKING ID */}
+                  <div className={styles.shipItem}>
+                    <span className={styles.label}>TRACKING ID</span>
+                    <p className={styles.value}>
+                      {ship.trackingId}
+                      <MdContentCopy
+                        className={styles.copyIcon}
+                        onClick={() =>
+                          navigator.clipboard.writeText(ship.trackingId)
+                        }
+                      />
+                    </p>
+                  </div>
+
+                  {/* SHIPPED DATE */}
+                  <div className={styles.shipItem}>
+                    <span className={styles.label}>SHIPPED AT</span>
+                    <p className={styles.value}>
+                      {ship.shippedAt
+                        ? new Date(ship.shippedAt).toISOString().split("T")[0]
+                        : "—"}
+                    </p>
+                  </div>
+
+                </div>
+              ))}
             </div>
-
-            <div className={styles.shipmentGrid}>
-
-              <div className={styles.shipItem}>
-                <span className={styles.label}>CARRIER</span>
-                <p className={styles.value}>DELHIVERY</p>
-              </div>
-
-              <div className={styles.shipItem}>
-                <span className={styles.label}>TRACKING ID</span>
-                <p className={styles.value}>
-                  DL123456 
-                  <MdContentCopy className={styles.copyIcon} />
-                </p>
-              </div>
-
-              <div className={styles.shipItem}>
-                <span className={styles.label}>SHIPPED AT</span>
-                <p className={styles.value}>2026-03-23</p>
-              </div>
-
-            </div>
-          </div> */}
+          )}
         </div>
 
         {/* RIGHT */}

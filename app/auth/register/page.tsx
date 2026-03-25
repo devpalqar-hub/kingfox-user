@@ -5,8 +5,10 @@ import { useState } from "react";
 import styles from "./register.module.css";
 import { completeProfile } from "@/services/auth.service";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function RegisterPage() {
+  const { showToast } = useToast();
   const router = useRouter();
   const { login } = useAuth();
   const params = useSearchParams();
@@ -18,9 +20,17 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
   try {
-    if (!name) return alert("Enter your name");
+    if (!name) {
+      showToast("Please enter your name", "error");
+      return;
+    }
+
+    if (!phone) {
+      showToast("Please enter your phone number", "error");
+      return;
+    }
 
     setLoading(true);
 
@@ -35,12 +45,17 @@ export default function RegisterPage() {
 
     login(token!, user);
 
-    // ✅ IMPORTANT FIX
-    window.location.href = "/profile"; // 🔥 FORCE FULL RESET
+    showToast("Profile completed successfully ", "success", 2500);
+
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 1000);
 
   } catch (err) {
     console.error(err);
-    alert("Failed to complete profile");
+
+    showToast("Failed to complete profile", "error", 3000);
+
   } finally {
     setLoading(false);
   }

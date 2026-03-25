@@ -1,15 +1,13 @@
 "use client";
-import React from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 import styles from './productcard.module.css';
-import {  Eye ,Star } from 'lucide-react';
-import { addToWishlist } from "@/services/wishlist.service";
+import { Eye, Star } from 'lucide-react';
+import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
 import { useAuth } from "@/context/AuthContext";
-import { useState, useEffect } from "react";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
-import { getWishList } from "@/services/wishlist.service";
 import { useRouter } from "next/navigation"; 
+
 interface ProductCardProps {
   id: number;
   image: string;
@@ -19,51 +17,51 @@ interface ProductCardProps {
   colors?: string[];
   rating: number;
   isNew?: boolean;
+  isWishlisted?: boolean;
 }
 
-const ProductCard = ({ id, image, name, price, rating, reviews, colors, isNew }: ProductCardProps) => {
+const ProductCard = ({
+  id,
+  image,
+  name,
+  price,
+  rating,
+  reviews,
+  colors,
+  isNew,
+  isWishlisted: initialWishlisted
+}: ProductCardProps) => {
+
   const router = useRouter();
   const { user } = useAuth();
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
-useEffect(() => {
-  const fetchWishlist = async () => {
+  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted ?? false);
+
+  const handleWishlist = async () => {
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
+
     try {
-      const data = await getWishList();
+      if (isWishlisted) {
 
-      const exists = data.some(
-        (item: any) => item.productId === id
-      );
+        await removeFromWishlist(id);
+        setIsWishlisted(false);
+      } else {
 
-      setIsWishlisted(exists);
-    } catch (err) {
-      console.error(err);
+        await addToWishlist(id);
+        setIsWishlisted(true);
+      }
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        setIsWishlisted(true);
+      } else {
+        console.error(err);
+      }
     }
   };
 
-  if (user) {
-    fetchWishlist();
-  }
-}, [user, id]);
-
-const handleWishlist = async () => {
-  if (!user) {
-    alert("Please login first");
-    return;
-  }
-
-  try {
-    await addToWishlist(id);
-    alert("Added to wishlist ❤️");
-  } catch (err: any) {
-    if (err.response?.status === 409) {
-      alert("Already in wishlist ❤️"); // ✅ handle 409
-    } else {
-      console.error(err);
-      alert("Failed to add to wishlist");
-    }
-  }
-};
   return (
     <div className={styles.cardContainer}>
       <div className={styles.imageWrapper}>
@@ -79,6 +77,7 @@ const handleWishlist = async () => {
             )}
           </button>
         </div>
+
         <button
           className={styles.viewBtn}
           onClick={() => router.push(`/products/${id}`)}
@@ -89,40 +88,35 @@ const handleWishlist = async () => {
       </div>
 
       <div className={styles.details}>
-  
-  {/* Product Name + Price */}
-  <div className={styles.row}>
-    <h3 className={styles.productName}>{name}</h3>
-    <p className={styles.price}>₹{price}</p>
-  </div>
+        <div className={styles.row}>
+          <h3 className={styles.productName}>{name}</h3>
+          <p className={styles.price}>₹{price}</p>
+        </div>
 
-  {/* Star Rating */}
-  <div className={styles.ratingRow}>
-    <div className={styles.stars}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-            key={i}
-            size={14}
-            className={i < Math.round(rating) ? styles.starFilled : styles.starEmpty}
-            fill={i < Math.round(rating) ? "#c28b5a" : "none"}
-        />
-        ))}
-    </div>
-    <span className={styles.reviewCount}>({reviews || 42})</span>
-  </div>
+        <div className={styles.ratingRow}>
+          <div className={styles.stars}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                size={14}
+                className={i < Math.round(rating) ? styles.starFilled : styles.starEmpty}
+                fill={i < Math.round(rating) ? "#c28b5a" : "none"}
+              />
+            ))}
+          </div>
+          <span className={styles.reviewCount}>({reviews || 42})</span>
+        </div>
 
-  {/* Color Options */}
-  <div className={styles.colorOptions}>
-    {(colors || ["#f1b941", "#777", "#000"]).map((color, i) => (
-      <span
-        key={i}
-        className={styles.colorDot}
-        style={{ backgroundColor: color }}
-      />
-    ))}
-  </div>
-
-</div>
+        <div className={styles.colorOptions}>
+          {(colors || ["#f1b941", "#777", "#000"]).map((color, i) => (
+            <span
+              key={i}
+              className={styles.colorDot}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

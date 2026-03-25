@@ -221,7 +221,6 @@ const handleSubmit = async (e: React.FormEvent) => {
             <div className={styles.supportCard}>
               <h3>SUPPORT CENTER</h3>
               <ul className={styles.supportLinks}>
-                <li>Frequently Asked Questions <ChevronRight size={18} /></li>
                 <li>Shipping Information <ChevronRight size={18} /></li>
                 <li>Return Policy <ChevronRight size={18} /></li>
               </ul>

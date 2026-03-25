@@ -9,6 +9,10 @@ export interface Category {
   name: string;
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+}
 
 export interface Variant {
   id: number;
@@ -16,21 +20,24 @@ export interface Variant {
   size: string;
   color: string;
   sku: string;
-  barcode: string;
-  costPrice: string;
+  barcode: string | null;
+  costPrice: string | null;
   sellingPrice: string;
   image: string | null;
+  isAddedInCart?: boolean;
 }
 export interface ProductDetail {
   id: number;
   name: string;
   description: string;
   images: string[];
-  brand: Brand;
+  brand: Brand | null;
   category: Category;
-  tags: string[];
+  tags: Tag[];
   variants: Variant[];
   metaInfo: MetaInfo[];
+  isWishlisted?: boolean;
+  isAddedInCart?: boolean;
 }
 export interface MetaInfo {
   title: string;
@@ -50,13 +57,15 @@ export interface Product {
   name: string;
   description: string;
   images: string[];
-  brand: Brand;
+  brand: Brand | null;
   category: Category;
   tags: string[];
   priceRange: PriceRange;
   colors: string[];
   sizes: string[];
   variantCount: number;
+  isWishlisted?: boolean;
+  isAddedInCart?: boolean;
 }
 
 export interface Pagination {
