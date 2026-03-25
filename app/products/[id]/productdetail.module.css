@@ -157,6 +157,7 @@
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 10px;
+  margin-bottom: 30px;
 }
 
 .sizeBtn, .sizeBtnActive {
@@ -611,17 +612,6 @@
   background: black;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .descriptionGrid {
-    grid-template-columns: 1fr;
-  }
-  .tabHeader {
-    gap: 20px;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-}
 .silhouetteSection {
   background-color: #000; /* Or #1a1a1a for a slight off-black */
   color: #fff;
@@ -683,17 +673,6 @@
   object-fit: contain;
   /* Add a slight drop shadow to make the product pop */
   filter: drop-shadow(0 10px 30px rgba(255,255,255,0.1));
-}
-
-/* Responsive Fix */
-@media (max-width: 768px) {
-  .silhouetteContent {
-    flex-direction: column;
-    text-align: center;
-  }
-  .silhouetteDesc {
-    margin: 0 auto;
-  }
 }
 
 .reviewGallerySection {
@@ -1088,6 +1067,29 @@
 }
 
 
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .descriptionGrid {
+    grid-template-columns: 1fr;
+  }
+  .tabHeader {
+    gap: 20px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Responsive Fix */
+@media (max-width: 768px) {
+  .silhouetteContent {
+    flex-direction: column;
+    text-align: center;
+  }
+  .silhouetteDesc {
+    margin: 0 auto;
+  }
 }
 
 

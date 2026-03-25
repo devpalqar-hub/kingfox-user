@@ -9,7 +9,7 @@ export const getProducts = async (params: {
   minPrice?: number;
   maxPrice?: number;
   categoryId?: number;
-  tag?: string;
+  tags?: string[];
   sortBy?: "newly_arrived" | "low_to_high" | "high_to_low";
 }) => {
   const query = new URLSearchParams();
@@ -22,6 +22,7 @@ export const getProducts = async (params: {
   if (params.categoryId) query.append("categoryId", params.categoryId.toString());
   if (params.color) query.append("color", params.color);
   if (params.sortBy) query.append("sortBy", params.sortBy);
+  if (params.tags) { params.tags.forEach((tag) => query.append("tags", tag));}
   const res = await fetch(`${BASE_URL}/v1/user/products?${query}`);
   
 

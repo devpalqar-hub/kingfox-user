@@ -4,6 +4,7 @@ import { useState } from "react";
 import styles from "./login.module.css";
 import { sendOtp, verifyOtp } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -11,6 +12,7 @@ type Props = {
 
 export default function LoginModal({ isOpen, onClose }: Props) {
   const router = useRouter();
+  const { showToast } = useToast();
     const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -24,14 +26,13 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     try {
       setLoading(true);
       const res = await sendOtp(email);
-      console.log(res);
 
-      alert("OTP sent successfully");
+      showToast("OTP sent successfully", "success", 3000);
       setStep("otp");
 
     } catch (err) {
       console.error(err);
-      alert("Failed to send OTP");
+      showToast("Failed to send OTP", "error", 3000);
     } finally {
       setLoading(false);
     }
@@ -44,10 +45,10 @@ const handleVerifyOtp = async () => {
     const res = await verifyOtp(email, otp);
 
     if (res.isNew) {
-      // 👉 Go to register page
+      showToast("Account not found. Continue signup ", "info", 3000);
+
       router.push(`/auth/register?email=${email}&token=${res.access_token}`);
     } else {
-      // 👉 Normal login
       const user = {
         id: 1,
         name: "User",
@@ -56,12 +57,15 @@ const handleVerifyOtp = async () => {
       };
 
       login(res.access_token, user);
+
+      showToast("Login successful ", "success", 2500);
+
       onClose();
     }
 
   } catch (err) {
     console.error(err);
-    alert("Invalid OTP");
+    showToast("Invalid OTP ", "error", 3000);
   } finally {
     setLoading(false);
   }
