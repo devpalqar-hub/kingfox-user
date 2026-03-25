@@ -46,11 +46,20 @@ const ProductDetail = () => {
 }, [params.id]);
 
 useEffect(() => {
-  if (product) {
-    setSelectedColor(product.variants[0]?.color || null);
-    setSelectedSize(product.variants[0]?.size || null);
+  if (product?.variants?.length) {
+    const firstSize = product.variants[0].size;
+
+    setSelectedSize(firstSize);
+
+    // pick first color of that size
+    const firstColorForSize = product.variants.find(
+      v => v.size === firstSize
+    )?.color;
+
+    setSelectedColor(firstColorForSize || null);
   }
 }, [product]);
+
 useEffect(() => {
   if (product?.metaInfo?.length) {
     setActiveTab(product.metaInfo[0].title);
@@ -88,7 +97,13 @@ const handleWishlist = async () => {
   }
 };
   const sizes = [...new Set(product?.variants?.map(v => v.size) || [])];
-  const colors = [...new Set(product?.variants?.map(v => v.color) || [])];
+  const colors = [
+    ...new Set(
+      product?.variants
+        ?.filter(v => v.size === selectedSize)
+        .map(v => v.color) || []
+    )
+  ];
   const selectedVariant = useMemo(() => {
     return product?.variants.find(
       (v) =>
@@ -96,15 +111,7 @@ const handleWishlist = async () => {
         v.size === selectedSize
     );
   }, [product, selectedColor, selectedSize]);
-  // Available sizes based on selected color
-  const availableSizes = product?.variants
-    .filter(v => v.color === selectedColor)
-    .map(v => v.size) || [];
 
-  // Available colors based on selected size
-  const availableColors = product?.variants
-    .filter(v => v.size === selectedSize)
-    .map(v => v.color) || [];
 
   // Mock images - replace with your actual paths
   const productImages = product?.images || [];
@@ -279,43 +286,22 @@ const handleBuyNow = async () => {
           </p>
 
           <div className={styles.colorPicker}>
-          {colors.map((color) => {
-            const isAvailable = availableColors.includes(color);
+          {colors.map((color) => (
+            <button
+              key={color}
+              onClick={() => setSelectedColor(color)}
+              className={`${styles.colorItem} ${
+                selectedColor === color ? styles.activeColor : ""
+              }`}
+            >
+              <span
+                className={styles.colorDot}
+                style={{ backgroundColor: color.toLowerCase() }}
+              ></span>
 
-            return (
-              <button
-                key={color}
-                onClick={() => {
-                  if (!product) return;
-
-                  const matchingVariant = product.variants.find(
-                    v => v.color === color && v.size === selectedSize
-                  );
-
-                  if (matchingVariant) {
-                    setSelectedColor(color);
-                  } else {
-                    const fallback = product.variants.find(v => v.color === color);
-
-                    if (fallback) {
-                      setSelectedColor(color);
-                      setSelectedSize(fallback.size);
-                    }
-                  }
-                }}
-                className={`${styles.colorItem} ${
-                  selectedColor === color ? styles.activeColor : ""
-                } ${!isAvailable ? styles.disabled : ""}`}
-              >
-                <span
-                  className={styles.colorDot}
-                  style={{ backgroundColor: color.toLowerCase() }}
-                ></span>
-
-                <span className={styles.colorText}>{color}</span>
-              </button>
-            );
-          })}
+              <span className={styles.colorText}>{color}</span>
+            </button>
+          ))}
         </div>
         </div>
         {/* Size Selection */}
@@ -324,42 +310,27 @@ const handleBuyNow = async () => {
             <span className={styles.label}>SELECT SIZE</span>
           </div>
           <div className={styles.sizeGrid}>
-            {sizes.map((size) => {
-              const isAvailable = availableSizes.includes(size);
+            {sizes.map((size) => (
+              <button
+                key={size}
+                onClick={() => {
+                  setSelectedSize(size);
 
-              return (
-                <button
-                  key={size}
-                  onClick={() => {
-                    if (!product) return;
+                  const firstColor = product?.variants.find(
+                    v => v.size === size
+                  )?.color;
 
-                    const matchingVariant = product.variants.find(
-                      v => v.size === size && v.color === selectedColor
-                    );
-
-                    if (matchingVariant) {
-                      // valid combo
-                      setSelectedSize(size);
-                    } else {
-                      // find any variant with this size
-                      const fallback = product.variants.find(v => v.size === size);
-
-                      if (fallback) {
-                        setSelectedSize(size);
-                        setSelectedColor(fallback.color);
-                      }
-                    }
-                  }}
-                  className={
-                    selectedSize === size
-                      ? styles.sizeBtnActive
-                      : `${styles.sizeBtn} ${!isAvailable ? styles.disabled : ""}`
-                  }
-                >
-                  {size}
-                </button>
-              );
-            })}
+                  setSelectedColor(firstColor || null);
+                }}
+                className={
+                  selectedSize === size
+                    ? styles.sizeBtnActive
+                    : styles.sizeBtn
+                }
+              >
+                {size}
+              </button>
+            ))}
           </div>
         </div>
 
