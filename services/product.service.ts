@@ -56,7 +56,7 @@ export const getNewArrivals = async (params?: {
 
   query.append("tags", "NEW ARRIVALS");
 
-  const res = await fetch(`${BASE_URL}/v1/products?${query}`);
+  const res = await fetch(`${BASE_URL}/v1/user/products?${query}`); // ✅ FIX
 
   if (!res.ok) {
     throw new Error("Failed to fetch new arrivals");

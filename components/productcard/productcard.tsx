@@ -21,6 +21,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({
+  
   id,
   image,
   name,
@@ -31,6 +32,7 @@ const ProductCard = ({
   isNew,
   isWishlisted: initialWishlisted
 }: ProductCardProps) => {
+  
 
   const router = useRouter();
   const { user } = useAuth();
@@ -86,28 +88,13 @@ const ProductCard = ({
           VIEW
         </button>
       </div>
-
+            
       <div className={styles.details}>
         <div className={styles.row}>
           <h3 className={styles.productName}>{name}</h3>
           <p className={styles.price}>₹{price}</p>
         </div>
-
-        <div className={styles.ratingRow}>
-          <div className={styles.stars}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                size={14}
-                className={i < Math.round(rating) ? styles.starFilled : styles.starEmpty}
-                fill={i < Math.round(rating) ? "#c28b5a" : "none"}
-              />
-            ))}
-          </div>
-          <span className={styles.reviewCount}>({reviews || 42})</span>
-        </div>
-
-        <div className={styles.colorOptions}>
+            <div className={styles.colorOptions}>
           {(colors || ["#f1b941", "#777", "#000"]).map((color, i) => (
             <span
               key={i}
@@ -116,6 +103,28 @@ const ProductCard = ({
             />
           ))}
         </div>
+        {reviews !== undefined && reviews > 0 && (
+        <div className={styles.ratingRow}>
+          
+          <div className={styles.stars}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                size={14}
+                color={i < Math.round(rating) ? "#c28b5a" : "#ccc"}
+                fill={i < Math.round(rating) ? "#c28b5a" : "none"}
+              />
+            ))}
+          </div>
+
+          <span className={styles.reviewCount} >
+            ({reviews}) Reviews
+          </span>
+
+        </div>
+      )}
+
+        
       </div>
     </div>
   );
