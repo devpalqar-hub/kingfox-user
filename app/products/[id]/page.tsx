@@ -1,5 +1,5 @@
 'use client'
-import { useEffect,useMemo,useState } from 'react';
+import { useEffect,useMemo,useState, useRef  } from 'react';
 import styles from './productdetail.module.css';
 import { LuShieldCheck, LuRotateCcw, LuCircleCheck,LuBox, LuAward } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
@@ -7,8 +7,8 @@ import { useParams } from "next/navigation";
 import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
 import { useRouter } from "next/navigation";
-
-
+import { getReviewsByProductId } from "@/services/review.service";
+<span className={styles.ratingNumber}>4.8</span>
 import { addToGuestCart } from "@/lib/cart";
 import { addToCartAPI } from "@/services/cart.service";
 import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
@@ -29,6 +29,96 @@ const ProductDetail = () => {
   const params = useParams();
   const { token } = useAuth();
   const { showToast } = useToast();
+
+
+  // reviews
+ const [reviewData, setReviewData] = useState<{
+  rating: number;
+  total: number;
+  distribution: Record<number, number>;
+  reviews: any[];
+} | null>(null);
+
+useEffect(() => {
+  const fetchReviews = async () => {
+    if (!product?.id) return;
+
+    const res = await getReviewsByProductId(product.id);
+
+    console.log("DETAIL PAGE REVIEW:", res);
+
+    if (res) {
+      const distribution: Record<number, number> = {
+        5: 0,
+        4: 0,
+        3: 0,
+      };
+
+      res.reviews.forEach((r: any) => {
+        const rating = Number(r.rating);
+        if (distribution[rating] !== undefined) {
+          distribution[rating] += 1;
+        }
+      });
+
+      console.log("FINAL DISTRIBUTION:", distribution); // ✅ debug
+
+      setReviewData({
+        rating: res.averageRating,
+        total: res.total,
+        distribution,
+        reviews: res.reviews,
+      });
+    }
+  };
+
+  fetchReviews();
+}, [product?.id]);
+
+// review couresal
+const scrollRef = useRef<HTMLDivElement>(null);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (!scrollRef.current) return;
+
+    const container = scrollRef.current;
+
+    container.scrollBy({
+      left: 320,
+      behavior: "smooth",
+    });
+
+    // loop back
+    if (
+      container.scrollLeft + container.clientWidth >=
+      container.scrollWidth - 10
+    ) {
+      setTimeout(() => {
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      }, 500);
+    }
+  }, 2500);
+
+  return () => clearInterval(interval);
+}, []);
+
+const [isHovered, setIsHovered] = useState(false);
+
+useEffect(() => {
+  if (isHovered) return;
+
+  const interval = setInterval(() => {
+    if (!scrollRef.current) return;
+
+    scrollRef.current.scrollBy({
+      left: 320,
+      behavior: "smooth",
+    });
+  }, 2500);
+
+  return () => clearInterval(interval);
+}, [isHovered]);
 
   useEffect(() => {
   const fetchProduct = async () => {
@@ -218,6 +308,7 @@ const handleBuyNow = async () => {
    if (!product) {
   return <div>Loading...</div>;
 }
+
   return (
      <>
     <div className={styles.container}>
@@ -256,6 +347,7 @@ const handleBuyNow = async () => {
     )}
   </button>
 </div>
+
       </div>
 
       {/* RIGHT: Product Info */}
@@ -267,12 +359,22 @@ const handleBuyNow = async () => {
             ₹{selectedVariant?.sellingPrice || product?.variants[0]?.sellingPrice}
           </span>
           <div className={styles.divider}></div>
-          <div className={styles.ratingBox}>
-            <div className={styles.stars}>
-              {[...Array(5)].map((_, i) => <IoStarSharp key={i} />)}
+          {reviewData && reviewData.total > 0 && (
+            <div className={styles.ratingBox}>
+              <div className={styles.stars}>
+                {[...Array(5)].map((_, i) => (
+                  <IoStarSharp
+                    key={i}
+                    color={i < Math.round(reviewData.rating) ? "#000" : "#ccc"}
+                  />
+                ))}
+              </div>
+
+              <span className={styles.reviews}>
+                ({reviewData.total} Reviews)
+              </span>
             </div>
-            <span className={styles.reviews}>(120 Reviews)</span>
-          </div>
+          )}
         </div>
         
         <p className={styles.description}>
@@ -496,6 +598,7 @@ const handleBuyNow = async () => {
   ))}
 </div>
       {/* Community Feedback Section */}
+      
 <section className={styles.feedbackSection}>
   <div className={styles.feedbackContainer}>
     
@@ -504,38 +607,39 @@ const handleBuyNow = async () => {
       
       <div className={styles.ratingFlex}>
         <div className={styles.bigRating}>
-          <span className={styles.ratingNumber}>4.8</span>
+          {reviewData && reviewData.total > 0 && (
+              <span className={styles.ratingNumber}>
+                {reviewData.rating.toFixed(1)}
+              </span>
+            )}
           <span className={styles.ratingSub}>OUT OF 5</span>
         </div>
 
         <div className={styles.statBars}>
-          {/* 5 Star Bar */}
-          <div className={styles.barRow}>
-            <span className={styles.starLabel}>5</span>
-            <div className={styles.barEmpty}>
-              <div className={styles.barFill} style={{ width: '85%' }}></div>
-            </div>
-          </div>
-          {/* 4 Star Bar */}
-          <div className={styles.barRow}>
-            <span className={styles.starLabel}>4</span>
-            <div className={styles.barEmpty}>
-              <div className={styles.barFill} style={{ width: '10%' }}></div>
-            </div>
-          </div>
-          {/* 3 Star Bar */}
-          <div className={styles.barRow}>
-            <span className={styles.starLabel}>3</span>
-            <div className={styles.barEmpty}>
-              <div className={styles.barFill} style={{ width: '5%' }}></div>
-            </div>
-          </div>
+          {reviewData &&
+            [5, 4, 3].map((star) => {
+              const count = reviewData.distribution?.[star] || 0;
+
+              const percent =
+                reviewData.total > 0
+                  ? (count / reviewData.total) * 100
+                  : 0;
+
+              return (
+                <div className={styles.barRow} key={star}>
+                  <span className={styles.starLabel}>{star}</span>
+
+                  <div className={styles.barEmpty}>
+                    <div
+                      className={styles.barFill}
+                      style={{ width: `${percent}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
         </div>
       </div>
-    </div>
-
-    <div className={styles.writeReviewContainer}>
-      <button className={styles.writeReviewBtn}>WRITE A REVIEW</button>
     </div>
 
   </div>
@@ -543,48 +647,70 @@ const handleBuyNow = async () => {
 {/* Customer Review Gallery */}
 <section className={styles.reviewGallerySection}>
   
-  <div className={styles.reviewGrid}>
-    {[
-      {
-        name: "ARJUN K.",
-        initials: "AK",
-        text: "Best plus size tee I've owned. The fit is super flattering and feels incredibly comfortable all day. The fabric quality feels premium and gives me the confident look I wanted.",
-        img: "/testmonial1.png"
-      },
-      {
-        name: "ROHAN M.",
-        initials: "RM",
-        text: "GSM quality is impressive. It feels a bit heavy for peak summer afternoons but perfect for cooler evenings and winter wear. Totally worth the price for the comfort and curve-friendly fit.",
-        img: "/testmonial3.png"
-      },
-      {
-        name: "SARA P.",
-        initials: "SP",
-        text: "Love the relaxed plus size fit. I sized up for an extra comfy look and it still holds its shape beautifully. Really happy with the quality and feel!",
-        img: "/testmonial2.png"
-      }
-    ].map((review, idx) => (
-      <div key={idx} className={styles.reviewCard}>
-        <div className={styles.reviewHeader}>
-          <div className={styles.avatar}>{review.initials}</div>
-          <div className={styles.userInfo}>
-            <span className={styles.userName}>{review.name}</span>
-            <span className={styles.verified}>VERIFIED BUYER</span>
+<div
+  className={styles.carouselWrapper} ref={scrollRef}
+  onMouseEnter={() => setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+  >
+  <div className={styles.carouselTrack}>
+    
+    {reviewData?.reviews?.length ? (
+  reviewData.reviews.map((review: any) => {
+    const name = review.customer?.name || "User";
+
+    
+
+        const initials = name
+          .split(" ")
+          .map((n: string) => n[0])
+          .join("")
+          .toUpperCase();
+
+        return (
+          <div key={review.id} className={styles.reviewCard}>
+            
+            {/* HEADER */}
+            <div className={styles.reviewHeader}>
+              <div className={styles.avatar}>{initials}</div>
+
+              <div>
+                <div className={styles.userName}>{name}</div>
+                <div className={styles.verified}>VERIFIED BUYER</div>
+              </div>
+            </div>
+
+            {/* STARS */}
+            <div className={styles.stars}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i}>
+                  {i < review.rating ? "★" : "☆"}
+                </span>
+              ))}
+            </div>
+
+            {/* TEXT */}
+            <p className={styles.reviewText}>
+              "{review.body}"
+            </p>
+
+            {/* IMAGE */}
+            {review.images?.length > 0 && (
+             <div className={styles.reviewWrapper}>
+              <img
+                src={review.images[0]}
+                className={styles.reviewImg}
+              />
+              </div>
+            )}
           </div>
-        </div>
-        <div className={styles.cardStars}>
-          {[...Array(5)].map((_, i) => <IoStarSharp key={i} size={12} />)}
-        </div>
-        <p className={styles.reviewText}>"{review.text}"</p>
-        <div className={styles.reviewImageWrapper}>
-          <img src={review.img} alt="User Review" className={styles.reviewImg} />
-        </div>
-      </div>
-    ))}
+        );
+      })
+    ) : (
+      <p>No reviews</p>
+    )}
+
   </div>
-  <div className={styles.seeAllContainer}>
-    <button className={styles.seeAllBtn}>SEE ALL →</button>
-  </div>
+</div>
 </section>
 
 {/* NEWSLETTER */}

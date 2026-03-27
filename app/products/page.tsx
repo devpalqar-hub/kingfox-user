@@ -5,10 +5,11 @@ import styles from './Products.module.css';
 import Link from 'next/link';
 import { getProducts } from '@/services/product.service';
 import { Product } from '@/types/product';
+import { getReviewsByProductId } from "@/services/review.service";
+import { useSearchParams } from "next/navigation";
 
-
-Link
 const ProductsPage = () => {
+const searchParams = useSearchParams();
 const [products, setProducts] = useState<Product[]>([]);
 const [totalProducts, setTotalProducts] = useState(0);
 const [page, setPage] = useState(1);
@@ -23,9 +24,41 @@ const [availableCategories, setAvailableCategories] = useState<{id:number,name:s
 const [loading, setLoading] = useState(true);
 const [sortBy, setSortBy] = useState<"newly_arrived" | "low_to_high" | "high_to_low" | null>(null);
 const [filterOpen, setFilterOpen] = useState(false);
+const [reviewMap, setReviewMap] = useState<any>({});
+
+
+const [initialized, setInitialized] = useState(false);
+const [tag, setTag] = useState<string | null>(null);
+useEffect(() => {
+  const categoryFromURL = searchParams.get("categoryId");
+  const tagFromURL = searchParams.get("tag");
+
+  if (categoryFromURL) {
+    setCategoryId(Number(categoryFromURL));
+  } else {
+    setCategoryId(null);
+  }
+
+  if (tagFromURL) {
+    setTag(tagFromURL);
+  } else {
+    setTag(null);
+  }
+
+  setInitialized(true);
+}, [searchParams]);
+
+
+// ✅ ADD HERE (TOP LEVEL)
+useEffect(() => {
+  setProducts([]);
+  setPage(1);
+}, [categoryId, tag]);
 
 
  useEffect(() => {
+  if (!initialized) return;
+
   const loadProducts = async () => {
   try {
     const data = await getProducts({
@@ -35,17 +68,23 @@ const [filterOpen, setFilterOpen] = useState(false);
       color: color || undefined,
       minPrice: minPrice || undefined,
       maxPrice: maxPrice || undefined,
-      categoryId: categoryId || undefined,
+      categoryId: categoryId ?? undefined,
+      tags: tag ? [tag] : undefined,
       sortBy: sortBy || undefined,
     });
 
     if (page === 1) {
-      setProducts(data.items);
-    } else {
-      setProducts((prev) => [...prev, ...data.items]);
-    }
-
+  setProducts(data.items); // replace
+} else {
+  setProducts((prev) => {
+    const newItems = data.items.filter(
+      (item: any) => !prev.some((p) => p.id === item.id)
+    );
+    return [...prev, ...newItems];
+  });
+}
     setTotalProducts(data.pagination.total);
+   
 
     // ---------- Extract filters from API ----------
     const colorsSet = new Set<string>();
@@ -75,7 +114,9 @@ const [filterOpen, setFilterOpen] = useState(false);
   }
 };
   loadProducts();
-}, [page, size, color, minPrice, maxPrice, categoryId, sortBy]);
+}, [page, size, color, minPrice, maxPrice, categoryId, sortBy,initialized]);
+
+
   const handleClearFilters = () => {
     setSize(null);
     setColor(null);
@@ -85,6 +126,31 @@ const [filterOpen, setFilterOpen] = useState(false);
     setSortBy(null);
     setPage(1);
   };
+
+  // reviews
+  useEffect(() => {
+  const fetchReviews = async () => {
+    const map: any = {};
+
+    await Promise.all(
+      products.map(async (product: any) => {
+        const res = await getReviewsByProductId(product.id);
+
+        if (res) {
+          map[product.id] = {
+            rating: res.averageRating,
+            total: res.total,
+          };
+        }
+      })
+    );
+    setReviewMap(map);
+  };
+
+  if (products.length > 0) fetchReviews();
+}, [products]);
+
+
   return (
     <section className={styles.pageWrapper}>
 
@@ -232,8 +298,8 @@ const [filterOpen, setFilterOpen] = useState(false);
                   id={product.id} 
                   name={product.name}
                   price={String(product.priceRange?.min || 0)}
-                  rating={4}
-                  reviews={product.variantCount}
+                  rating={reviewMap[product.id]?.rating ?? 0}
+                  reviews={reviewMap[product.id]?.total ?? 0}
                   colors={product.colors}
                   image={
                     product.images && product.images.length > 0
