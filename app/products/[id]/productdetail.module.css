@@ -45,6 +45,7 @@
 
 .mainImage {
   flex: 1;
+  position: relative;
 }
 
 .mainImage img {
@@ -787,6 +788,20 @@
 .userInfo {
   display: flex;
   flex-direction: column;
+}
+.wishlistBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
 }
 
 .userName {

@@ -1,12 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./Header.module.css";
 import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
 import LoginModal from "@/app/auth/login/page";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { getWishList } from "@/services/wishlist.service";
 import { useRouter } from "next/navigation";
+import { getAllCategories } from "@/services/category.service";
+import { getCartAPI } from "@/services/cart.service";
+
 const Header = () => {
   const router = useRouter();
   const { user, loading } = useAuth(); // ✅ ADD loading
@@ -14,23 +18,45 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
+type Category = {
+  id: number;
+  name: string;
+};
+
+const [categories, setCategories] = useState<Category[]>([]);
+
+useEffect(() => {
+  const loadCategories = async () => {
+    const data = await getAllCategories();
+    setCategories(data || []);
+  };
+
+  loadCategories();
+}, []);
+
+const oversizedCategory = categories.find((cat) =>
+  cat.name.toLowerCase().includes("oversize")
+);
+
 
 const handleSearch = async () => {
   if (!searchTerm.trim()) return;
 
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/products?search=${searchTerm}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/products`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        params: {
+          search: searchTerm, // ✅ better way
         },
       }
     );
 
     console.log("API:", response.data);
 
-    const products = response.data; // ✅ FIXED
+    const products = response.data.items; // ✅ FIXED
 
     if (products && products.length > 0) {
       const firstProduct = products[0];
@@ -46,6 +72,58 @@ const handleSearch = async () => {
   setShowSearch(false);
 };
    if (loading) return null;
+
+
+   useEffect(() => {
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem("token");
+
+    // ❌ not logged in → skip
+    if (!token) {
+      setWishlistCount(0);
+      return;
+    }
+
+    try {
+      const res = await getWishList();
+
+      // ✅ API returns array
+      setWishlistCount(res.length);
+    } catch (err) {
+      console.error("Wishlist error:", err);
+      setWishlistCount(0);
+    }
+  };
+
+  fetchWishlist();
+}, [user]); // ✅ runs when login changes
+
+useEffect(() => {
+  const fetchCart = async () => {
+    const token = localStorage.getItem("token");
+
+    // ❌ not logged
+    if (!token) {
+      setCartCount(0);
+      return;
+    }
+
+    try {
+      const res = await getCartAPI();
+
+      // ✅ depends on your API shape
+      // Most likely:
+      setCartCount(res.items?.length || 0);
+
+    } catch (err) {
+      console.error("Cart error:", err);
+      setCartCount(0);
+    }
+  };
+
+  fetchCart();
+}, [user]); // ✅ update on login
+
   return (
     <header className={styles.headerContainer}>
       
@@ -98,15 +176,16 @@ const handleSearch = async () => {
             <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>NEW ARRIVALS</Link>
           </li>
 
-         <li data-text="OVERSIZED TEE">
-          <Link
-            href="/products?categoryId=8"   // 👈 IMPORTANT
-            onClick={() => setMenuOpen(false)}
-          >
-            OVERSIZED TEE
-          </Link>
-        </li>
-
+         {oversizedCategory && (
+          <li data-text={oversizedCategory.name}>
+            <Link
+              href={`/products?categoryId=${oversizedCategory.id}`}
+              onClick={() => setMenuOpen(false)}
+            >
+              {oversizedCategory.name.toUpperCase()}
+            </Link>
+          </li>
+        )}
           <li data-text="ABOUT US">
             <a href="/about" onClick={() => setMenuOpen(false)}>ABOUT US</a>
           </li>
@@ -116,46 +195,50 @@ const handleSearch = async () => {
         <div className={styles.iconActions}>
           <div className={styles.searchContainer}>
   
-  {showSearch ? (
-  <div className={styles.searchFull}>
-    <Search size={20} className={styles.searchIcon} />
+            {showSearch ? (
+            <div className={styles.searchFull}>
+              <Search size={20} className={styles.searchIcon} />
 
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-      className={styles.searchInput}
-      autoFocus
-    />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className={styles.searchInput}
+                autoFocus
+              />
 
-    <X
-      size={18}
-      className={styles.closeIcon}
-      onClick={() => setShowSearch(false)}
-    />
-  </div>
-) : (
-  <div
-    className={styles.iconWrapper}
-    onClick={() => setShowSearch(true)}
-  >
-    <Search size={20} />
-  </div>
-)}
-</div>
+              <X
+                size={18}
+                className={styles.closeIcon}
+                onClick={() => setShowSearch(false)}
+              />
+            </div>
+          ) : (
+            <div
+              className={styles.iconWrapper}
+              onClick={() => setShowSearch(true)}
+            >
+              <Search size={20} />
+            </div>
+          )}
+          </div>
 
           <Link href="/wishlist" className={styles.wishlistLink}>
             <div className={styles.iconWrapper}>
               <Heart size={20} />
-              <span className={styles.badge}>0</span>
+              {wishlistCount > 0 && (
+                <span className={styles.badge}>{wishlistCount}</span>
+              )}
             </div>
           </Link>
 
           <Link href="/cart" className={styles.iconWrapper}>
             <ShoppingCart size={20} />
-            <span className={styles.badge}>3</span>
+            {cartCount > 0 && (
+                <span className={styles.badge}>{cartCount}</span>
+              )}
           </Link>
           {user ? (
             <Link href="/profile" className={styles.iconWrapper} title="Profile">

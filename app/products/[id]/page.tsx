@@ -16,6 +16,7 @@ import { FiHeart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from '@/context/ToastContext';
+import { getWishList } from "@/services/wishlist.service";
 const ProductDetail = () => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -156,6 +157,27 @@ useEffect(() => {
   }
 }, [product]);
 
+
+useEffect(() => {
+  const syncWishlist = async () => {
+    try {
+      const res = await getWishList();
+
+      const exists = res.some(
+        (item: any) => item.productId === product?.id
+      );
+
+      setIsWishlisted(exists);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (product?.id) {
+    syncWishlist();
+  }
+}, [product?.id]);
+
 useEffect(() => {
   if (product) {
     setIsWishlisted(product.isWishlisted ?? false);
@@ -164,7 +186,8 @@ useEffect(() => {
 
 const handleWishlist = async () => {
   if (!user) {
-    alert("Please login first");
+    showToast("Please login first", "error");
+    router.push("/login");
     return;
   }
 
@@ -172,20 +195,32 @@ const handleWishlist = async () => {
 
   try {
     if (isWishlisted) {
+      // 🔴 REMOVE
       await removeFromWishlist(product.id);
       setIsWishlisted(false);
+      showToast("Removed from wishlist", "info");
     } else {
+      // 🟢 ADD
       await addToWishlist(product.id);
       setIsWishlisted(true);
+      showToast("Added to wishlist", "success");
     }
+
+    // 🔥 update header count
+    window.dispatchEvent(new Event("wishlistUpdated"));
+
   } catch (err: any) {
     if (err?.response?.status === 409) {
+      // already exists → fix UI
       setIsWishlisted(true);
+      showToast("Already in wishlist", "info");
     } else {
       console.error(err);
+      showToast("Something went wrong", "error");
     }
   }
 };
+
   const sizes = [...new Set(product?.variants?.map(v => v.size) || [])];
   const colors = [
     ...new Set(
@@ -334,18 +369,13 @@ const handleBuyNow = async () => {
   />
 
   {/* ❤️ Wishlist */}
-  <button
-    className={`${styles.wishlistBtn} ${
-      isWishlisted ? styles.active : ""
-    }`}
-    onClick={handleWishlist}
-  >
-    {isWishlisted ? (
-      <FaHeart size={20} color="white" />
-    ) : (
-      <FiHeart size={20} color="black" />
-    )}
-  </button>
+  <button className={styles.wishlistBtn} onClick={handleWishlist}>
+  {isWishlisted ? (
+    <FaHeart size={20} color="black" />   // ❤️ BLACK
+  ) : (
+    <FiHeart size={20} color="#999" />    // 🤍 WHITE
+  )}
+</button>
 </div>
 
       </div>

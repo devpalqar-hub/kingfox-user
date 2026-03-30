@@ -18,10 +18,10 @@ interface ProductCardProps {
   rating: number;
   isNew?: boolean;
   isWishlisted?: boolean;
+  onWishlistToggle?: () => void;
 }
 
 const ProductCard = ({
-  
   id,
   image,
   name,
@@ -30,40 +30,27 @@ const ProductCard = ({
   reviews,
   colors,
   isNew,
-  isWishlisted: initialWishlisted
+  isWishlisted,
+  onWishlistToggle,
 }: ProductCardProps) => {
   
 
   const router = useRouter();
   const { user } = useAuth();
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  
+const handleWishlist = async () => {
+  if (!user) {
+    alert("Please login first");
+    return;
+  }
 
-  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted ?? false);
+  if (onWishlistToggle) {
+    onWishlistToggle(); // ✅ delegate to parent
+  }
+};
 
-  const handleWishlist = async () => {
-    if (!user) {
-      alert("Please login first");
-      return;
-    }
-
-    try {
-      if (isWishlisted) {
-
-        await removeFromWishlist(id);
-        setIsWishlisted(false);
-      } else {
-
-        await addToWishlist(id);
-        setIsWishlisted(true);
-      }
-    } catch (err: any) {
-      if (err?.response?.status === 409) {
-        setIsWishlisted(true);
-      } else {
-        console.error(err);
-      }
-    }
-  };
-
+  
   return (
     <div className={styles.cardContainer}>
       <div className={styles.imageWrapper}>
@@ -73,9 +60,9 @@ const ProductCard = ({
         <div className={styles.iconOverlay}>
           <button className={styles.iconBtn} onClick={handleWishlist}>
             {isWishlisted ? (
-              <FaHeart size={18} color="black" />
+              <FaHeart size={18} color="black" />   // ✅ always black when saved
             ) : (
-              <FiHeart size={18} />
+              <FiHeart size={18} />                // ✅ outline when not saved
             )}
           </button>
         </div>
