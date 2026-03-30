@@ -6,6 +6,8 @@ import { FiHeart } from "react-icons/fi"; // outline
 import { FaHeart } from "react-icons/fa"; // filled
 import { FiEye } from "react-icons/fi";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 import { 
   addToWishlist, 
   removeFromWishlist, 
@@ -14,7 +16,9 @@ import {
 import { getNewArrivals } from "@/services/product.service";
 
 const NewArrivals = () => {
-  
+
+  const { showToast } = useToast();
+  const router = useRouter();
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [availableSizes, setAvailableSizes] = useState<string[]>([]);
@@ -46,6 +50,7 @@ useEffect(() => {
       setWishlist(ids);
     } catch (err) {
       console.error("Failed to fetch wishlist", err);
+      showToast("Failed to load wishlist", "error");
     }
   };
 
@@ -60,15 +65,18 @@ useEffect(() => {
         categoryId: selectedCategory,
       });
 
-      const data = Array.isArray(res) ? res : res.data;
+      console.log("NEW ARRIVALS API:", res);
+
+      const data = res.items || []; // ✅ FIX
       setProducts(data);
     } catch (err) {
       console.error("Failed to fetch new arrivals", err);
+      showToast("Failed to load products", "error");
     }
   };
 
   fetchData();
-}, [selectedSize, selectedCategory]);// 👈 IMPORTANT // 👈 IMPORTANT
+}, [selectedSize, selectedCategory]);
 
 
 useEffect(() => {
@@ -104,25 +112,35 @@ useEffect(() => {
 
 
 const handleWishlist = async (id: number) => {
+  const token = localStorage.getItem("token");
+
+  // ❌ Not logged in
+  if (!token) {
+    showToast("Please login to use wishlist", "error");
+    return;
+  }
+
   try {
     if (wishlist.includes(id)) {
-      // 👉 REMOVE
+      // REMOVE
       await removeFromWishlist(id);
-
       setWishlist((prev) => prev.filter((i) => i !== id));
-    } else {
-      // 👉 ADD
-      await addToWishlist(id);
 
+      showToast("Removed from wishlist", "info"); // ✅ TOAST
+    } else {
+      // ADD
+      await addToWishlist(id);
       setWishlist((prev) => [...prev, id]);
+
+      showToast("Added to wishlist ❤️", "success"); // ✅ TOAST
     }
   } catch (err: any) {
-    // ⚠️ handle duplicate case (409)
     if (err?.response?.status === 409) {
       setWishlist((prev) => [...prev, id]);
+      showToast("Already in wishlist", "info"); // ✅ TOAST
     } else {
       console.error(err);
-      alert("Something went wrong");
+      showToast("Something went wrong", "error"); // ✅ TOAST
     }
   }
 };

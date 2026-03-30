@@ -12,12 +12,14 @@ import { LuLogOut } from "react-icons/lu";
 import { ProfileResponse } from "@/types/profile";
 import { CartItem, CartResponse } from "@/types/cart";
 import { OrderHistoryItem, OrderHistoryResponse } from "@/types/order-history";
+import { updateProfileAPI } from "@/services/profile.service";
+import { useToast } from "@/context/ToastContext";
 
 const ProfilePage = () => {
 
   const { logout } = useAuth();
   const router = useRouter();
-
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState<number>(0);
@@ -30,11 +32,22 @@ const ProfilePage = () => {
       year: "numeric",
     });
 
+    const [isEditing, setIsEditing] = useState(false);
+    const [form, setForm] = useState({
+      name: "",
+      phone: "",
+    });
+
   useEffect(() => {
   const loadData = async () => {
   try {
     const profileData = await getProfileAPI();
     setProfile(profileData);
+
+    setForm({
+      name: profileData.name,
+      phone: profileData.phone,
+    });
 
     const cartData: CartResponse = await getCartAPI();
     setCartItems(cartData.items);
@@ -50,7 +63,21 @@ const ProfilePage = () => {
 
   loadData();
 }, []);
+const handleSave = async () => {
+  try {
+    await updateProfileAPI(form);
 
+    // ✅ REFETCH PROFILE
+    const freshProfile = await getProfileAPI();
+    setProfile(freshProfile);
+
+    setIsEditing(false);
+    showToast("Profile updated successfully", "success");
+
+  } catch (err) {
+    showToast("Failed to update profile", "error");
+  }
+};
 
   const wishlist = [
     { name: "KF-VEST GEN. 2", price: "$210.00", image: "/wishlist1.png" },
@@ -74,25 +101,67 @@ const ProfilePage = () => {
         <div className={styles.detailsCard}>
           <div className={styles.cardHeader}>
             <h2>DETAILS</h2>
-            <button className={styles.editBtn}>EDIT INFO</button>
+            <button
+              className={styles.editBtn}
+              onClick={() => setIsEditing(true)}
+            >
+              EDIT INFO
+            </button>
           </div>
 
           <div className={styles.grid}>
-            <div>
-              <p className={styles.label}>FULL NAME</p>
-              <strong>{profile?.name}</strong>
-            </div>
+  {isEditing ? (
+    <>
+      <div>
+        <p className={styles.label}>FULL NAME</p>
+        <input
+          value={form.name}
+          onChange={(e) =>
+            setForm({ ...form, name: e.target.value })
+          }
+        />
+      </div>
 
-            <div>
-              <p className={styles.label}>EMAIL ADDRESS</p>
-              <strong>{profile?.email}</strong>
-            </div>
+      <div>
+        <p className={styles.label}>EMAIL</p>
+        <strong>{profile?.email}</strong>
+      </div>
 
-            <div>
-              <p className={styles.label}>PHONE</p>
-              <strong>{profile?.phone}</strong>
-            </div>
-          </div>
+      <div>
+        <p className={styles.label}>PHONE</p>
+        <input
+          value={form.phone}
+          onChange={(e) =>
+            setForm({ ...form, phone: e.target.value })
+          }
+        />
+      </div>
+    </>
+  ) : (
+    <>
+      <div>
+        <p className={styles.label}>FULL NAME</p>
+        <strong>{profile?.name}</strong>
+      </div>
+
+      <div>
+        <p className={styles.label}>EMAIL ADDRESS</p>
+        <strong>{profile?.email}</strong>
+      </div>
+
+      <div>
+        <p className={styles.label}>PHONE</p>
+        <strong>{profile?.phone}</strong>
+      </div>
+    </>
+  )}
+</div>
+{isEditing && (
+  <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+    <button onClick={handleSave}>SAVE</button>
+    <button onClick={() => setIsEditing(false)}>CANCEL</button>
+  </div>
+)}
         </div>
 
         {/* CART */}

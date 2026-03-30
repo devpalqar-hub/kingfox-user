@@ -7,7 +7,11 @@ import { getProducts } from '@/services/product.service';
 import { Product } from '@/types/product';
 import { getReviewsByProductId } from "@/services/review.service";
 import { useSearchParams } from "next/navigation";
-
+import {
+  getWishList,
+  addToWishlist,
+  removeFromWishlist
+} from "@/services/wishlist.service";
 const ProductsPage = () => {
 const searchParams = useSearchParams();
 const [products, setProducts] = useState<Product[]>([]);
@@ -18,17 +22,61 @@ const [size, setSize] = useState<string | null>(null);
 const [minPrice, setMinPrice] = useState<number | null>(null);
 const [maxPrice, setMaxPrice] = useState<number | null>(null);
 const [categoryId, setCategoryId] = useState<number | null>(null);
-const [availableColors, setAvailableColors] = useState<string[]>([]);
 const [availableSizes, setAvailableSizes] = useState<string[]>([]);
 const [availableCategories, setAvailableCategories] = useState<{id:number,name:string}[]>([]);
 const [loading, setLoading] = useState(true);
 const [sortBy, setSortBy] = useState<"newly_arrived" | "low_to_high" | "high_to_low" | null>(null);
 const [filterOpen, setFilterOpen] = useState(false);
 const [reviewMap, setReviewMap] = useState<any>({});
-
-
+const [wishlist, setWishlist] = useState<number[]>([]);
+const [availableColors, setAvailableColors] = useState<string[]>([]);
+const [loadingColors, setLoadingColors] = useState(false);
 const [initialized, setInitialized] = useState(false);
 const [tag, setTag] = useState<string | null>(null);
+const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+
+
+// ✅ CORRECT PLACE (top level)
+useEffect(() => {
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await getWishList();
+      const ids = res.map((item: any) => item.productId);
+      setWishlist(ids);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchWishlist();
+}, []);
+
+const handleWishlist = async (id: number) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please login");
+    return;
+  }
+
+  try {
+    if (wishlist.includes(id)) {
+      await removeFromWishlist(id);
+      setWishlist((prev) => prev.filter((i) => i !== id));
+    } else {
+      await addToWishlist(id);
+      setWishlist((prev) => [...prev, id]);
+    }
+
+    window.dispatchEvent(new Event("wishlistUpdated"));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 useEffect(() => {
   const categoryFromURL = searchParams.get("categoryId");
   const tagFromURL = searchParams.get("tag");
@@ -84,6 +132,8 @@ useEffect(() => {
   });
 }
     setTotalProducts(data.pagination.total);
+
+    
    
 
     // ---------- Extract filters from API ----------
@@ -306,6 +356,8 @@ useEffect(() => {
                       ? product.images[0]
                       : "/placeholder-product.png"
                   }
+                  isWishlisted={wishlist.includes(product.id)}
+                  onWishlistToggle={() => handleWishlist(product.id)}
                   isNew={false}
                 />
             ))}
