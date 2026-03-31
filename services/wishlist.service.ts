@@ -18,3 +18,8 @@ export const removeFromWishlist = async (productId: number) => {
   const res = await axiosInstance.delete(`/v1/user/wishlist/${productId}`);
   return res.data;
 };
+
+export const clearWishlist = async () => {
+  const res = await axiosInstance.delete("/v1/user/wishlist/wishlist/clear");
+  return res.data;
+};

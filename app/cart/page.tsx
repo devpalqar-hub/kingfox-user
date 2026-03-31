@@ -31,7 +31,10 @@ const CartPage = () => {
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-
+  
+  const isCartEmpty = token
+  ? !cartData || cartData.items.length === 0
+  : guestCart.length === 0;
 
   const loadPreview = async (guest?: CartItem[]) => {
   try {
@@ -232,16 +235,19 @@ useEffect(() => {
                 </div>
 
                 <button 
-                    className={styles.checkoutBtn}
-                    onClick={() => {
-                      localStorage.setItem("checkout_preview", JSON.stringify(preview));
+                      className={`${styles.checkoutBtn} ${isCartEmpty ? styles.disabledBtn : ""}`}
+                      disabled={isCartEmpty}
+                      onClick={() => {
+                        if (isCartEmpty) return; // extra safety
 
-                      if (!token) {
-                        localStorage.setItem("checkout_items", JSON.stringify(guestCart));
-                      }
+                        localStorage.setItem("checkout_preview", JSON.stringify(preview));
 
-                      router.push("/checkout");
-                    }}
+                        if (!token) {
+                          localStorage.setItem("checkout_items", JSON.stringify(guestCart));
+                        }
+
+                        router.push("/checkout");
+                      }}
                     >
                     PROCEED TO CHECKOUT <ArrowRight size={20} strokeWidth={2.5} />
                 </button>
@@ -263,16 +269,19 @@ useEffect(() => {
                   </span>
 
                   <button
-                      className={styles.mobileCheckoutBtn}
-                      onClick={() => {
-                        localStorage.setItem("checkout_preview", JSON.stringify(preview));
+                        className={`${styles.mobileCheckoutBtn} ${isCartEmpty ? styles.disabledBtn : ""}`}
+                        disabled={isCartEmpty}
+                        onClick={() => {
+                          if (isCartEmpty) return;
 
-                        if (!token) {
-                          localStorage.setItem("checkout_items", JSON.stringify(guestCart));
-                        }
+                          localStorage.setItem("checkout_preview", JSON.stringify(preview));
 
-                        router.push("/checkout");
-                      }}
+                          if (!token) {
+                            localStorage.setItem("checkout_items", JSON.stringify(guestCart));
+                          }
+
+                          router.push("/checkout");
+                        }}
                       >
                       Checkout
             </button>
