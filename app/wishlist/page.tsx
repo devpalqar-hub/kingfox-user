@@ -2,7 +2,7 @@
 import styles from './wishlist.module.css';
 import { Heart, ShoppingCart, Bell,ChevronLeft, ChevronRight, Eye } from 'lucide-react'; // Using Lucide for icons
 import React, { useRef } from "react";
-import { getWishList,removeFromWishlist } from "@/services/wishlist.service";
+import { getWishList,removeFromWishlist,clearWishlist } from "@/services/wishlist.service";
 import { useEffect, useState } from "react";
 const RECOMMENDED_DATA = [
   { id: 5, name: "Urban Oversized Tee", price: "₹1,499", img: "/wishlist1.png", tag: "NEW DROP" },
@@ -44,6 +44,20 @@ const scrollRight = () => {
   });
 };
 
+const handleClearWishlist = async () => {
+  const confirmClear = confirm("Are you sure you want to clear wishlist?");
+  if (!confirmClear) return;
+
+  try {
+    await clearWishlist();
+
+    setWishlist([]); // ✅ clear UI instantly
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 const handleRemove = async (productId: number) => {
   try {
     await removeFromWishlist(productId);
@@ -73,7 +87,9 @@ const handleRemove = async (productId: number) => {
           <button className={styles.moveAllBtn}>
             <ShoppingCart size={16} /> Move All To Cart
           </button>
-          <button className={styles.clearBtn}>Clear Wishlist</button>
+          <button className={styles.clearBtn} onClick={handleClearWishlist}>
+            Clear Wishlist
+          </button>
         </div>
       </header>
 

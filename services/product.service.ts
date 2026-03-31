@@ -66,5 +66,15 @@ export const getNewArrivals = async (params?: {
 };
 
 
+export const getColorsBySize = async (size: string) => {
+  const res = await fetch(
+    `${BASE_URL}/v1/products/variants/colors?size=${size}`
+  );
 
+  if (!res.ok) {
+    throw new Error("Failed to fetch colors");
+  }
+
+  return res.json();
+};
 

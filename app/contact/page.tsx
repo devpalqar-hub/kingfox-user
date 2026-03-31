@@ -245,7 +245,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
       </section>
       {/* NEW FAQ SECTION */}
-      <section className={styles.faqSection}>
+      <section id="faq" className={styles.faqSection}>
         <h2 className={styles.faqMainTitle}>QUICK HELP FAQ</h2>
         <div className={styles.faqContainer}>
           {faqData.map((item, index) => (

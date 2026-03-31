@@ -2,14 +2,50 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./Footer.module.css";
+import { useEffect } from "react";
+import { getAllCategories } from "@/services/category.service";
 
 const Footer = () => {
 
   const [open, setOpen] = useState<string | null>(null);
-
+  const [categories, setCategories] = useState<any[]>([]);
   const toggle = (section: string) => {
   setOpen(open === section ? null : section);
 };
+
+
+useEffect(() => {
+  const loadCategories = async () => {
+    const data = await getAllCategories();
+
+    const findCategory = (keyword: string) =>
+      data.find(
+        (c: any) =>
+          c.name &&
+          c.name.toLowerCase().includes(keyword.toLowerCase())
+      );
+
+    const selected = [
+      findCategory("oversize"),
+      findCategory("half sleeve"),
+      findCategory("full sleeve"),
+      data.find(
+        (c: any) =>
+          c.name &&
+          c.name.toLowerCase() === "shirts"
+      ),
+    ].filter(Boolean);
+
+    // ✅ REMOVE DUPLICATES (IMPORTANT FIX)
+    const unique = Array.from(
+      new Map(selected.map((c: any) => [c.id, c])).values()
+    );
+
+    setCategories(unique);
+  };
+
+  loadCategories();
+}, []);
 
   return (
     <footer className={styles.footer}>
@@ -51,11 +87,22 @@ const Footer = () => {
             </h3>
 
             <ul className={`${styles.list} ${styles.mobileContent} ${open === "shop" ? styles.show : ""}`}>
-              <li><Link href="/products" className={styles.link}>Oversized Tees</Link></li>
-              <li><Link href="/products" className={styles.link}>Half Sleeves</Link></li>
-              <li><Link href="/products" className={styles.link}>Full Sleeves</Link></li>
-              <li><Link href="/products" className={styles.link}>Casual Shirts</Link></li>
-              <li><Link href="/custom" className={styles.link}>Custom Designer</Link></li>
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link
+                    href={`/products?categoryId=${cat.id}`}
+                    className={styles.link}
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+
+              <li>
+                <Link href="/custom" className={styles.link}>
+                  Custom Designer
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -72,11 +119,11 @@ const Footer = () => {
             </h3>
 
             <ul className={`${styles.list} ${styles.mobileContent} ${open === "info" ? styles.show : ""}`}>
-              <li><Link href="/account" className={styles.link}>My Account</Link></li>
+              <li><Link href="/profile" className={styles.link}>My Account</Link></li>
               <li><Link href="/products" className={styles.link}>Products</Link></li>
               <li><Link href="/cart" className={styles.link}>My Cart</Link></li>
               <li><Link href="/wishlist" className={styles.link}>Wishlist</Link></li>
-              <li><Link href="/faq" className={styles.link}>Faq</Link></li>
+              <li><Link href="/contact#faq" className={styles.link}>Faq</Link></li>
             </ul>
           </div>
 

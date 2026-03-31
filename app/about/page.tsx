@@ -2,8 +2,10 @@ import React from 'react';
 import Image from 'next/image';
 import styles from './About.module.css';
 import { Fingerprint, Palette, Flag, Activity,Factory,Leaf,ShieldCheck} from "lucide-react";
+import Link from "next/link";
 
 const AboutPage = () => {
+
   return (
     <>
     <main className={styles.container}>
@@ -147,9 +149,9 @@ const AboutPage = () => {
     </h3>
   </div>
 
-  <button className={styles.exploreButton}>
-    EXPLORE THE DROP
-  </button>
+  <Link href="/new-arrivals" className={styles.exploreButton}>
+  EXPLORE THE DROP
+</Link>
 </section>
     </main>
     </>

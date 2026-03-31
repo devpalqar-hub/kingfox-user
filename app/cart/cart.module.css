@@ -538,7 +538,11 @@
     max-width: 130px;
     margin-left:-12px;
   }
-
+.disabledBtn {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
   .removeBtn {
     flex-shrink: 0;
     margin-right: -10px;

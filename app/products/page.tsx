@@ -7,11 +7,14 @@ import { getProducts } from '@/services/product.service';
 import { Product } from '@/types/product';
 import { getReviewsByProductId } from "@/services/review.service";
 import { useSearchParams } from "next/navigation";
+import { getColorsBySize } from "@/services/product.service";
+import LoginModal from "@/app/auth/login/page";
 import {
   getWishList,
   addToWishlist,
   removeFromWishlist
 } from "@/services/wishlist.service";
+
 const ProductsPage = () => {
 const searchParams = useSearchParams();
 const [products, setProducts] = useState<Product[]>([]);
@@ -34,6 +37,8 @@ const [loadingColors, setLoadingColors] = useState(false);
 const [initialized, setInitialized] = useState(false);
 const [tag, setTag] = useState<string | null>(null);
 const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+const [isLoginOpen, setIsLoginOpen] = useState(false);
+const [prefillEmail, setPrefillEmail] = useState("");
 
 
 // ✅ CORRECT PLACE (top level)
@@ -132,18 +137,13 @@ useEffect(() => {
   });
 }
     setTotalProducts(data.pagination.total);
-
-    
-   
-
     // ---------- Extract filters from API ----------
-    const colorsSet = new Set<string>();
+
+
     const sizesSet = new Set<string>();
     const categoryMap = new Map<number,string>();
 
     data.items.forEach((product) => {
-
-      product.colors?.forEach((c) => colorsSet.add(c));
 
       product.sizes?.forEach((s) => sizesSet.add(s));
 
@@ -152,8 +152,6 @@ useEffect(() => {
       }
 
     });
-
-    setAvailableColors(Array.from(colorsSet));
     setAvailableSizes(Array.from(sizesSet));
     setAvailableCategories(
       Array.from(categoryMap, ([id,name]) => ({id,name}))
@@ -165,6 +163,25 @@ useEffect(() => {
 };
   loadProducts();
 }, [page, size, color, minPrice, maxPrice, categoryId, sortBy,initialized]);
+
+   // ✅ OUTSIDE loadProducts (top level)
+useEffect(() => {
+  const fetchColors = async () => {
+    if (!size) {
+      setAvailableColors([]);
+      return;
+    }
+
+    try {
+      const res = await getColorsBySize(size);
+      setAvailableColors(res.colors || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchColors();
+}, [size]);
 
 
   const handleClearFilters = () => {
@@ -253,7 +270,7 @@ useEffect(() => {
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>SIZE</p>
               <div className={styles.sizeGrid}>
-                {availableSizes.map((s) => (
+                {FIXED_SIZES.map((s) => (
                   <button
                     key={s}
                     className={`${styles.sizeBtn} ${
@@ -261,6 +278,7 @@ useEffect(() => {
                     }`}
                     onClick={() => {
                       setSize((prev) => (prev === s ? null : s));
+                      setColor(null); // ✅ IMPORTANT (reset color when size changes)
                       setPage(1);
                     }}
                   >
@@ -418,30 +436,41 @@ useEffect(() => {
             Get exclusive access to underground drops, private events,
             and 15% off your first order.
           </p>
-
           <form
             className={styles.newsletterForm}
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={(e) => {
+              e.preventDefault();
+
+              const form = e.currentTarget;
+              const email = form.email.value;
+
+              setPrefillEmail(email);
+              setIsLoginOpen(true);
+
+              form.reset(); // ✅ CLEAR INPUT
+            }}
           >
             <input
+              name="email"   // 🔥 MUST ADD THIS
               type="email"
               placeholder="Your email address"
               className={styles.newsletterInput}
             />
 
-            <button
-              type="submit"
-              className={styles.subscribeBtn}
-            >
+            <button type="submit" className={styles.subscribeBtn}>
               SUBSCRIBE
             </button>
-
           </form>
-
         </div>
       </div>
+      <LoginModal
+      isOpen={isLoginOpen}
+      onClose={() => setIsLoginOpen(false)}
+      prefillEmail={prefillEmail}
+    />
 
     </section>
+    
   );
 };
 

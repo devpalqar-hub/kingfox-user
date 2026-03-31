@@ -5,20 +5,36 @@ import styles from "./login.module.css";
 import { sendOtp, verifyOtp } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  prefillEmail?: string;
 };
 
-export default function LoginModal({ isOpen, onClose }: Props) {
+export default function LoginModal({ isOpen, onClose, prefillEmail }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
-    const { login } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
   const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
+  
+  useEffect(() => {
+  if (prefillEmail) {
+    setEmail(prefillEmail);
+  }
+}, [prefillEmail]);
 
+  useEffect(() => {
+    if (isOpen) {
+      onClose(); // close only if modal is open
+    }
+  }, [pathname]);
   if (!isOpen) return null;
 
   // 👉 Send OTP
@@ -70,6 +86,10 @@ const handleVerifyOtp = async () => {
     setLoading(false);
   }
 };
+
+
+
+
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>
@@ -133,7 +153,14 @@ const handleVerifyOtp = async () => {
         )}
 
         <p className={styles.terms}>
-          BY CONTINUING, YOU AGREE TO THE <span>TERMS</span>
+          BY CONTINUING, YOU AGREE TO THE{" "}
+         <Link
+            href="/terms-and-condition"
+            className={styles.termsLink}
+            onClick={onClose} // ✅ CLOSE MODAL
+          >
+            TERMS
+          </Link>
         </p>
 
       </div>

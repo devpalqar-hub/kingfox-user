@@ -116,6 +116,16 @@
   flex-direction: column;
   gap: 16px; /* ✅ Perfect spacing */
 }
+.termsLink {
+  color: #000;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.termsLink:hover {
+  opacity: 0.7;
+}
 /* Country code */
 /* Input */
 .phoneInput {
