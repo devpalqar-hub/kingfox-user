@@ -1,118 +1,122 @@
 import styles from "./terms.module.css";
 
-export default function TermsConditions() {
+export default function TermsPage() {
   return (
-    <main className={styles.page}>
-      <div className={styles.container}>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1>TERMS & CONDITIONS</h1>
+        <p className={styles.breadcrumb}>
+          HOME <span>&gt;</span> TERMS & CONDITIONS
+        </p>
+      </div>
 
-        {/* Header */}
-        <div className={styles.header}>
-          <h1>Terms & Conditions</h1>
-          <p>Last updated: March 20, 2026</p>
-        </div>
-
-        {/* Intro */}
-        <p className={styles.intro}>
-          These Terms & Conditions ("Terms") govern your use of{" "}
-          <strong>King Fox Clothing</strong>. By using our website, you agree to
-          these terms.
+      {/* Content */}
+      <div className={styles.content}>
+        <p>
+          PLEASE READ THESE TERMS OF USE CAREFULLY. BY SIGNING UP TO AND/OR USING
+          THIS PLATFORM AND OUR SERVICES, YOU AGREE TO BE BOUND BY ALL OF THE
+          BELOW TERMS AND CONDITIONS AND PRIVACY POLICY. :contentReference[oaicite:0]
         </p>
 
-        {/* Sections */}
-        <section className={styles.section}>
-          <h2>1. Eligibility</h2>
-          <p>
-            You must be at least 18 years old or under supervision of a guardian.
-          </p>
-        </section>
+        <p>
+          The website at www.kingfoxclothing.com (“Website”) is owned and
+          operated by King Fox Clothing (“KING FOX CLOTHING”, “we”, “us”, “our”).
+          The Website are collectively referred to as “Platform”.
+        </p>
 
-        <section className={styles.section}>
-          <h2>2. Products & Availability</h2>
-          <ul>
-            <li>Products are subject to availability</li>
-            <li>Images are for illustration only</li>
-            <li>Products may change without notice</li>
-          </ul>
-        </section>
+        <p>
+          These terms of service (“Terms” / “Terms of Use”) describe the terms on
+          which KING FOX CLOTHING grants users access to the Platform, and should
+          be read with the privacy policy available at:
+          https://www.thekingfoxclothing.com/privacy-policy (“Privacy Policy”).
+        </p>
 
-        <section className={styles.section}>
-          <h2>3. Pricing & Payments</h2>
-          <ul>
-            <li>Prices shown at checkout</li>
-            <li>Payment required before confirmation</li>
-            <li>Secure third-party payment processing</li>
-          </ul>
-        </section>
+        <p>
+          King Fox Clothing enables artists to earn money from their artwork by
+          making it available for sale as products without giving up control of
+          their rights.
+        </p>
 
-        <section className={styles.section}>
-          <h2>4. Orders & Cancellation</h2>
-          <p>
-            Orders may be cancelled due to stock issues, errors, or fraud
-            detection.
-          </p>
-        </section>
+        <p>
+          King Fox Clothing offers the Platform conditioned upon the user’s
+          acceptance of all terms. By using the Platform, you agree to be bound by
+          these Terms.
+        </p>
 
-        <section className={styles.section}>
-          <h2>5. Shipping & Delivery</h2>
-          <p>
-            Delivery timelines may vary. We are not responsible for courier delays.
-          </p>
-        </section>
+        <p>
+          We reserve the right to review and amend the Services without notice.
+          If you do not agree, do not use this Website.
+        </p>
 
-        <section className={styles.section}>
-          <h2>6. Returns & Refunds</h2>
-          <p>
-            Subject to our refund policy. Items must be in original condition.
-          </p>
-        </section>
+        <h2>ABOUT OUR SERVICES</h2>
+        <p>
+          King Fox Clothing provides services including publishing, selling,
+          promoting, and purchasing merchandise such as clothing, footwear, and
+          accessories, along with payment processing and order fulfillment.
+        </p>
 
-        <section className={styles.section}>
-          <h2>7. User Accounts</h2>
-          <p>
-            You are responsible for maintaining your account credentials.
-          </p>
-        </section>
+        <h2>HOW TO USE THE SERVICES</h2>
+        <p>
+          We grant you a limited, non-transferable license to access and use the
+          platform. Any misuse or illegal activity may result in suspension.
+        </p>
 
-        <section className={styles.section}>
-          <h2>8. Prohibited Activities</h2>
-          <ul>
-            <li>Illegal use of website</li>
-            <li>False information</li>
-            <li>Security interference</li>
-            <li>Content misuse</li>
-          </ul>
-        </section>
+        <h2>ACCOUNT</h2>
+        <p>
+          You must create an account to use our services. You are responsible for
+          maintaining confidentiality of your credentials and all activities
+          under your account.
+        </p>
 
-        <section className={styles.section}>
-          <h2>9. Intellectual Property</h2>
-          <p>
-            All content belongs to King Fox Clothing and cannot be reused.
-          </p>
-        </section>
+        <h2>SUBSCRIPTION</h2>
+        <p>
+          Membership plans may be offered and can be updated at any time. Fees are
+          non-refundable unless cancelled by King Fox Clothing.
+        </p>
 
-        <section className={styles.section}>
-          <h2>10. Liability</h2>
-          <p>
-            We are not liable for indirect or consequential damages.
-          </p>
-        </section>
+        <h2>PRODUCT INFORMATION</h2>
+        <p>
+          We strive for accuracy but do not guarantee product descriptions,
+          pricing, or availability are error-free.
+        </p>
 
-        <section className={styles.section}>
-          <h2>11. Governing Law</h2>
-          <p>These terms are governed by Qatar law.</p>
-        </section>
+        <h2>CONTENT & COPYRIGHT POLICY</h2>
+        <p>
+          You retain ownership of content you upload but grant us a license to use
+          it. You must not upload illegal, offensive, or infringing content.
+        </p>
 
-        <section className={styles.section}>
-          <h2>12. Contact</h2>
-          <div className={styles.contact}>
-            <p><strong>King Fox Clothing</strong></p>
-            <p>King Fox Clothing, MNS Avenue,Calicut</p>
-            <p>📞 +91 8129 8822 45</p>
-            <p>✉️ kingfoxclothingstore@gmail.com</p>
-          </div>
-        </section>
+        <h2>DISCLAIMER</h2>
+        <p>
+          Services are provided “as is” without warranties. We are not liable for
+          indirect damages or data loss.
+        </p>
 
+        <h2>INTELLECTUAL PROPERTY</h2>
+        <p>
+          All platform content including logos, text, and graphics are owned by
+          King Fox Clothing and protected by law.
+        </p>
+
+        <h2>TERMINATION</h2>
+        <p>
+          We may terminate accounts at any time if terms are violated.
+        </p>
+
+        <h2>GOVERNING LAW</h2>
+        <p>
+          These terms are governed by the laws of India and disputes will be
+          handled in Mumbai courts.
+        </p>
+
+        <h2>CONTACT</h2>
+        <p>
+          Email: kingfoxclothingstore@gmail.com <br />
+          Phone: +91 8129882245 <br />
+          Address: MN’S Avenue, Calicut, Kerala – 673001
+        </p>
       </div>
-    </main>
+    </div>
   );
 }

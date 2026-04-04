@@ -16,32 +16,16 @@ const Footer = () => {
 
 useEffect(() => {
   const loadCategories = async () => {
-    const data = await getAllCategories();
+    try {
+      const data = await getAllCategories();
 
-    const findCategory = (keyword: string) =>
-      data.find(
-        (c: any) =>
-          c.name &&
-          c.name.toLowerCase().includes(keyword.toLowerCase())
-      );
+      // ✅ TAKE FIRST 4 DIRECTLY
+      const firstFour = data.slice(0, 4);
 
-    const selected = [
-      findCategory("oversize"),
-      findCategory("half sleeve"),
-      findCategory("full sleeve"),
-      data.find(
-        (c: any) =>
-          c.name &&
-          c.name.toLowerCase() === "shirts"
-      ),
-    ].filter(Boolean);
-
-    // ✅ REMOVE DUPLICATES (IMPORTANT FIX)
-    const unique = Array.from(
-      new Map(selected.map((c: any) => [c.id, c])).values()
-    );
-
-    setCategories(unique);
+      setCategories(firstFour);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   loadCategories();
@@ -67,7 +51,14 @@ useEffect(() => {
             <div className={`${styles.mobileContent} ${open === "company" ? styles.show : ""}`}>
               <div className={styles.addressText}>
                 <p>King Fox Clothing, MNS Avenue,<br/> Near 4th Gate, Calicut 673001</p>
-                <Link href="#" className={`${styles.link} ${styles.mapLink}`}>Visit Map</Link>
+                <a
+                    href="https://www.google.com/maps?q=King+Fox+Clothing,+MNS+Avenue,+Near+4th+Gate,+Calicut+673001"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${styles.link} ${styles.mapLink}`}
+                  >
+                    Visit Map
+                  </a>
                 <p style={{marginTop:'20px'}}>+91 8129 8822 45</p>
                 <p style={{textTransform:'lowercase'}}>kingfoxclothingstore@gmail.com</p>
               </div>

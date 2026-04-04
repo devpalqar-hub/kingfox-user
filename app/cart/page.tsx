@@ -21,6 +21,26 @@ const CartPage = () => {
   const [guestCart, setGuestCart] = useState<CartItem[]>([]);
   const router = useRouter();
   const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
+
+
+  const getImageSrc = (image?: string) => {
+  if (!image) return "/placeholder-product.png";
+
+  // ❌ block broken placeholder
+  if (image.includes("via.placeholder.com")) {
+    return "/placeholder-product.png";
+  }
+
+  // ✅ full URL
+  if (image.startsWith("http")) {
+    return image;
+  }
+
+  // ✅ relative path
+  return `${BASE_URL}${image}`;
+};
 
   const guestItemCount = guestCart.reduce(
     (acc, item) => acc + item.quantity,
@@ -94,62 +114,85 @@ useEffect(() => {
       <div className={styles.cartContent}>
         {/* Left Column: Items */}
         <div className={styles.itemsList}>
-          {token &&
-            cartData?.items.map((item) => (
-              <div key={item.cartItemId} className={styles.cartItem}>
-                <div className={styles.imageWrapper}>
-                  <img src={item.productImage || "/placeholder-product.png"} />
-                </div>
+         {token &&
+  cartData?.items.map((item) => {
+    console.log("LOGGED CART ITEM:", item); // ✅ HERE
 
-                <div className={styles.itemDetails}>
-                  <h3>{item.productName}</h3>
-                  <p>₹{item.price}</p>
-                  <p>{item.size} / {item.color}</p>
+    return (
+      <div key={item.cartItemId} className={styles.cartItem}>
+        <div className={styles.imageWrapper}>
+          <img
+            src={getImageSrc(item.productImage)}
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder-product.png";
+            }}
+            alt={item.productName}
+          />
+        </div>
 
-                  <div className={styles.quantity}>
-                    <button
-                      onClick={async () => {
-                        if (item.quantity > 1) {
-                          await updateCartItemAPI(item.variantId, item.quantity - 1);
-                          const data = await getCartAPI();
-                          setCartData(data);
-                          await loadPreview();
-                        }
-                      }}
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button
-                      onClick={async () => {
-                        await updateCartItemAPI(item.variantId, item.quantity + 1);
-                        const data = await getCartAPI();
-                        setCartData(data);
-                        await loadPreview();
-                      }}
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                  <button
-                    className={styles.removeBtn}
-                    onClick={async () => {
-                      await removeCartItemAPI(item.variantId);
-                      const data = await getCartAPI();
-                      setCartData(data);
-                      await loadPreview();
-                    }}
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-          ))}
+        <div className={styles.itemDetails}>
+          <h3>{item.productName}</h3>
+          <p>₹{item.price}</p>
+          <p>{item.size} / {item.color}</p>
+
+          <div className={styles.quantity}>
+            <button
+              onClick={async () => {
+                if (item.quantity > 1) {
+                  await updateCartItemAPI(item.variantId, item.quantity - 1);
+                  window.dispatchEvent(new Event("cartUpdated"));
+                  const data = await getCartAPI();
+                  setCartData(data);
+                  await loadPreview();
+                }
+              }}
+            >
+              <Minus size={16} />
+            </button>
+
+            <span>{item.quantity}</span>
+
+            <button
+              onClick={async () => {
+                await updateCartItemAPI(item.variantId, item.quantity + 1);
+                window.dispatchEvent(new Event("cartUpdated"));
+                const data = await getCartAPI();
+                setCartData(data);
+                await loadPreview();
+              }}
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
+          <button
+            className={styles.removeBtn}
+            onClick={async () => {
+              await removeCartItemAPI(item.variantId);
+              window.dispatchEvent(new Event("cartUpdated"));
+              const data = await getCartAPI();
+              setCartData(data);
+              await loadPreview();
+            }}
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </div>
+    );
+  })}
           {!token &&
             guestCart.map((item) => (
+              
               <div key={item.variantId} className={styles.cartItem}>
                 <div className={styles.imageWrapper}>
-                  <img src={item.productImage || "/placeholder-product.png"} />
+                  <img
+                    src={getImageSrc(item.productImage)}
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder-product.png";
+                    }}
+                    alt={item.productName}
+                  />
                 </div>
 
                 <div className={styles.itemDetails}>
@@ -162,6 +205,7 @@ useEffect(() => {
                       onClick={async() => {
                         if (item.quantity > 1) {
                           updateGuestCart(item.variantId, item.quantity - 1);
+                          window.dispatchEvent(new Event("cartUpdated"));
                           const updated = getGuestCart();
                           setGuestCart(updated);
                           await loadPreview(updated);
@@ -176,6 +220,7 @@ useEffect(() => {
                     <button
                       onClick={async() => {
                         updateGuestCart(item.variantId, item.quantity + 1);
+                        window.dispatchEvent(new Event("cartUpdated"));
                         const updated = getGuestCart();
                         setGuestCart(updated);
                         await loadPreview(updated);

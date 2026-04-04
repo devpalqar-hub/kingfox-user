@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { checkoutAPI } from "@/services/order.service";
+import { getBranchesAPI } from "@/services/branch.service";
 import { useAuth } from "@/context/AuthContext";
 import React from 'react';
 import { useToast } from "@/context/ToastContext";
@@ -14,21 +15,27 @@ import {
   MdPayments, 
   MdLock 
 } from 'react-icons/md';
+
 import { OrderPreviewResponse } from '@/types/order';
 import { CartItem } from '@/types/cart';
 import { ProfileResponse } from '@/types/profile';
 import { getProfileAPI } from '@/services/profile.service';
 import { getCartAPI, updateCartItemAPI} from "@/services/cart.service";
 import { previewOrderAPI } from "@/services/order.service";
+import { MdCreditCard, MdAccountBalance } from "react-icons/md";
 
 export default function CheckoutPage() {
 const router = useRouter();
 const [isPending, setIsPending] = useState(false);
 const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
 const [profile, setProfile] = useState<ProfileResponse | null>(null);
-const [paymentMethod, setPaymentMethod] = useState<"COD">("COD");
+const [paymentMethod, setPaymentMethod] = useState<"COD" | "RAZORPAY">("RAZORPAY");
 const [items, setItems] = useState<CartItem[]>([]);
 const { showToast } = useToast();
+const [branches, setBranches] = useState<any[]>([]);
+const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
+const [couponCode, setCouponCode] = useState("");
+
 
 const [form, setForm] = useState({
   firstName: "",
@@ -68,7 +75,9 @@ useEffect(() => {
         // 🔥 Logged user → use cart
         const res = await previewOrderAPI({
           isCartPurchase: true,
+          couponCode: undefined,
         });
+          
         setPreview(res);
       } else {
         // 👤 Guest → send items
@@ -118,6 +127,21 @@ useEffect(() => {
   loadProfile();
 }, [token]);
 
+useEffect(() => {
+  if (paymentMethod === "COD") {
+    const loadBranches = async () => {
+      try {
+        const res = await getBranchesAPI();
+        setBranches(res.branches);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadBranches();
+  }
+}, [paymentMethod]);
+
 const updateGuestItem = (variantId: number, qty: number) => {
   const updated = items.map((i) =>
     i.variantId === variantId ? { ...i, quantity: qty } : i
@@ -162,6 +186,8 @@ const handlePlaceOrder = async () => {
         customerPhone: form.phone,
         paymentMethod,
         shippingAddress: fullAddress,
+        couponCode: couponCode || undefined,
+        ...(paymentMethod === "COD" && { pickupBranchId: selectedBranch }),
       });
     } else {
       const guestCart: CartItem[] = JSON.parse(
@@ -179,23 +205,48 @@ const handlePlaceOrder = async () => {
         customerPhone: form.phone,
         paymentMethod,
         shippingAddress: fullAddress,
+        couponCode: couponCode || undefined,
+         ...(paymentMethod === "COD" && { pickupBranchId: selectedBranch }),
       });
     }
 
     console.log("Order Success:", response);
+    // 🔥 RAZORPAY REDIRECT (ADD THIS)
+    if (paymentMethod === "RAZORPAY") {
+  const paymentUrl = response?.paymentLink?.url;
 
-    // 🧹 Clear guest cart
-    if (!token) {
-      localStorage.removeItem("guest_cart");
+  // ✅ SAVE ORDER ID BEFORE REDIRECT
+  if (response?.order?.id) {
+    localStorage.setItem("lastOrderId", response.order.id.toString());
+  }
+
+  if (paymentUrl) {
+    showToast("Redirecting to payment...", "info");
+    window.location.href = paymentUrl;
+    return;
+  } else {
+    showToast("Payment link not received", "error");
+    return;
+  }
+}
+
+      // ✅ ONLY FOR COD
+    if (paymentMethod === "COD" && !selectedBranch) {
+        showToast("Please select a pickup branch", "error");
+        return;
+      }{
+      
+      if (!token) {
+        localStorage.removeItem("guest_cart");
+      }
+
+      showToast("Order placed successfully", "success", 2500);
+      console.log("FULL RESPONSE:", response);
+
+      setTimeout(() => {
+        router.replace("/profile");
+      }, 1200);
     }
-
-    // ✅ SUCCESS TOAST
-    showToast("Order placed successfully", "success", 2500);
-
-    // 🔥 Delay navigation for better UX
-    setTimeout(() => {
-      router.replace("/profile");
-    }, 1200);
 
   } catch (err) {
     console.error(err);
@@ -300,8 +351,38 @@ const handlePlaceOrder = async () => {
         <div className={styles.couponSection}>
           <p>HAVE A COUPON? <span>▾</span></p>
           <div className={styles.couponRow}>
-            <input type="text" placeholder="ENTER CODE" />
-            <button className={styles.applyBtn}>APPLY</button>
+            <input
+              type="text"
+              placeholder="ENTER CODE"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+            />
+            <button
+              className={styles.applyBtn}
+              onClick={async () => {
+                try {
+                  const res = await previewOrderAPI({
+                    isCartPurchase: token ? true : false,
+                    couponCode: couponCode,
+                    ...(token
+                      ? {}
+                      : {
+                          customerEmail: "guest@test.com",
+                          items: items.map((item) => ({
+                            variantId: item.variantId,
+                            quantity: item.quantity,
+                          })),
+                        }),
+                  });
+                  setPreview(res);
+                  showToast("Coupon applied", "success");
+                } catch (err) {
+                  showToast("Invalid coupon", "error");
+                }
+              }}
+            >
+              APPLY
+            </button>
           </div>
         </div>
 
@@ -310,8 +391,12 @@ const handlePlaceOrder = async () => {
           <h2 className={styles.sectionTitle}>
             <MdOutlinePayment /> PAYMENT METHOD
           </h2>
-          {/* <div className={styles.paymentCard}>
-            <input type="radio" />
+          <div className={styles.paymentCard}>
+            <input
+                type="radio"
+                checked={paymentMethod === "RAZORPAY"}
+                onChange={() => setPaymentMethod("RAZORPAY")}
+              />
             <div className={styles.paymentInfo}>
               <strong>RAZORPAY SECURE</strong>
               <p>CARDS, NETBANKING, WALLET, UPI</p>
@@ -319,7 +404,7 @@ const handlePlaceOrder = async () => {
             <div className={styles.paymentIcons}>
               <MdCreditCard /> <MdAccountBalance />
             </div>
-          </div> */}
+          </div>
           <div
             className={styles.paymentCardActive}
             onClick={() => setPaymentMethod("COD")}
@@ -331,6 +416,24 @@ const handlePlaceOrder = async () => {
             </div>
             <MdPayments />
           </div>
+          {paymentMethod === "COD" && (
+            <div className={styles.inputGroup}>
+              <label>SELECT PICKUP BRANCH</label>
+
+              <select
+                value={selectedBranch || ""}
+                onChange={(e) => setSelectedBranch(Number(e.target.value))}
+              >
+                <option value="">Select Branch</option>
+
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} - {b.address}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </section>
       </div>
 
@@ -408,7 +511,16 @@ const handlePlaceOrder = async () => {
             ) : (
               <span>₹{preview?.shippingCharge}</span>
             )}
+            
           </div>
+          {(preview?.discount ?? 0) > 0 && (
+            <div className={styles.summaryLine}>
+              <span>DISCOUNT</span>
+              <span style={{ color: "#16a34a", fontWeight: 600 }}>
+                -₹{preview?.discount || 0}
+              </span>
+            </div>
+          )}
 
           <div className={styles.totalLine}>
             <span>TOTAL</span>

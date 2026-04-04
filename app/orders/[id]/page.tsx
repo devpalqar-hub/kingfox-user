@@ -1,5 +1,5 @@
 "use client";
-
+import axiosInstance from "@/lib/axios";
 import styles from "./orderdetails.module.css";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -10,11 +10,109 @@ import { getOrderDetailsAPI } from "@/services/order-details.service";
 import { OrderDetailsResponse } from "@/types/order-details";
 import { getProfileAPI } from "@/services/profile.service";
 
+
 const OrderDetailsPage = () => {
   const router = useRouter();
   const [order, setOrder] = useState<OrderDetailsResponse | null>(null);
   const params = useParams();
   const [profile, setProfile] = useState<any>(null);
+
+
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+const [reviewData, setReviewData] = useState({
+  rating: 5,
+  title: "",
+  body: "",
+});
+
+const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+const [uploading, setUploading] = useState(false);
+
+const handleImageUpload = async (e: any) => {
+  const files = e.target.files;
+
+  if (!files || files.length === 0) return;
+
+  setUploading(true);
+
+  const uploadedUrls: string[] = [];
+
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const formData = new FormData();
+      formData.append("file", files[i]);
+      formData.append("folder", "reviews");
+
+      const res = await axiosInstance.post(
+        "/v1/upload/image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      uploadedUrls.push(res.data.url);
+    }
+
+    setUploadedImages((prev) => [...prev, ...uploadedUrls]);
+
+  } catch (err) {
+    console.error(err);
+    alert("Image upload failed");
+  } finally {
+    setUploading(false);
+  }
+};
+
+
+const submitReview = async () => {
+  try {
+    if (!reviewData.title || !reviewData.body) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    await axiosInstance.post(
+      `/v1/user/products/${selectedItem.variant.productId}/reviews`,
+      {
+        rating: reviewData.rating,
+        title: reviewData.title,
+        body: reviewData.body,
+        images: uploadedImages,
+      }
+    );
+
+    alert("Review added!");
+
+    closeReviewModal();
+
+    // ✅ reset states
+    setUploadedImages([]);
+    setReviewData({
+      rating: 5,
+      title: "",
+      body: "",
+    });
+
+    const data = await getOrderDetailsAPI(params.id as string);
+    setOrder(data);
+
+  } catch (err: any) {
+    console.error(err);
+    alert(err?.response?.data?.message || "Failed to add review");
+  }
+};
+const openReviewModal = (item: any) => {
+  setSelectedItem(item);
+};
+
+const closeReviewModal = () => {
+  setSelectedItem(null);
+};
+
+
 
   useEffect(() => {
     const loadOrder = async () => {
@@ -185,6 +283,45 @@ const OrderDetailsPage = () => {
                     <span>ITEM SUBTOTAL</span>
                     <span className={styles.subtotal}>₹{item.subtotal}</span>
                   </div>
+                  <div className={styles.reviewSection}>
+
+  {item.review ? (
+    /* ⭐ SHOW REVIEW */
+    <div className={styles.reviewBox}>
+      
+      {/* Stars */}
+      <div className={styles.stars}>
+        {"★".repeat(item.review.rating)}
+        {"☆".repeat(5 - item.review.rating)}
+      </div>
+
+      {/* Title */}
+      <h4 className={styles.reviewTitle}>{item.review.title}</h4>
+
+      {/* Body */}
+      <p className={styles.reviewText}>{item.review.body}</p>
+
+      {/* Images */}
+      {item.review.images?.length > 0 && (
+        <div className={styles.reviewImages}>
+          {item.review.images.map((img: string, i: number) => (
+            <img key={i} src={img} />
+          ))}
+        </div>
+      )}
+
+    </div>
+  ) : (
+    /* ➕ ADD REVIEW BUTTON */
+    <button
+      className={styles.addReviewBtn}
+      onClick={() => openReviewModal(item)}
+    >
+      ⭐ Add Review
+    </button>
+  )}
+
+</div>
                 </div>
               </div>
             ))}
@@ -341,7 +478,70 @@ const OrderDetailsPage = () => {
         </div>
 
       </div>
+      {selectedItem && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+
+      <h2>Add Review</h2>
+
+      {/* Rating */}
+      <select
+        value={reviewData.rating}
+        onChange={(e) =>
+          setReviewData({ ...reviewData, rating: Number(e.target.value) })
+        }
+      >
+        {[5,4,3,2,1].map(r => (
+          <option key={r} value={r}>{r} Star</option>
+        ))}
+      </select>
+
+      {/* Title */}
+      <input
+        placeholder="Title"
+        value={reviewData.title}
+        onChange={(e) =>
+          setReviewData({ ...reviewData, title: e.target.value })
+        }
+      />
+
+      {/* Body */}
+      <textarea
+        placeholder="Write your review..."
+        value={reviewData.body}
+        onChange={(e) =>
+          setReviewData({ ...reviewData, body: e.target.value })
+        }
+      />
+      {/* Image Upload */}
+      <input
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={handleImageUpload}
+      />
+
+      {/* Uploading text */}
+      {uploading && <p>Uploading...</p>}
+
+      {/* Preview */}
+      <div className={styles.previewImages}>
+        {uploadedImages.map((img, i) => (
+          <img key={i} src={img} />
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div className={styles.modalActions}>
+        <button onClick={closeReviewModal}>Cancel</button>
+        <button onClick={submitReview}>Submit</button>
+      </div>
+
     </div>
+  </div>
+)}
+    </div>
+    
   );
 };
 

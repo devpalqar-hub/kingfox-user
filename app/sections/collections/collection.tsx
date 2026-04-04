@@ -19,27 +19,11 @@ const Collections = () => {
   const loadCategories = async () => {
     const data = await getAllCategories();
 
-    console.log("CATEGORIES:", data);
-
     // ✅ take only 4 categories
-    const findCategory = (keyword: string) =>
-  data.find(
-    (c: any) =>
-      c.name &&
-      c.image && // ✅ ensure image exists
-      c.name.toLowerCase().includes(keyword.toLowerCase())
-  );
-      const selectedCategories = [
-  findCategory("full sleeve"),
-  findCategory("oversize"),
-  findCategory("half sleeve"),
-  data.find(
-    (c: any) =>
-      c.name.toLowerCase() === "shirts" && c.image // exact match ✅
-  ),
-].filter(Boolean);
+    // ✅ Just take first 4 categories from API
+    const selectedCategories = data.slice(0, 4);
 
-    setCategories(selectedCategories);
+    setCategories(selectedCategories);    
   };
 
   loadCategories();
@@ -49,10 +33,10 @@ const getCategory = (index: number) => {
   return categories[index] || null;
 };
 
-const cat0 = getCategory(0); // Full sleeve
-const cat1 = getCategory(1); // Oversize
-const cat2 = getCategory(2); // Half sleeve
-const cat3 = getCategory(3); // Shirts
+const cat0 = categories[0];
+const cat1 = categories[1];
+const cat2 = categories[2];
+const cat3 = categories[3];
 
 
   return (

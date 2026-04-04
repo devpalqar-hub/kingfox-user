@@ -7,6 +7,8 @@ import { OrderHistoryItem } from "@/types/order-history";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { useSearchParams } from "next/navigation";
+
 const OrdersPage = () => {
   const router = useRouter();
 
@@ -14,6 +16,12 @@ const OrdersPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 5;
+  const searchParams = useSearchParams();
+
+  const paymentId = searchParams.get("razorpay_payment_id");
+  const orderId = searchParams.get("razorpay_order_id");
+  console.log("Payment ID:", paymentId);
+  console.log("Order ID:", orderId);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -91,7 +99,7 @@ const getStatusClass = (status: string) => {
             <span className={styles.amount}>₹{order.finalAmount}</span>
 
             <span>
-              <span className={styles.paymentBadge}>COD</span>
+              <span className={styles.paymentBadge}>{order.paymentMethod}</span>
             </span>
 
             <span className={`${styles.status} ${getStatusClass(order.status)}`}>

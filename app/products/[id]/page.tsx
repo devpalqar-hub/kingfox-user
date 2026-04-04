@@ -17,6 +17,7 @@ import { FaHeart } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from '@/context/ToastContext';
 import { getWishList } from "@/services/wishlist.service";
+
 const ProductDetail = () => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -272,7 +273,8 @@ const handleAddToCart = async () => {
         color: selectedVariant.color,
       });
     }
-
+         // ✅🔥 ADD THIS (VERY IMPORTANT)
+    window.dispatchEvent(new Event("cartUpdated"));
     setProduct((prev) => {
       if (!prev) return prev;
 
@@ -318,6 +320,7 @@ const handleBuyNow = async () => {
         color: selectedVariant.color,
       });
     }
+     window.dispatchEvent(new Event("cartUpdated"));
 
     // ✅ update UI state
     setProduct((prev) => {
@@ -410,33 +413,7 @@ const handleBuyNow = async () => {
         <p className={styles.description}>
           {product?.description}
         </p>
-
-        {/* Color Selection */}
-        <div className={styles.section}>
-          <p className={styles.label}>
-            COLOR: <span className={styles.colorName}>{selectedColor}</span>
-          </p>
-
-          <div className={styles.colorPicker}>
-          {colors.map((color) => (
-            <button
-              key={color}
-              onClick={() => setSelectedColor(color)}
-              className={`${styles.colorItem} ${
-                selectedColor === color ? styles.activeColor : ""
-              }`}
-            >
-              <span
-                className={styles.colorDot}
-                style={{ backgroundColor: color.toLowerCase() }}
-              ></span>
-
-              <span className={styles.colorText}>{color}</span>
-            </button>
-          ))}
-        </div>
-        </div>
-        {/* Size Selection */}
+          {/* Size Selection */}
         <div className={styles.section}>
           <div className={styles.labelRow}>
             <span className={styles.label}>SELECT SIZE</span>
@@ -465,6 +442,32 @@ const handleBuyNow = async () => {
             ))}
           </div>
         </div>
+        {/* Color Selection */}
+        <div className={styles.section}>
+          <p className={styles.label}>
+            COLOR: <span className={styles.colorName}>{selectedColor}</span>
+          </p>
+
+          <div className={styles.colorPicker}>
+          {colors.map((color) => (
+            <button
+              key={color}
+              onClick={() => setSelectedColor(color)}
+              className={`${styles.colorItem} ${
+                selectedColor === color ? styles.activeColor : ""
+              }`}
+            >
+              <span
+                className={styles.colorDot}
+                style={{ backgroundColor: color.toLowerCase() }}
+              ></span>
+
+              <span className={styles.colorText}>{color}</span>
+            </button>
+          ))}
+        </div>
+        </div>
+        
 
         {/* Actions */}
         <div className={styles.actions}>

@@ -1,5 +1,6 @@
 import { ProductResponse } from "@/types/product";
 import { ProductDetail } from "@/types/product";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const getProducts = async (params: {
   page?: number;

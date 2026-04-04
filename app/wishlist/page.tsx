@@ -3,16 +3,13 @@ import styles from './wishlist.module.css';
 import { Heart, ShoppingCart, Bell,ChevronLeft, ChevronRight, Eye } from 'lucide-react'; // Using Lucide for icons
 import React, { useRef } from "react";
 import { getWishList,removeFromWishlist,clearWishlist } from "@/services/wishlist.service";
+import { getNewArrivals } from "@/services/product.service";
 import { useEffect, useState } from "react";
-const RECOMMENDED_DATA = [
-  { id: 5, name: "Urban Oversized Tee", price: "₹1,499", img: "/wishlist1.png", tag: "NEW DROP" },
-  { id: 6, name: "Vortex Graphic Hoodie", price: "₹2,999", img: "/wishlist2.png" },
-  { id: 7, name: "Vortex Graphic Hoodie", price: "₹2,999", img: "/wishlist2.png" },
-  { id: 8, name: "Vortex Graphic Hoodie", price: "₹2,999", img: "/wishlist2.png" },
-];
+
 export default function WishlistPage() {
  const sliderRef = useRef<HTMLDivElement | null>(null);
  const [wishlist, setWishlist] = useState<any[]>([]);
+ const [newArrivals, setNewArrivals] = useState<any[]>([]);
  useEffect(() => {
   const fetchWishlist = async () => {
     try {
@@ -25,21 +22,24 @@ export default function WishlistPage() {
 
   fetchWishlist();
 }, []);
-const scrollLeft = () => {
 
-  if (!sliderRef.current) return;
+const showControls = newArrivals.length > 4;
+const scrollAmount = 300;
+
+const scrollLeft = () => {
+  if (!sliderRef.current || newArrivals.length <= 4) return;
 
   sliderRef.current.scrollBy({
-    left: -300,
+    left: -scrollAmount,
     behavior: "smooth",
   });
 };
 
 const scrollRight = () => {
-  if (!sliderRef.current) return;
+  if (!sliderRef.current || newArrivals.length <= 4) return;
 
   sliderRef.current.scrollBy({
-    left: 300,
+    left: scrollAmount,
     behavior: "smooth",
   });
 };
@@ -72,6 +72,20 @@ const handleRemove = async (productId: number) => {
     console.error(err);
   }
 };
+
+useEffect(() => {
+  const fetchNewArrivals = async () => {
+    try {
+      const data = await getNewArrivals();
+
+      setNewArrivals(data.items); // ✅ FIXED
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchNewArrivals();
+}, []);
   return (
     <>
     <div className={styles.container}>
@@ -96,16 +110,15 @@ const handleRemove = async (productId: number) => {
       {/* Grid Section */}
       <div className={styles.grid}>
         {wishlist.map((item) => {
-  const product = item.product;
+          const product = item.product;
 
-  return (
-    <div key={item.id} className={styles.card}>
-      <div className={styles.imageWrapper}>
-        <img
-          src={product.images?.[0] || "/fallback.png"}
-          alt={product.name}
-        />
-
+          return (
+            <div key={item.id} className={styles.card}>
+              <div className={styles.imageWrapper}>
+                <img
+                  src={product.images?.[0] }
+                  alt={product.name}
+                />
         <div
           className={styles.wishlistIcon}
           onClick={() => handleRemove(item.productId)}
@@ -139,30 +152,40 @@ const handleRemove = async (productId: number) => {
       <section className={styles.recommendSection}>
         <div className={styles.recommendHeader}>
           <h2>You Might Also Like</h2>
-          <div className={styles.sliderControls}>
-            <button className={styles.navBtn} onClick={scrollLeft}>
-              <ChevronLeft size={20} />
-            </button>
+          {showControls && (
+            <div className={styles.sliderControls}>
+              <button className={styles.navBtn} onClick={scrollLeft}>
+                <ChevronLeft size={20} />
+              </button>
 
-            <button className={styles.navBtn} onClick={scrollRight}>
-              <ChevronRight size={20} />
-            </button>
-          </div>
+              <button className={styles.navBtn} onClick={scrollRight}>
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className={styles.grid} ref={sliderRef}>
-          {RECOMMENDED_DATA.map((item) => (
+          {newArrivals.map((item) => (
             <div key={item.id} className={styles.card}>
               <div className={styles.imageWrapper}>
-                <img src={item.img} alt={item.name} />
+                <img
+                  src={item.images?.[0] }
+                  alt={item.name}
+                />
+
                 <div className={styles.quickViewIcon}>
                   <Eye size={18} />
                 </div>
-                {item.tag && <div className={styles.tag}>{item.tag}</div>}
+
+                <div className={styles.tag}>NEW</div>
               </div>
+
               <div className={styles.productInfo}>
                 <h3>{item.name}</h3>
-                <span className={styles.price}>{item.price}</span>
+                <span className={styles.price}>
+                  ₹{item.priceRange?.min || 0}
+                </span>
               </div>
             </div>
           ))}

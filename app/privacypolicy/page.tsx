@@ -2,98 +2,122 @@ import styles from "./privacy.module.css";
 
 export default function PrivacyPolicy() {
   return (
-    <main className={styles.page}>
-      <div className={styles.container}>
-        
-        {/* Header */}
-        <div className={styles.header}>
-            <h1>Privacy Policy</h1>
-            <p>Last updated: March 20, 2026</p>
-            </div>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1>PRIVACY POLICY</h1>
+        <p className={styles.breadcrumb}>
+          HOME <span>&gt;</span> PRIVACY POLICY
+        </p>
+      </div>
 
-        {/* Intro */}
-        <p className={styles.intro}>
-          This Privacy Policy explains how <strong>King Fox Clothing</strong>
-          ("we", "us", "our") collects, uses, and protects your information.
+      {/* Content */}
+      <div className={styles.content}>
+        <h2>INTRODUCTION</h2>
+
+        <p>
+          This Privacy Policy sets out how King Fox Clothing uses and protects
+          any personal information of users collected through the website or
+          services. :contentReference[oaicite:0]
         </p>
 
-        {/* Sections */}
-        <div className={styles.section}>
-          <h2>1. Information We Collect</h2>
+        <p>
+          This Policy is published in accordance with the Information Technology
+          (Reasonable Security Practices and Procedures and Sensitive Personal
+          Data or Information) Rules, 2011.
+        </p>
 
-          <h3>Information You Provide</h3>
-          <ul>
-            <li>Full name</li>
-            <li>Phone number</li>
-            <li>Email address</li>
-            <li>Billing & shipping address</li>
-            <li>Order history</li>
-            <li>Login credentials</li>
-          </ul>
+        <p>
+          King Fox Clothing is committed to ensuring that your privacy is
+          protected and your personal information is used strictly in accordance
+          with this policy.
+        </p>
 
-          <h3>Automatically Collected</h3>
-          <ul>
-            <li>IP address</li>
-            <li>Device & browser info</li>
-            <li>Usage data</li>
-            <li>Cookies</li>
-          </ul>
-        </div>
+        <p>
+          By using the Platform, you agree to the collection and use of
+          information in accordance with this Privacy Policy.
+        </p>
 
-        <div className={styles.section}>
-          <h2>2. How We Use Information</h2>
-          <ul>
-            <li>Order processing</li>
-            <li>Customer support</li>
-            <li>Improve experience</li>
-            <li>Fraud prevention</li>
-          </ul>
-        </div>
+        <h2>LEGAL BASIS</h2>
+        <p>
+          This policy complies with:
+          <br />• Digital Personal Data Protection Act, 2023 <br />
+          • Information Technology Act, 2000 <br />• IT Rules, 2011 <br />• IT
+          Intermediary Guidelines, 2021
+        </p>
 
-        <div className={styles.section}>
-          <h2>3. Data Sharing</h2>
-          <p>
-            We do not sell your data. We only share with trusted partners like
-            payment and delivery services when required.
-          </p>
-        </div>
+        <h2>CONSENT</h2>
+        <p>
+          By using our Platform, you consent to the collection, storage, and use
+          of your information. You may withdraw consent anytime by contacting us.
+        </p>
 
-        <div className={styles.section}>
-          <h2>4. Data Security</h2>
-          <p>
-            We use security measures to protect your data, but no system is 100%
-            secure.
-          </p>
-        </div>
+        <h2>INFORMATION WE COLLECT</h2>
+        <p>
+          We collect personal details such as name, email, phone number, address,
+          payment details, and account credentials.
+        </p>
 
-        <div className={styles.section}>
-          <h2>5. Data Retention</h2>
-          <p>
-            We keep data only as long as necessary for legal and business needs.
-          </p>
-        </div>
+        <p>
+          We also automatically collect data such as IP address, browser type,
+          device info, cookies, and usage behavior.
+        </p>
 
-        <div className={styles.section}>
-          <h2>6. Children’s Privacy</h2>
-          <p>Our services are not intended for users under 18.</p>
-        </div>
+        <h2>HOW WE USE INFORMATION</h2>
+        <p>
+          Your information is used to:
+          <br />• Provide services and process orders <br />• Improve user
+          experience <br />• Prevent fraud <br />• Send updates and promotional
+          content
+        </p>
 
-        <div className={styles.section}>
-          <h2>7. Your Rights</h2>
-          <p>You can request access, correction, or deletion of your data.</p>
-        </div>
+        <h2>DATA SHARING</h2>
+        <p>
+          We do not sell your data. We only share information with trusted
+          partners for payment processing, logistics, and legal compliance.
+        </p>
 
-        <div className={styles.section}>
-          <h2>8. Contact</h2>
-          <div className={styles.contact}>
-            <p><strong>King Fox Clothing</strong></p>
-            <p>King Fox Clothing, MNS Avenue, Calicut</p>
-            <p>📞 +91 8129 8822 45</p>
-            <p>✉️ kingfoxclothingstore@gmail.com</p>
-          </div>
-        </div>
+        <h2>DATA RETENTION</h2>
+        <p>
+          We retain your data as long as necessary to provide services or comply
+          with legal obligations. You can request deletion anytime.
+        </p>
 
+        <h2>COOKIES</h2>
+        <p>
+          Cookies help us enhance your experience by remembering preferences and
+          tracking usage behavior.
+        </p>
+
+        <h2>SECURITY</h2>
+        <p>
+          We implement strict security measures to protect your data, but no
+          system is completely secure.
+        </p>
+
+        <h2>THIRD-PARTY LINKS</h2>
+        <p>
+          Our website may contain links to third-party sites. We are not
+          responsible for their privacy practices.
+        </p>
+
+        <h2>USER RIGHTS</h2>
+        <p>
+          You can update, correct, or delete your data anytime. You may also opt
+          out of marketing communications.
+        </p>
+
+        <h2>CONTACT</h2>
+        <p>
+          Email: kingfoxclothingstore@gmail.com
+        </p>
+
+        <h2>GOVERNING LAW</h2>
+        <p>
+          This Privacy Policy is governed by the laws of India. Any disputes will
+          be handled in Mumbai courts.
+        </p>
       </div>
-    </main>
+    </div>
   );
 }
