@@ -151,7 +151,7 @@ const handleWishlist = async (id: number) => {
         <h1 className={styles.title}>NEW ARRIVALS:<br />BEYOND THE STANDARD</h1>
         <div className={styles.subtextContainer}>
           <span className={styles.greenLine}></span>
-          <p className={styles.subtext}>AVAILABLE UP TO SIZE 10XL</p>
+          <p className={styles.subtext}>AVAILABLE UP TO SIZE  XL</p>
         </div>
       </header>
       {/* ⭐ MOBILE FILTER BUTTON — EXACT POSITION */}
@@ -221,7 +221,7 @@ const handleWishlist = async (id: number) => {
             <div key={product.id} className={styles.productCard}>
               <div className={styles.imageWrapper}>
                 <img
-                  src={product.images?.[0] || "/fallback.png"}
+                  src={product.images?.[0] }
                   alt={product.name}
                 />
                 <div className={styles.iconActions}>
@@ -237,7 +237,10 @@ const handleWishlist = async (id: number) => {
                     )}
                   </button>
 
-                  <button className={styles.iconBtn}>
+                  <button
+                    className={styles.iconBtn}
+                    onClick={() => router.push(`/products/${product.id}`)}
+                  >
                     <FiEye size={16} />
                   </button>
                 </div>
@@ -253,7 +256,7 @@ const handleWishlist = async (id: number) => {
                       ₹{product.variants?.[0]?.sellingPrice || 0}
                     </p>
                   </div>
-                <p className={styles.inclusiveText}>INCLUSIVE SIZING (UP TO 10XL)</p>
+                <p className={styles.inclusiveText}>INCLUSIVE SIZING (UP TO XL)</p>
               </div>
             </div>
           ))}

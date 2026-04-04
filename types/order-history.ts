@@ -5,7 +5,7 @@ export interface OrderHistoryItem {
   subtotal: string;
   finalAmount: string;
   createdAt: string;
-
+  paymentMethod: string;
   items: {
     id: number;
     quantity: number;

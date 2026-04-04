@@ -102,7 +102,6 @@ useEffect(() => {
   const fetchCart = async () => {
     const token = localStorage.getItem("token");
 
-    // ❌ not logged
     if (!token) {
       setCartCount(0);
       return;
@@ -110,11 +109,10 @@ useEffect(() => {
 
     try {
       const res = await getCartAPI();
+      const totalQty =
+        res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
 
-      // ✅ depends on your API shape
-      // Most likely:
-      setCartCount(res.items?.length || 0);
-
+      setCartCount(totalQty);
     } catch (err) {
       console.error("Cart error:", err);
       setCartCount(0);
@@ -122,7 +120,17 @@ useEffect(() => {
   };
 
   fetchCart();
-}, [user]); // ✅ update on login
+
+  // ✅ LISTENER
+  const handleCartUpdate = () => fetchCart();
+
+  window.addEventListener("cartUpdated", handleCartUpdate);
+
+  return () => {
+    window.removeEventListener("cartUpdated", handleCartUpdate);
+  };
+}, [user]);
+
 
   return (
     <header className={styles.headerContainer}>
@@ -186,8 +194,10 @@ useEffect(() => {
             </Link>
           </li>
         )}
-          <li data-text="ABOUT US">
-            <a href="/about" onClick={() => setMenuOpen(false)}>ABOUT US</a>
+          <li data-text="CONTACT">
+            <Link href="/contact" onClick={() => setMenuOpen(false)}>
+              CONTACT
+            </Link>
           </li>
         </ul>
 

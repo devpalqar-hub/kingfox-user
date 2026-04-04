@@ -59,6 +59,9 @@ useEffect(() => {
   fetchWishlist();
 }, []);
 
+
+
+
 const handleWishlist = async (id: number) => {
   const token = localStorage.getItem("token");
 
@@ -81,30 +84,18 @@ const handleWishlist = async (id: number) => {
     console.error(err);
   }
 };
-
 useEffect(() => {
   const categoryFromURL = searchParams.get("categoryId");
   const tagFromURL = searchParams.get("tag");
 
-  if (categoryFromURL) {
-    setCategoryId(Number(categoryFromURL));
-  } else {
-    setCategoryId(null);
-  }
-
-  if (tagFromURL) {
-    setTag(tagFromURL);
-  } else {
-    setTag(null);
-  }
+  setCategoryId(categoryFromURL ? Number(categoryFromURL) : null);
+  setTag(tagFromURL || null);
 
   setInitialized(true);
 }, [searchParams]);
 
 
-// ✅ ADD HERE (TOP LEVEL)
-useEffect(() => {
-  setProducts([]);
+    useEffect(() => {
   setPage(1);
 }, [categoryId, tag]);
 
@@ -121,7 +112,7 @@ useEffect(() => {
       color: color || undefined,
       minPrice: minPrice || undefined,
       maxPrice: maxPrice || undefined,
-      categoryId: categoryId ?? undefined,
+      categoryId: categoryId || undefined,  
       tags: tag ? [tag] : undefined,
       sortBy: sortBy || undefined,
     });
@@ -137,6 +128,8 @@ useEffect(() => {
   });
 }
     setTotalProducts(data.pagination.total);
+
+
     // ---------- Extract filters from API ----------
 
 
@@ -162,7 +155,7 @@ useEffect(() => {
   }
 };
   loadProducts();
-}, [page, size, color, minPrice, maxPrice, categoryId, sortBy,initialized]);
+}, [page, size, color, minPrice, maxPrice, categoryId, sortBy,initialized, tag]);
 
    // ✅ OUTSIDE loadProducts (top level)
 useEffect(() => {
