@@ -215,11 +215,12 @@ const handlePlaceOrder = async () => {
     if (paymentMethod === "RAZORPAY") {
        const paymentUrl = response?.paymentLink?.url;
 
-  // ✅ SAVE ORDER ID BEFORE REDIRECT
   if (response?.order?.id) {
-    localStorage.setItem("lastOrderId", response.order.id.toString());
-  }
+  localStorage.setItem("lastOrderId", response.order.id.toString());
 
+  // ✅ ADD THIS
+  localStorage.setItem("lastOrderData", JSON.stringify(response.order));
+}
   if (paymentUrl) {
     showToast("Redirecting to payment...", "info");
     window.location.href = paymentUrl;
@@ -234,7 +235,8 @@ const handlePlaceOrder = async () => {
     if (paymentMethod === "COD" && !selectedBranch) {
         showToast("Please select a pickup branch", "error");
         return;
-      }{
+      }
+      {
       
       if (!token) {
         localStorage.removeItem("guest_cart");
@@ -244,7 +246,7 @@ const handlePlaceOrder = async () => {
       console.log("FULL RESPONSE:", response);
 
       setTimeout(() => {
-        router.replace("/profile");
+        router.replace("/orderplaced");
       }, 1200);
     }
 
