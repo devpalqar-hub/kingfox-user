@@ -213,7 +213,7 @@ const handlePlaceOrder = async () => {
     console.log("Order Success:", response);
     // 🔥 RAZORPAY REDIRECT (ADD THIS)
     if (paymentMethod === "RAZORPAY") {
-  const paymentUrl = response?.paymentLink?.url;
+       const paymentUrl = response?.paymentLink?.url;
 
   // ✅ SAVE ORDER ID BEFORE REDIRECT
   if (response?.order?.id) {
