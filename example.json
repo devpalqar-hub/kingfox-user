@@ -1874,6 +1874,66 @@
         ]
       }
     },
+    "/v1/inventory/logs": {
+      "get": {
+        "operationId": "InventoryController_getStockLog",
+        "parameters": [
+          {
+            "name": "filterType",
+            "required": false,
+            "in": "query",
+            "description": "Filter by log type",
+            "schema": {
+              "enum": [
+                "ALL",
+                "NEW_STOCK",
+                "TRANSFER"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by user, product, or branch",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get unified stock log list for the UI",
+        "tags": [
+          "Inventory"
+        ]
+      }
+    },
     "/v1/suppliers": {
       "post": {
         "operationId": "SuppliersController_create",
@@ -5627,7 +5687,7 @@
     },
     "/v1/admin/orders": {
       "get": {
-        "description": "Filter by status or search by order number.",
+        "description": "Filter by status or search by order number. Automatically filters by assigned branch for Warehouse Managers.",
         "operationId": "AdminOrdersController_findAll",
         "parameters": [
           {
@@ -5663,6 +5723,16 @@
                 "DELIVERED",
                 "CANCELLED"
               ]
+            }
+          },
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by specific branch ID",
+            "schema": {
+              "example": 1,
+              "type": "number"
             }
           },
           {
@@ -5994,6 +6064,195 @@
         "summary": "Delete any review (admin override — no ownership check)",
         "tags": [
           "Admin - Reviews"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/overview": {
+      "get": {
+        "operationId": "AdminDashboardController_getOverview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get total revenue, orders, online/physical ratio, and warehouse health",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/sales-comparison": {
+      "get": {
+        "operationId": "AdminDashboardController_getSalesComparison",
+        "parameters": [
+          {
+            "name": "range",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get daily sales comparison between online and physical stores",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/category-performance": {
+      "get": {
+        "operationId": "AdminDashboardController_getCategoryPerformance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get GMV share percentage per category",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/warehouse-analytics": {
+      "get": {
+        "operationId": "AdminDashboardController_getWarehouseAnalytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get health and utilisation stats for warehouses",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/recent-orders": {
+      "get": {
+        "operationId": "AdminDashboardController_getRecentOrders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get recent online orders",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/latest-feedback": {
+      "get": {
+        "operationId": "AdminDashboardController_getLatestFeedback",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get latest product reviews and NPS score placeholder",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/app/market-analytics": {
+      "get": {
+        "operationId": "AdminDashboardController_getAppMarketAnalytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get market analytics for mobile app (revenue, branch reach, active orders)",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/app/staff-performance": {
+      "get": {
+        "operationId": "AdminDashboardController_getAppStaffPerformance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get staff revenue rankings and top performer",
+        "tags": [
+          "Admin Dashboard"
+        ]
+      }
+    },
+    "/v1/admin-dashboard/app/top-categories": {
+      "get": {
+        "operationId": "AdminDashboardController_getAppTopCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get top 3 categories by GMV with formatted amounts and stock status",
+        "tags": [
+          "Admin Dashboard"
         ]
       }
     }
@@ -7989,7 +8248,7 @@
           "paymentMethod": {
             "type": "string",
             "example": "RAZORPAY",
-            "description": "Payment method. RAZORPAY (default for DELIVERY) — generates a payment link. COD is only allowed for PICKUP orders.",
+            "description": "Payment method. RAZORPAY (default for DELIVERY) — generates a payment link. COD (Cash on Delivery) is also supported.",
             "enum": [
               "RAZORPAY",
               "COD"
