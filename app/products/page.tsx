@@ -14,7 +14,6 @@ import {
   addToWishlist,
   removeFromWishlist
 } from "@/services/wishlist.service";
-
 const ProductsPage = () => {
 const searchParams = useSearchParams();
 const [products, setProducts] = useState<Product[]>([]);
@@ -22,8 +21,8 @@ const [totalProducts, setTotalProducts] = useState(0);
 const [page, setPage] = useState(1);
 const [color, setColor] = useState<string | null>(null);
 const [size, setSize] = useState<string | null>(null);
-const [minPrice, setMinPrice] = useState<number | null>(null);
-const [maxPrice, setMaxPrice] = useState<number | null>(null);
+const [minPrice, setMinPrice] = useState(100);
+const [maxPrice, setMaxPrice] = useState(5000);
 const [categoryId, setCategoryId] = useState<number | null>(null);
 const [availableSizes, setAvailableSizes] = useState<string[]>([]);
 const [availableCategories, setAvailableCategories] = useState<{id:number,name:string}[]>([]);
@@ -110,8 +109,8 @@ useEffect(() => {
       limit: 8,
       size: size || undefined,
       color: color || undefined,
-      minPrice: minPrice || undefined,
-      maxPrice: maxPrice || undefined,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
       categoryId: categoryId || undefined,  
       tags: tag ? [tag] : undefined,
       sortBy: sortBy || undefined,
@@ -180,8 +179,8 @@ useEffect(() => {
   const handleClearFilters = () => {
     setSize(null);
     setColor(null);
-    setMinPrice(null);
-    setMaxPrice(null);
+    setMinPrice(100);
+    setMaxPrice(5000);
     setCategoryId(null);
     setSortBy(null);
     setPage(1);
@@ -305,18 +304,59 @@ useEffect(() => {
             {/* PRICE RANGE */}
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>PRICE RANGE</p>
-              <input
-                type="range"
-                min="100"
-                max="5000"
-                onChange={(e) => {
-                  setMaxPrice(Number(e.target.value));
-                  setPage(1);
-                }}
-              />
+
+              <div className={styles.sliderWrapper}>
+                
+                {/* Background track */}
+                <div className={styles.sliderTrack}></div>
+
+                {/* Active selected range */}
+                <div
+                  className={styles.sliderRange}
+                  style={{
+                    left: `${(minPrice / 5000) * 100}%`,
+                    width: `${((maxPrice - minPrice) / 5000) * 100}%`,
+                  }}
+                />
+
+                {/* MIN */}
+                {/* MIN */}
+                  <input
+                    type="range"
+                    min="100"
+                    max="5000"
+                    value={minPrice}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (value < maxPrice) {
+                        setMinPrice(value);
+                        setPage(1);
+                      }
+                    }}
+                    className={styles.thumb}
+                  />
+
+                  {/* MAX */}
+                  <input
+                    type="range"
+                    min="100"
+                    max="5000"
+                    value={maxPrice}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (value > minPrice) {
+                        setMaxPrice(value);
+                        setPage(1);
+                      }
+                    }}
+                    className={styles.thumb}
+                  />
+              </div>
+
+              {/* Values */}
               <div className={styles.priceRangeLabels}>
-                <span>₹499</span>
-                <span>₹2,999</span>
+                <span>₹{minPrice}</span>
+                <span>₹{maxPrice}</span>
               </div>
             </div>
 
