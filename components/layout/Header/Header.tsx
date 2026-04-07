@@ -20,121 +20,129 @@ const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
-type Category = {
-  id: number;
-  name: string;
-};
-
-const [categories, setCategories] = useState<Category[]>([]);
-
-useEffect(() => {
-  const loadCategories = async () => {
-    const data = await getAllCategories();
-    setCategories(data || []);
+  type Category = {
+    id: number;
+    name: string;
   };
 
-  loadCategories();
-}, []);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-const oversizedCategory = categories.find((cat) =>
-  cat.name.toLowerCase().includes("oversize")
-);
+  useEffect(() => {
+    const loadCategories = async () => {
+      const data = await getAllCategories();
+      setCategories(data || []);
+    };
+
+    loadCategories();
+  }, []);
+
+  const oversizedCategory = categories.find((cat) =>
+    cat.name.toLowerCase().includes("oversize")
+  );
 
 
-const handleSearch = async () => {
-  if (!searchTerm.trim()) return;
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
 
-  try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/products`,
-      {
-        params: {
-          search: searchTerm, // ✅ better way
-        },
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/products`,
+        {
+          params: {
+            search: searchTerm, // ✅ better way
+          },
+        }
+      );
+
+      console.log("API:", response.data);
+
+      const products = response.data.items; // ✅ FIXED
+
+      if (products && products.length > 0) {
+        const firstProduct = products[0];
+
+        router.push(`/products/${firstProduct.id}`);
+      } else {
+        alert("No products found");
       }
-    );
-
-    console.log("API:", response.data);
-
-    const products = response.data.items; // ✅ FIXED
-
-    if (products && products.length > 0) {
-      const firstProduct = products[0];
-
-      router.push(`/products/${firstProduct.id}`);
-    } else {
-      alert("No products found");
+    } catch (error) {
+      console.error("Search error:", error);
     }
-  } catch (error) {
-    console.error("Search error:", error);
-  }
 
-  setShowSearch(false);
-};
-   if (loading) return null;
+    setShowSearch(false);
+  };
+  if (loading) return null;
 
 
-   useEffect(() => {
+  useEffect(() => {
   const fetchWishlist = async () => {
     const token = localStorage.getItem("token");
 
-    // ❌ not logged in → skip
-    if (!token) {
+    if (!token || (user && user.role !== "customer")) {
       setWishlistCount(0);
       return;
     }
 
     try {
       const res = await getWishList();
-
-      // ✅ API returns array
       setWishlistCount(res.length);
     } catch (err) {
-      console.error("Wishlist error:", err);
       setWishlistCount(0);
     }
   };
 
   fetchWishlist();
-}, [user]); // ✅ runs when login changes
 
-useEffect(() => {
-  const fetchCart = async () => {
-    const token = localStorage.getItem("token");
+  // ✅ ADD THIS LISTENER
+  const handleWishlistUpdate = () => fetchWishlist();
 
-    if (!token) {
-      setCartCount(0);
-      return;
-    }
-
-    try {
-      const res = await getCartAPI();
-      const totalQty =
-        res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
-
-      setCartCount(totalQty);
-    } catch (err) {
-      console.error("Cart error:", err);
-      setCartCount(0);
-    }
-  };
-
-  fetchCart();
-
-  // ✅ LISTENER
-  const handleCartUpdate = () => fetchCart();
-
-  window.addEventListener("cartUpdated", handleCartUpdate);
+  window.addEventListener("wishlistUpdated", handleWishlistUpdate);
 
   return () => {
-    window.removeEventListener("cartUpdated", handleCartUpdate);
+    window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
   };
 }, [user]);
 
 
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      const token = localStorage.getItem("token");
+
+      // Skip for logged-out users and non-customer roles
+      if (!token || (user && user.role !== "customer")) {
+        setCartCount(0);
+        return;
+      }
+
+      try {
+        const res = await getCartAPI();
+        const totalQty =
+          res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+
+        setCartCount(totalQty);
+      } catch (err) {
+        console.warn("Cart unavailable for current user role");
+        setCartCount(0);
+      }
+    };
+
+    fetchCart();
+
+    // ✅ LISTENER
+    const handleCartUpdate = () => fetchCart();
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
+  }, [user]);
+
+
   return (
     <header className={styles.headerContainer}>
-      
+
       {/* Announcement Bar */}
       <div className={styles.announcementBar}>
         <div className={styles.marquee}>
@@ -184,16 +192,16 @@ useEffect(() => {
             <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>NEW ARRIVALS</Link>
           </li>
 
-         {oversizedCategory && (
-          <li data-text={oversizedCategory.name}>
-            <Link
-              href={`/products?categoryId=${oversizedCategory.id}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              {oversizedCategory.name.toUpperCase()}
-            </Link>
-          </li>
-        )}
+          {oversizedCategory && (
+            <li data-text={oversizedCategory.name}>
+              <Link
+                href={`/products?categoryId=${oversizedCategory.id}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {oversizedCategory.name.toUpperCase()}
+              </Link>
+            </li>
+          )}
           <li data-text="CONTACT">
             <Link href="/contact" onClick={() => setMenuOpen(false)}>
               CONTACT
@@ -204,35 +212,35 @@ useEffect(() => {
         {/* Icons */}
         <div className={styles.iconActions}>
           <div className={styles.searchContainer}>
-  
+
             {showSearch ? (
-            <div className={styles.searchFull}>
-              <Search size={20} className={styles.searchIcon} />
+              <div className={styles.searchFull}>
+                <Search size={20} className={styles.searchIcon} />
 
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className={styles.searchInput}
-                autoFocus
-              />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className={styles.searchInput}
+                  autoFocus
+                />
 
-              <X
-                size={18}
-                className={styles.closeIcon}
-                onClick={() => setShowSearch(false)}
-              />
-            </div>
-          ) : (
-            <div
-              className={styles.iconWrapper}
-              onClick={() => setShowSearch(true)}
-            >
-              <Search size={20} />
-            </div>
-          )}
+                <X
+                  size={18}
+                  className={styles.closeIcon}
+                  onClick={() => setShowSearch(false)}
+                />
+              </div>
+            ) : (
+              <div
+                className={styles.iconWrapper}
+                onClick={() => setShowSearch(true)}
+              >
+                <Search size={20} />
+              </div>
+            )}
           </div>
 
           <Link href="/wishlist" className={styles.wishlistLink}>
@@ -247,8 +255,8 @@ useEffect(() => {
           <Link href="/cart" className={styles.iconWrapper}>
             <ShoppingCart size={20} />
             {cartCount > 0 && (
-                <span className={styles.badge}>{cartCount}</span>
-              )}
+              <span className={styles.badge}>{cartCount}</span>
+            )}
           </Link>
           {user ? (
             <Link href="/profile" className={styles.iconWrapper} title="Profile">

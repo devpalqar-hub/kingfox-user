@@ -158,7 +158,7 @@ const closeReviewModal = () => {
           <h1>ORDER #{order?.orderNumber}</h1>
 
           <span className={styles.statusBadge}>
-            {order?.status}
+            {order?.status?.replaceAll("_", " ")}
           </span>
         </div>
 
@@ -285,43 +285,40 @@ const closeReviewModal = () => {
                   </div>
                   <div className={styles.reviewSection}>
 
-  {item.review ? (
-    /* ⭐ SHOW REVIEW */
-    <div className={styles.reviewBox}>
-      
-      {/* Stars */}
-      <div className={styles.stars}>
-        {"★".repeat(item.review.rating)}
-        {"☆".repeat(5 - item.review.rating)}
-      </div>
+                    {item.review ? (
+                    // ⭐ SHOW REVIEW
+                    <div className={styles.reviewBox}>
+                      <div className={styles.stars}>
+                        {"★".repeat(item.review.rating)}
+                        {"☆".repeat(5 - item.review.rating)}
+                      </div>
 
-      {/* Title */}
-      <h4 className={styles.reviewTitle}>{item.review.title}</h4>
+                      <h4 className={styles.reviewTitle}>{item.review.title}</h4>
+                      <p className={styles.reviewText}>{item.review.body}</p>
 
-      {/* Body */}
-      <p className={styles.reviewText}>{item.review.body}</p>
-
-      {/* Images */}
-      {item.review.images?.length > 0 && (
-        <div className={styles.reviewImages}>
-          {item.review.images.map((img: string, i: number) => (
-            <img key={i} src={img} />
-          ))}
-        </div>
-      )}
-
-    </div>
-  ) : (
-    /* ➕ ADD REVIEW BUTTON */
-    <button
-      className={styles.addReviewBtn}
-      onClick={() => openReviewModal(item)}
-    >
-      ⭐ Add Review
-    </button>
-  )}
-
-</div>
+                      {item.review.images?.length > 0 && (
+                        <div className={styles.reviewImages}>
+                          {item.review.images.map((img: string, i: number) => (
+                            <img key={i} src={img} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : order.status === "DELIVERED" ? (
+                    // ✅ ONLY AFTER DELIVERY
+                    <button
+                      className={styles.addReviewBtn}
+                      onClick={() => openReviewModal(item)}
+                    >
+                      ⭐ Add Review
+                    </button>
+                  ) : (
+                    // ❌ BEFORE DELIVERY
+                    <p className={styles.reviewDisabled}>
+                      Review available after delivery
+                    </p>
+                  )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -429,52 +426,52 @@ const closeReviewModal = () => {
           {/* SUMMARY */}
           <div className={styles.summaryCard}>
   
-  <h3 className={styles.title}>SUMMARY</h3>
+              <h3 className={styles.title}>SUMMARY</h3>
 
-  {/* ROWS */}
-  <div className={styles.row}>
-    <span>SUBTOTAL</span>
-    <span>₹{order?.subtotal}</span>
-  </div>
+              {/* ROWS */}
+              <div className={styles.row}>
+                <span>SUBTOTAL</span>
+                <span>₹{order?.subtotal}</span>
+              </div>
 
-  <div className={styles.row}>
-    <span>SHIPPING</span>
-    <span>
-      {Number(order?.shippingCharge) === 0
-        ? "FREE"
-        : `₹${order?.shippingCharge}`}
-    </span>
-  </div>
+              <div className={styles.row}>
+                <span>SHIPPING</span>
+                <span>
+                  {Number(order?.shippingCharge) === 0
+                    ? "FREE"
+                    : `₹${order?.shippingCharge}`}
+                </span>
+              </div>
 
-  <div className={styles.divider}></div>
+              <div className={styles.divider}></div>
 
-  {/* DISCOUNT */}
-  {Number(order?.discount) > 0 && (
-    <>
-      <div className={`${styles.row} ${styles.discount}`}>
-        <span>DISCOUNT</span>
-        <span>-₹{order?.discount}</span>
-      </div>
+              {/* DISCOUNT */}
+              {Number(order?.discount) > 0 && (
+                <>
+                  <div className={`${styles.row} ${styles.discount}`}>
+                    <span>DISCOUNT</span>
+                    <span>-₹{order?.discount}</span>
+                  </div>
 
-      {order?.voucher && (
-        <div className={styles.voucherBox}>
-          🎟 {order.voucher.voucherCode}: {order.voucher.campaign.name} APPLIED
-        </div>
-      )}
+                  {order?.voucher && (
+                    <div className={styles.voucherBox}>
+                      🎟 {order.voucher.voucherCode}: {order.voucher.campaign.name} APPLIED
+                    </div>
+                  )}
 
-      <div className={styles.divider}></div>
-    </>
-  )}
+                  <div className={styles.divider}></div>
+                </>
+              )}
 
-  <div className={styles.divider}></div>
+              <div className={styles.divider}></div>
 
-  {/* TOTAL */}
-  <div className={styles.totalRow}>
-    <span>TOTAL</span>
-    <div className={styles.totalBox}>₹{order?.finalAmount}</div>
-  </div>
+              {/* TOTAL */}
+              <div className={styles.totalRow}>
+                <span>TOTAL</span>
+                <div className={styles.totalBox}>₹{order?.finalAmount}</div>
+              </div>
 
-</div>
+            </div>
         </div>
 
       </div>

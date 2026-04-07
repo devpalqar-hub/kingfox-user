@@ -196,6 +196,24 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -5487,7 +5505,7 @@
     },
     "/v1/customer-auth/request-otp": {
       "post": {
-        "description": "Send the customer email address. If the account is new `isNew: true` is returned. An OTP is generated and (temporarily) returned in the response until the email service is integrated.",
+        "description": "Send the customer mobile number. If the account is new `isNew: true` is returned. An OTP is generated and (temporarily) returned in the response until the SMS service is integrated.",
         "operationId": "CustomerAuthController_requestOtp",
         "parameters": [],
         "requestBody": {
@@ -5548,8 +5566,8 @@
                     "customer": {
                       "id": 5,
                       "name": "",
-                      "email": "john.doe@example.com",
-                      "phone": null
+                      "phone": "9876543210",
+                      "email": null
                     },
                     "isNew": true
                   }
@@ -5569,7 +5587,7 @@
     },
     "/v1/customer-auth/complete-profile": {
       "patch": {
-        "description": "Collect `name` (required) and `phone` (optional) for a newly registered customer. Must be called with the JWT received from `verify-otp`.",
+        "description": "Collect `name` (required) and `email` (optional) for a newly registered customer. Must be called with the JWT received from `verify-otp`.",
         "operationId": "CustomerAuthController_completeProfile",
         "parameters": [],
         "requestBody": {
@@ -5593,8 +5611,8 @@
                     "customer": {
                       "id": 5,
                       "name": "John Doe",
-                      "email": "john.doe@example.com",
-                      "phone": "9901234567"
+                      "phone": "9876543210",
+                      "email": "john.doe@example.com"
                     }
                   }
                 }
@@ -5642,8 +5660,8 @@
                     "customer": {
                       "id": 5,
                       "name": "John Doe",
-                      "email": "john.doe@example.com",
-                      "phone": "9901234567"
+                      "phone": "9876543210",
+                      "email": "john.doe@example.com"
                     }
                   }
                 }
@@ -7005,7 +7023,8 @@
           }
         },
         "required": [
-          "name"
+          "name",
+          "phone"
         ]
       },
       "CreateCouponDto": {
@@ -8434,32 +8453,32 @@
       "RequestOtpDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "phone": {
             "type": "string",
-            "example": "john.doe@example.com",
-            "description": "Customer email address to send OTP to"
+            "example": "9876543210",
+            "description": "Customer mobile phone number to send OTP to"
           }
         },
         "required": [
-          "email"
+          "phone"
         ]
       },
       "VerifyOtpDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "phone": {
             "type": "string",
-            "example": "john.doe@example.com",
-            "description": "Customer email address"
+            "example": "9876543210",
+            "description": "Customer mobile phone number"
           },
           "otp": {
             "type": "string",
             "example": "482910",
-            "description": "6-digit OTP received via email"
+            "description": "6-digit OTP received via SMS"
           }
         },
         "required": [
-          "email",
+          "phone",
           "otp"
         ]
       },
@@ -8471,10 +8490,10 @@
             "example": "John Doe",
             "description": "Full name of the customer"
           },
-          "phone": {
+          "email": {
             "type": "string",
-            "example": "9901234567",
-            "description": "Mobile phone number"
+            "example": "john.doe@example.com",
+            "description": "Email address"
           }
         },
         "required": [

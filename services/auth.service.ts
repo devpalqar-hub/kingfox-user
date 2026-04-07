@@ -1,7 +1,6 @@
 import axiosInstance from "@/lib/axios";
 
-// Base path
-const BASE_URL = "/v1/customer-auth";
+
 
 // 👉 Types
 type SendOtpResponse = {
@@ -12,14 +11,20 @@ type SendOtpResponse = {
 
 type VerifyOtpResponse = {
   access_token: string;
-  isNew: boolean;
+  isNew?: boolean;
+  user?: {
+    id: string | number;
+    name?: string;
+    email?: string;
+    role?: string;
+  };
 };
 
 // 👉 Send OTP
-export const sendOtp = async (email: string): Promise<SendOtpResponse> => {
+export const sendOtp = async (phone: string): Promise<SendOtpResponse> => {
   try {
-    const res = await axiosInstance.post(`${BASE_URL}/request-otp`, {
-      email,
+    const res = await axiosInstance.post(`/v1/customer-auth/request-otp`, {
+      phone,
     });
 
     return res.data;
@@ -33,12 +38,12 @@ export const sendOtp = async (email: string): Promise<SendOtpResponse> => {
 
 // 👉 Verify OTP
 export const verifyOtp = async (
-  email: string,
+  phone: string,
   otp: string
 ): Promise<VerifyOtpResponse> => {
   try {
-    const res = await axiosInstance.post(`${BASE_URL}/verify-otp`, {
-      email,
+    const res = await axiosInstance.post(`/v1/customer-auth/verify-otp`, {
+      phone,
       otp,
     });
 
@@ -53,7 +58,7 @@ export const verifyOtp = async (
 
 export const completeProfile = async (
   token: string,
-  data: { name: string; phone: string }
+  data: { name: string; email: string }
 ) => {
   const res = await axiosInstance.patch(
     "/v1/customer-auth/complete-profile",

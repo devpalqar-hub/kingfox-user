@@ -5,8 +5,10 @@ import React, { useRef } from "react";
 import { getWishList,removeFromWishlist,clearWishlist } from "@/services/wishlist.service";
 import { getNewArrivals } from "@/services/product.service";
 import { useEffect, useState } from "react";
+import { useToast } from "@/context/ToastContext";
 
 export default function WishlistPage() {
+  const { showToast } = useToast();
  const sliderRef = useRef<HTMLDivElement | null>(null);
  const [wishlist, setWishlist] = useState<any[]>([]);
  const [newArrivals, setNewArrivals] = useState<any[]>([]);
@@ -51,23 +53,35 @@ const handleClearWishlist = async () => {
   try {
     await clearWishlist();
 
-    setWishlist([]); // ✅ clear UI instantly
+    setWishlist([]); // UI update
+    showToast("Wishlist cleared", "success");
+
+    // ✅🔥 ADD THIS
+    window.dispatchEvent(new Event("wishlistUpdated"));
 
   } catch (err) {
     console.error(err);
+    showToast("Something went wrong", "error");
   }
 };
 
 const handleRemove = async (productId: number) => {
+  const confirmRemove = window.confirm("Remove from wishlist?");
+
+  // ✅ HARD STOP
+  if (confirmRemove !== true) {
+    return;
+  }
+
   try {
     await removeFromWishlist(productId);
+    showToast("Removed from wishlist", "success");
 
-    // ✅ update UI instantly (important)
     setWishlist((prev) =>
       prev.filter((item) => item.productId !== productId)
     );
-    if (!confirm("Remove from wishlist?")) return;
 
+    window.dispatchEvent(new Event("wishlistUpdated"));
   } catch (err) {
     console.error(err);
   }
@@ -101,7 +115,11 @@ useEffect(() => {
           <button className={styles.moveAllBtn}>
             <ShoppingCart size={16} /> Move All To Cart
           </button>
-          <button className={styles.clearBtn} onClick={handleClearWishlist}>
+          <button
+            className={styles.clearBtn}
+            onClick={handleClearWishlist}
+            disabled={wishlist.length === 0}
+          >
             Clear Wishlist
           </button>
         </div>
