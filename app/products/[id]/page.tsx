@@ -8,7 +8,6 @@ import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { getReviewsByProductId } from "@/services/review.service";
-<span className={styles.ratingNumber}>4.8</span>
 import { addToGuestCart } from "@/lib/cart";
 import { addToCartAPI } from "@/services/cart.service";
 import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
@@ -31,7 +30,7 @@ const ProductDetail = () => {
   const params = useParams();
   const { token } = useAuth();
   const { showToast } = useToast();
-
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   // reviews
  const [reviewData, setReviewData] = useState<{
@@ -76,6 +75,29 @@ useEffect(() => {
 
   fetchReviews();
 }, [product?.id]);
+
+
+// Because multiple variants have same color
+// Now only one image per color
+const variantList = useMemo(() => {
+  const filtered = product?.variants?.filter(
+    (v) => v.size === selectedSize
+  ) || [];
+
+  const unique = Array.from(
+    new Map(filtered.map(v => [v.color, v])).values()
+  );
+
+  return unique;
+}, [product, selectedSize]);
+
+// second option(show all the color mutliple images)
+
+// const variantList = useMemo(() => {
+//   return product?.variants?.filter(
+//     (v) => v.size === selectedSize
+//   ) || [];
+// }, [product, selectedSize]);
 
 // review couresal
 const scrollRef = useRef<HTMLDivElement>(null);
@@ -467,8 +489,27 @@ const handleBuyNow = async () => {
           ))}
         </div>
         </div>
-        
-
+        <div className={styles.moreColorsSection}>
+          <div className={styles.moreColorsRow}>
+            {variantList.map((variant) => (
+              <img
+          key={variant.id}
+          src={variant.image || ""}
+          alt={variant.color}
+          className={`${styles.colorPreview} ${
+            selectedVariant?.id === variant.id
+              ? styles.activePreview
+              : ""
+          }`}
+          onClick={() => {
+            setSelectedSize(variant.size);
+            setSelectedColor(variant.color);
+            setActiveImg(variant.image || "");
+          }}
+        />
+            ))}
+          </div>
+        </div>
         {/* Actions */}
         <div className={styles.actions}>
           {isInCart ? (

@@ -8,7 +8,40 @@
   font-family: var(--font-jakarta);
   color: #000;
 }
+.moreColorsSection {
+  margin-top: 20px;
+   margin-bottom: 30px;
+}
+.moreColorsRow
+.moreColorsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
 
+.moreColorsRow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.colorPreview {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.colorPreview:hover {
+  transform: scale(1.05);
+}
+
+.activePreview {
+  border: 2px solid black;
+}
 .gallery {
   display: flex;
   gap: 15px;
@@ -208,6 +241,10 @@
 
 .location { text-decoration: underline; font-weight: 700; }
 
+
+.activePreview {
+  border: 2px solid black;
+}
 /* Action Buttons */
 .actions {
   display: flex;
