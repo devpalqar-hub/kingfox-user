@@ -9,6 +9,8 @@ import {
   updateGuestCart,
   removeGuestCartItem,
 } from "@/lib/cart";
+import { useToast } from "@/context/ToastContext";
+updateCartItemAPI
 import { getCartAPI, removeCartItemAPI, updateCartItemAPI } from "@/services/cart.service";
 import { CartResponse, CartItem } from "@/types/cart";
 import { useEffect, useState } from "react";
@@ -22,7 +24,7 @@ const CartPage = () => {
   const router = useRouter();
   const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-
+  const { showToast } = useToast();
 
 
   const getImageSrc = (image?: string) => {
@@ -153,7 +155,16 @@ useEffect(() => {
             <span>{item.quantity}</span>
 
             <button
+              disabled={item.quantity >= item.availableStock} // ✅ FIX
               onClick={async () => {
+                if (item.quantity >= item.availableStock) {
+                  showToast(
+                    `Only ${item.availableStock} item(s) available`,
+                    "error"
+                  );
+                  return;
+                }
+
                 await updateCartItemAPI(item.variantId, item.quantity + 1);
                 window.dispatchEvent(new Event("cartUpdated"));
                 const data = await getCartAPI();
@@ -169,6 +180,7 @@ useEffect(() => {
             className={styles.removeBtn}
             onClick={async () => {
               await removeCartItemAPI(item.variantId);
+              showToast("Item removed from cart", "info"); 
               window.dispatchEvent(new Event("cartUpdated"));
               const data = await getCartAPI();
               setCartData(data);
@@ -205,6 +217,7 @@ useEffect(() => {
                       onClick={async() => {
                         if (item.quantity > 1) {
                           updateGuestCart(item.variantId, item.quantity - 1);
+                          showToast("Item removed from cart", "info");
                           window.dispatchEvent(new Event("cartUpdated"));
                           const updated = getGuestCart();
                           setGuestCart(updated);
@@ -284,6 +297,7 @@ useEffect(() => {
                       disabled={isCartEmpty}
                       onClick={() => {
                         if (isCartEmpty) return; // extra safety
+                        showToast("Your cart is empty", "error");
 
                         localStorage.setItem("checkout_preview", JSON.stringify(preview));
 

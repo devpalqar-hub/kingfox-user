@@ -6,16 +6,17 @@ import Footer from "@/components/layout/Footer/Footer";
 
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { ToastProvider } from "@/context/ToastContext";
+import { ConfirmProvider } from "@/context/ConfirmContext";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["300","400","500","600","700","800"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-jakarta",
 });
 
 const space = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["300","400","500","600","700"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-space",
 });
 
@@ -27,18 +28,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${jakarta.variable} ${space.variable}`}>
-
         {/* ✅ FIX: Wrap with AuthProvider */}
-        
-          <ToastProvider>
-            <AuthProvider>
-            <Header />
-            {children}
-            <Footer />
-    </AuthProvider>
-          </ToastProvider>
-        
 
+        <ToastProvider>
+          <ConfirmProvider>
+            <AuthProvider>
+              <Header />
+              {children}
+              <Footer />
+            </AuthProvider>
+          </ConfirmProvider>
+        </ToastProvider>
       </body>
     </html>
   );

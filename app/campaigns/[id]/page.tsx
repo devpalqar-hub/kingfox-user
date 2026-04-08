@@ -8,35 +8,36 @@ import { useParams } from "next/navigation";
 export default function CampaignPage() {
   const [campaign, setCampaign] = useState<any>(null);
   const params = useParams();
-  const id = params?.id;
+  const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const formatDate = (date: string) => {
-  if (!date) return "";
+    if (!date) return "";
 
-  const d = new Date(date);
+    const d = new Date(date);
 
-  const month = d.toLocaleString("en-US", {
-    month: "short",
-    timeZone: "UTC",   // 🔥 FIX
-  }).toUpperCase();
+    const month = d.toLocaleString("en-US", {
+      month: "short",
+      timeZone: "UTC",   // 🔥 FIX
+    }).toUpperCase();
 
-  const day = String(
-    d.getUTCDate()     // 🔥 FIX
-  ).padStart(2, "0");
+    const day = String(
+      d.getUTCDate()     // 🔥 FIX
+    ).padStart(2, "0");
 
-  return `${month} ${day}`;
-};
-
-useEffect(() => {
-  if (!id) return;
-
-  const fetchCampaign = async () => {
-    const data = await getCampaignById(Number(id));
-    setCampaign(data);
+    return `${month} ${day}`;
   };
 
-  fetchCampaign();
-}, [id]);
+  useEffect(() => {
+    const campaignId = Number(idParam);
+    if (!campaignId || Number.isNaN(campaignId)) return;
+
+    const fetchCampaign = async () => {
+      const data = await getCampaignById(campaignId);
+      setCampaign(data);
+    };
+
+    fetchCampaign();
+  }, [idParam]);
   return (
     <div className={styles.wrapper}>
       {/* Hero Section */}
@@ -44,36 +45,36 @@ useEffect(() => {
         className={styles.hero}
         style={{
           backgroundImage: `url(${campaign?.image})`,
-          
+
         }}
       >
-  <div className={styles.heroOverlay}>
-    <div className={styles.heroContent}>   {/* ✅ CHANGE */}
-      
-      <span className={styles.tag}>SUMMER EDITION 2025</span>
+        <div className={styles.heroOverlay}>
+          <div className={styles.heroContent}>   {/* ✅ CHANGE */}
 
-      <h1 className={styles.mainTitle}>
-        {campaign?.name?.toUpperCase() || "LOADING..."}
-      </h1>
+            <span className={styles.tag}>SUMMER EDITION 2025</span>
 
-      <div className={styles.metaRow}>
-        <div className={styles.metaItem}>
-          <Ticket size={16} className={styles.icon} />
-          LIMIT: {campaign?.totalVouchersLimit || 0} VOUCHERS
+            <h1 className={styles.mainTitle}>
+              {campaign?.name?.toUpperCase() || "LOADING..."}
+            </h1>
+
+            <div className={styles.metaRow}>
+              <div className={styles.metaItem}>
+                <Ticket size={16} className={styles.icon} />
+                LIMIT: {campaign?.totalVouchersLimit || 0} VOUCHERS
+              </div>
+
+              <div className={styles.metaItem}>
+                <Calendar size={16} className={styles.icon} />
+
+                {campaign?.startDate && campaign?.endDate
+                  ? `${formatDate(campaign.startDate)} - ${formatDate(campaign.endDate)}`
+                  : "LOADING..."}
+              </div>
+            </div>
+
+          </div>
         </div>
-
-        <div className={styles.metaItem}>
-          <Calendar size={16} className={styles.icon} />
-
-          {campaign?.startDate && campaign?.endDate
-            ? `${formatDate(campaign.startDate)} - ${formatDate(campaign.endDate)}`
-            : "LOADING..."}
-        </div>
-      </div>
-
-    </div>
-  </div>
-</header>
+      </header>
 
       {/* Content Area */}
       <main className={styles.container}>
@@ -84,7 +85,7 @@ useEffect(() => {
             <p className={styles.description}>
               {campaign?.description}
             </p>
-  
+
             <ul className={styles.list}>
               <li><span className={styles.dot}>•</span> <strong>GRAND PRIZE:</strong> KINGFOX NEON KINETIC SERIES (COMPLETE SET)</li>
               <li><span className={styles.dot}>•</span> <strong>SECONDARY PRIZES:</strong> LIMITED RELEASE VOUCHERS & ARCHIVE ACCESS</li>
@@ -109,13 +110,13 @@ useEffect(() => {
               </div>
               <div className={styles.progressTrack}>
                 <div
-                    className={styles.progressFill}
-                    style={{
-                      width: campaign
-                        ? `${(campaign.vouchersIssued / campaign.totalVouchersLimit) * 100}%`
-                        : "0%",
-                    }}
-                  ></div>
+                  className={styles.progressFill}
+                  style={{
+                    width: campaign
+                      ? `${(campaign.vouchersIssued / campaign.totalVouchersLimit) * 100}%`
+                      : "0%",
+                  }}
+                ></div>
               </div>
 
               <div className={styles.branchesSection}>
@@ -163,27 +164,27 @@ useEffect(() => {
         </section>
       </main>
       <section className={styles.subscribeSection}>
-  <div className={styles.subscribeContainer}>
-    
-    {/* LEFT TEXT */}
-    <h2 className={styles.subscribeTitle}>
-      NEVER MISS <br /> A DROP AGAIN
-    </h2>
+        <div className={styles.subscribeContainer}>
 
-    {/* RIGHT INPUT */}
-    <div className={styles.subscribeForm}>
-      <input
-        type="email"
-        placeholder="ENTER EMAIL"
-        className={styles.input}
-      />
-      <button className={styles.subscribeBtn}>
-        SUBSCRIBE
-      </button>
-    </div>
+          {/* LEFT TEXT */}
+          <h2 className={styles.subscribeTitle}>
+            NEVER MISS <br /> A DROP AGAIN
+          </h2>
 
-  </div>
-</section>
+          {/* RIGHT INPUT */}
+          <div className={styles.subscribeForm}>
+            <input
+              type="email"
+              placeholder="ENTER EMAIL"
+              className={styles.input}
+            />
+            <button className={styles.subscribeBtn}>
+              SUBSCRIBE
+            </button>
+          </div>
+
+        </div>
+      </section>
     </div>
   );
 }

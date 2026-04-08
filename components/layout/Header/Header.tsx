@@ -203,37 +203,41 @@ useEffect(() => {
 
         {/* Icons */}
         <div className={styles.iconActions}>
-          <div className={styles.searchContainer}>
   
-            {showSearch ? (
-            <div className={styles.searchFull}>
-              <Search size={20} className={styles.searchIcon} />
-
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className={styles.searchInput}
-                autoFocus
-              />
-
-              <X
-                size={18}
-                className={styles.closeIcon}
-                onClick={() => setShowSearch(false)}
-              />
-            </div>
-          ) : (
-            <div
-              className={styles.iconWrapper}
-              onClick={() => setShowSearch(true)}
-            >
-              <Search size={20} />
-            </div>
-          )}
+          {/* 🔍 SEARCH BUTTON */}
+          <div
+            className={styles.iconWrapper}
+            onClick={() => setShowSearch(true)}
+          >
+            <Search size={20} />
           </div>
+           {showSearch && (
+                <div className={styles.searchOverlay}>
+                  <div
+                    className={styles.searchBox}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Search size={20} />
+
+                    <input
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                      autoFocus
+                    />
+
+                    <div
+                      className={styles.closeBtn}
+                      onClick={() => setShowSearch(false)}
+                    >
+                      <X size={18} />
+                    </div>
+                  </div>
+                </div>
+              )}
+         
 
           <Link href="/wishlist" className={styles.wishlistLink}>
             <div className={styles.iconWrapper}>

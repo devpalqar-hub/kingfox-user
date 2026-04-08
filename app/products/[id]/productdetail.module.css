@@ -9,6 +9,40 @@
   color: #000;
 }
 
+.moreColorsSection {
+  margin-top: 20px;
+   margin-bottom: 30px;
+}
+.moreColorsRow
+.moreColorsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.moreColorsRow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.colorPreview {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.colorPreview:hover {
+  transform: scale(1.05);
+}
+
+.activePreview {
+  border: 2px solid black;
+}
 .gallery {
   display: flex;
   gap: 15px;
@@ -208,6 +242,10 @@
 
 .location { text-decoration: underline; font-weight: 700; }
 
+
+.activePreview {
+  border: 2px solid black;
+}
 /* Action Buttons */
 .actions {
   display: flex;
@@ -1026,7 +1064,68 @@
 .subscribeBtn:hover {
   opacity: 0.9;
 }
+.sizeChartOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
 
+.sizeChartModal {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  position: relative;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.sizeTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.sizeTable th,
+.sizeTable td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.sizeTable th {
+  background: #f5f5f5;
+}
+
+.sizeGuide {
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.sizeGuide:hover {
+  opacity: 0.6;
+}
 @media (max-width: 1024px) {
   .container{
   gap:40px;

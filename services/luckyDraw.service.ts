@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -21,18 +22,14 @@ export const getAllCampaigns = async () => {
 
 export const getCampaignById = async (id: number) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}/v1/lucky-draw/campaigns/${id}`, // ✅ FIXED
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // ✅ FIXED
-        },
-      }
-    );
-
-    return response.data; // ✅ matches your API response
+    const response = await axiosInstance.get(`/v1/lucky-draw/campaigns/${id}`);
+    return response.data?.data ?? response.data;
   } catch (error: any) {
-    console.error("Error fetching campaign:", error.response?.data || error);
+    console.error("Error fetching campaign:", {
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+    });
     return null;
   }
 };

@@ -196,6 +196,24 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -1362,6 +1380,35 @@
           }
         ],
         "summary": "Delete product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/v1/products/slug/{slug}": {
+      "get": {
+        "operationId": "ProductsController_findOneBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get product by slug",
         "tags": [
           "Products"
         ]
@@ -3038,6 +3085,25 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "CLOSED"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -4592,6 +4658,37 @@
         ]
       }
     },
+    "/v1/user/products/slug/{slug}": {
+      "get": {
+        "description": "Get detailed product information using product slug. Authentication optional - if authenticated, includes wishlist/cart status.",
+        "operationId": "UserProductsController_getProductDetailsBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Product slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get product details by slug (for website users)",
+        "tags": [
+          "User - Products"
+        ]
+      }
+    },
     "/v1/user/wishlist": {
       "post": {
         "operationId": "UserWishlistController_addToWishlist",
@@ -5487,7 +5584,7 @@
     },
     "/v1/customer-auth/request-otp": {
       "post": {
-        "description": "Send the customer email address. If the account is new `isNew: true` is returned. An OTP is generated and (temporarily) returned in the response until the email service is integrated.",
+        "description": "Send the customer mobile number. If the account is new `isNew: true` is returned. An OTP is generated and (temporarily) returned in the response until the SMS service is integrated.",
         "operationId": "CustomerAuthController_requestOtp",
         "parameters": [],
         "requestBody": {
@@ -5548,8 +5645,8 @@
                     "customer": {
                       "id": 5,
                       "name": "",
-                      "email": "john.doe@example.com",
-                      "phone": null
+                      "phone": "9876543210",
+                      "email": null
                     },
                     "isNew": true
                   }
@@ -5569,7 +5666,7 @@
     },
     "/v1/customer-auth/complete-profile": {
       "patch": {
-        "description": "Collect `name` (required) and `phone` (optional) for a newly registered customer. Must be called with the JWT received from `verify-otp`.",
+        "description": "Collect `name` (required) and `email` (optional) for a newly registered customer. Must be called with the JWT received from `verify-otp`.",
         "operationId": "CustomerAuthController_completeProfile",
         "parameters": [],
         "requestBody": {
@@ -5593,8 +5690,8 @@
                     "customer": {
                       "id": 5,
                       "name": "John Doe",
-                      "email": "john.doe@example.com",
-                      "phone": "9901234567"
+                      "phone": "9876543210",
+                      "email": "john.doe@example.com"
                     }
                   }
                 }
@@ -5642,8 +5739,8 @@
                     "customer": {
                       "id": 5,
                       "name": "John Doe",
-                      "email": "john.doe@example.com",
-                      "phone": "9901234567"
+                      "phone": "9876543210",
+                      "email": "john.doe@example.com"
                     }
                   }
                 }
@@ -6199,7 +6296,32 @@
     "/v1/admin-dashboard/app/market-analytics": {
       "get": {
         "operationId": "AdminDashboardController_getAppMarketAnalytics",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -6219,7 +6341,50 @@
     "/v1/admin-dashboard/app/staff-performance": {
       "get": {
         "operationId": "AdminDashboardController_getAppStaffPerformance",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 10)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -6710,6 +6875,11 @@
             "example": "Classic Cotton Tee",
             "description": "Product name"
           },
+          "slug": {
+            "type": "string",
+            "example": "classic-cotton-tee",
+            "description": "Optional SEO-friendly slug. Auto-generated from name when omitted."
+          },
           "description": {
             "type": "string",
             "example": "Premium 100% cotton round-neck T-shirt, pre-shrunk and color-fast.",
@@ -7005,7 +7175,8 @@
           }
         },
         "required": [
-          "name"
+          "name",
+          "phone"
         ]
       },
       "CreateCouponDto": {
@@ -8434,32 +8605,32 @@
       "RequestOtpDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "phone": {
             "type": "string",
-            "example": "john.doe@example.com",
-            "description": "Customer email address to send OTP to"
+            "example": "9876543210",
+            "description": "Customer mobile phone number to send OTP to"
           }
         },
         "required": [
-          "email"
+          "phone"
         ]
       },
       "VerifyOtpDto": {
         "type": "object",
         "properties": {
-          "email": {
+          "phone": {
             "type": "string",
-            "example": "john.doe@example.com",
-            "description": "Customer email address"
+            "example": "9876543210",
+            "description": "Customer mobile phone number"
           },
           "otp": {
             "type": "string",
             "example": "482910",
-            "description": "6-digit OTP received via email"
+            "description": "6-digit OTP received via SMS"
           }
         },
         "required": [
-          "email",
+          "phone",
           "otp"
         ]
       },
@@ -8471,10 +8642,10 @@
             "example": "John Doe",
             "description": "Full name of the customer"
           },
-          "phone": {
+          "email": {
             "type": "string",
-            "example": "9901234567",
-            "description": "Mobile phone number"
+            "example": "john.doe@example.com",
+            "description": "Email address"
           }
         },
         "required": [

@@ -13,53 +13,52 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const params = useSearchParams();
 
-  const email = params.get("email");
   const token = params.get("token");
 
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-const handleSubmit = async () => {
-  try {
-    if (!name) {
-      showToast("Please enter your name", "error");
-      return;
+  const handleSubmit = async () => {
+    try {
+      if (!name) {
+        showToast("Please enter your name", "error");
+        return;
+      }
+
+      if (!email) {
+        showToast("Please enter your email", "error");
+        return;
+      }
+
+      setLoading(true);
+
+      await completeProfile(token!, { name, email });
+
+      const user = {
+        id: 1,
+        name,
+        email,
+        role: "customer",
+      };
+
+      login(token!, user);
+
+      showToast("Profile completed successfully ", "success", 2500);
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
+
+    } catch (err) {
+      console.error(err);
+
+      showToast("Failed to complete profile", "error", 3000);
+
+    } finally {
+      setLoading(false);
     }
-
-    if (!phone) {
-      showToast("Please enter your phone number", "error");
-      return;
-    }
-
-    setLoading(true);
-
-    await completeProfile(token!, { name, phone });
-
-    const user = {
-      id: 1,
-      name,
-      email: email!,
-      role: "customer",
-    };
-
-    login(token!, user);
-
-    showToast("Profile completed successfully ", "success", 2500);
-
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1000);
-
-  } catch (err) {
-    console.error(err);
-
-    showToast("Failed to complete profile", "error", 3000);
-
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>
@@ -75,21 +74,21 @@ const handleSubmit = async () => {
         </p>
 
         <div className={styles.inputGroup}>
-        <input
+          <input
             type="text"
             placeholder="Enter your name"
             className={styles.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
-        />
+          />
 
-        <input
-            type="text"
-            placeholder="Enter your phone"
+          <input
+            type="email"
+            placeholder="Enter your email"
             className={styles.input}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-        />
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
 
         {/* BUTTON */}

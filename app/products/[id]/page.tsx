@@ -8,7 +8,6 @@ import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { getReviewsByProductId } from "@/services/review.service";
-<span className={styles.ratingNumber}>4.8</span>
 import { addToGuestCart } from "@/lib/cart";
 import { addToCartAPI } from "@/services/cart.service";
 import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
@@ -31,7 +30,7 @@ const ProductDetail = () => {
   const params = useParams();
   const { token } = useAuth();
   const { showToast } = useToast();
-
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   // reviews
  const [reviewData, setReviewData] = useState<{
@@ -76,6 +75,29 @@ useEffect(() => {
 
   fetchReviews();
 }, [product?.id]);
+
+
+// Because multiple variants have same color
+// Now only one image per color
+const variantList = useMemo(() => {
+  const filtered = product?.variants?.filter(
+    (v) => v.size === selectedSize
+  ) || [];
+
+  const unique = Array.from(
+    new Map(filtered.map(v => [v.color, v])).values()
+  );
+
+  return unique;
+}, [product, selectedSize]);
+
+// second option(show all the color mutliple images)
+
+// const variantList = useMemo(() => {
+//   return product?.variants?.filter(
+//     (v) => v.size === selectedSize
+//   ) || [];
+// }, [product, selectedSize]);
 
 // review couresal
 const scrollRef = useRef<HTMLDivElement>(null);
@@ -170,7 +192,7 @@ useEffect(() => {
 
       setIsWishlisted(exists);
     } catch (err) {
-      console.error(err);
+      showToast("Something went wrong", "error");
     }
   };
 
@@ -255,7 +277,7 @@ const isOutOfStock = selectedVariant?.totalStock === 0;
 
 const handleAddToCart = async () => {
   if (!product || !selectedVariant) {
-    alert("Please select size & color");
+    showToast("Please select size & color", "error");
     return;
   }
 
@@ -296,7 +318,7 @@ const handleAddToCart = async () => {
 
 const handleBuyNow = async () => {
   if (!product || !selectedVariant) {
-    alert("Please select size & color");
+    showToast("Please select size & color", "error");
     return;
   }
 
@@ -417,6 +439,13 @@ const handleBuyNow = async () => {
         <div className={styles.section}>
           <div className={styles.labelRow}>
             <span className={styles.label}>SELECT SIZE</span>
+
+            <span
+              className={styles.sizeGuide}
+              onClick={() => setShowSizeChart(true)}
+            >
+              SIZE CHART
+            </span>
           </div>
           <div className={styles.sizeGrid}>
             {sizes.map((size) => (
@@ -467,8 +496,27 @@ const handleBuyNow = async () => {
           ))}
         </div>
         </div>
-        
-
+        <div className={styles.moreColorsSection}>
+          <div className={styles.moreColorsRow}>
+            {variantList.map((variant) => (
+              <img
+          key={variant.id}
+          src={variant.image || ""}
+          alt={variant.color}
+          className={`${styles.colorPreview} ${
+            selectedVariant?.id === variant.id
+              ? styles.activePreview
+              : ""
+          }`}
+          onClick={() => {
+            setSelectedSize(variant.size);
+            setSelectedColor(variant.color);
+            setActiveImg(variant.image || "");
+          }}
+        />
+            ))}
+          </div>
+        </div>
         {/* Actions */}
         <div className={styles.actions}>
           {isInCart ? (
@@ -780,7 +828,41 @@ const handleBuyNow = async () => {
 
         </div>
       </div>
+{showSizeChart && (
+  <div className={styles.sizeChartOverlay}>
+    <div className={styles.sizeChartModal}>
 
+      {/* CLOSE BUTTON */}
+      <button
+        className={styles.closeBtn}
+        onClick={() => setShowSizeChart(false)}
+      >
+        ✕
+      </button>
+
+      <h2>Size Chart</h2>
+
+      <table className={styles.sizeTable}>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>Chest (in)</th>
+            <th>Length (in)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr><td>XS</td><td>36</td><td>26</td></tr>
+          <tr><td>S</td><td>38</td><td>27</td></tr>
+          <tr><td>M</td><td>40</td><td>28</td></tr>
+          <tr><td>L</td><td>42</td><td>29</td></tr>
+          <tr><td>XL</td><td>44</td><td>30</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+)}
   </>
   );
 };

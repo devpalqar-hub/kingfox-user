@@ -543,6 +543,11 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+
+.quantity button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
   .removeBtn {
     flex-shrink: 0;
     margin-right: -10px;

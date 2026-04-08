@@ -7,6 +7,7 @@ const nextConfig = {
         hostname: "dev-palqar-bucket.s3.ap-south-1.amazonaws.com",
       },
     ],
+    unoptimized: true,
   },
 };
 
