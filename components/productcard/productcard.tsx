@@ -1,12 +1,13 @@
 "use client";
-import React, { useState } from 'react';
-import styles from './productcard.module.css';
-import { Eye, Star } from 'lucide-react';
+import React, { useState } from "react";
+import styles from "./productcard.module.css";
+import { Eye, Star } from "lucide-react";
 import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
 import { useAuth } from "@/context/AuthContext";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 
 interface ProductCardProps {
   id: number;
@@ -33,24 +34,22 @@ const ProductCard = ({
   isWishlisted,
   onWishlistToggle,
 }: ProductCardProps) => {
-  
-
   const router = useRouter();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [wishlist, setWishlist] = useState<number[]>([]);
-  
-const handleWishlist = async () => {
-  if (!user) {
-    alert("Please login first");
-    return;
-  }
 
-  if (onWishlistToggle) {
-    onWishlistToggle(); // ✅ delegate to parent
-  }
-};
+  const handleWishlist = async () => {
+    if (!user) {
+      showToast("Please login first", "info");
+      return;
+    }
 
-  
+    if (onWishlistToggle) {
+      onWishlistToggle(); // ✅ delegate to parent
+    }
+  };
+
   return (
     <div className={styles.cardContainer}>
       <div className={styles.imageWrapper}>
@@ -60,9 +59,9 @@ const handleWishlist = async () => {
         <div className={styles.iconOverlay}>
           <button className={styles.iconBtn} onClick={handleWishlist}>
             {isWishlisted ? (
-              <FaHeart size={18} color="black" />   // ✅ always black when saved
+              <FaHeart size={18} color="black" /> // ✅ always black when saved
             ) : (
-              <FiHeart size={18} />                // ✅ outline when not saved
+              <FiHeart size={18} /> // ✅ outline when not saved
             )}
           </button>
         </div>
@@ -75,13 +74,13 @@ const handleWishlist = async () => {
           VIEW
         </button>
       </div>
-            
+
       <div className={styles.details}>
         <div className={styles.row}>
           <h3 className={styles.productName}>{name}</h3>
           <p className={styles.price}>₹{price}</p>
         </div>
-            <div className={styles.colorOptions}>
+        <div className={styles.colorOptions}>
           {(colors || ["#f1b941", "#777", "#000"]).map((color, i) => (
             <span
               key={i}
@@ -91,27 +90,21 @@ const handleWishlist = async () => {
           ))}
         </div>
         {reviews !== undefined && reviews > 0 && (
-        <div className={styles.ratingRow}>
-          
-          <div className={styles.stars}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                size={14}
-                color={i < Math.round(rating) ? "#c28b5a" : "#ccc"}
-                fill={i < Math.round(rating) ? "#c28b5a" : "none"}
-              />
-            ))}
+          <div className={styles.ratingRow}>
+            <div className={styles.stars}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={14}
+                  color={i < Math.round(rating) ? "#c28b5a" : "#ccc"}
+                  fill={i < Math.round(rating) ? "#c28b5a" : "none"}
+                />
+              ))}
+            </div>
+
+            <span className={styles.reviewCount}>({reviews}) Reviews</span>
           </div>
-
-          <span className={styles.reviewCount} >
-            ({reviews}) Reviews
-          </span>
-
-        </div>
-      )}
-
-        
+        )}
       </div>
     </div>
   );

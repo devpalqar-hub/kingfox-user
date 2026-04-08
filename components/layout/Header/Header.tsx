@@ -10,10 +10,12 @@ import { getWishList } from "@/services/wishlist.service";
 import { useRouter } from "next/navigation";
 import { getAllCategories } from "@/services/category.service";
 import { getCartAPI } from "@/services/cart.service";
+import { useToast } from "@/context/ToastContext";
 
 const Header = () => {
   const router = useRouter();
   const { user, loading } = useAuth(); // ✅ ADD loading
+  const { showToast } = useToast();
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -37,9 +39,8 @@ const Header = () => {
   }, []);
 
   const oversizedCategory = categories.find((cat) =>
-    cat.name.toLowerCase().includes("oversize")
+    cat.name.toLowerCase().includes("oversize"),
   );
-
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -51,19 +52,18 @@ const Header = () => {
           params: {
             search: searchTerm, // ✅ better way
           },
-        }
+        },
       );
 
       console.log("API:", response.data);
 
       const products = response.data.items; // ✅ FIXED
 
-      if (products && products.length > 0) {
+      if (products.length > 0) {
         const firstProduct = products[0];
-
         router.push(`/products/${firstProduct.id}`);
       } else {
-        alert("No products found");
+        showToast("No products found", "info");
       }
     } catch (error) {
       console.error("Search error:", error);
@@ -73,37 +73,34 @@ const Header = () => {
   };
   if (loading) return null;
 
-
   useEffect(() => {
-  const fetchWishlist = async () => {
-    const token = localStorage.getItem("token");
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
 
-    if (!token || (user && user.role !== "customer")) {
-      setWishlistCount(0);
-      return;
-    }
+      if (!token || (user && user.role !== "customer")) {
+        setWishlistCount(0);
+        return;
+      }
 
-    try {
-      const res = await getWishList();
-      setWishlistCount(res.length);
-    } catch (err) {
-      setWishlistCount(0);
-    }
-  };
+      try {
+        const res = await getWishList();
+        setWishlistCount(res.length);
+      } catch (err) {
+        setWishlistCount(0);
+      }
+    };
 
-  fetchWishlist();
+    fetchWishlist();
 
-  // ✅ ADD THIS LISTENER
-  const handleWishlistUpdate = () => fetchWishlist();
+    // ✅ ADD THIS LISTENER
+    const handleWishlistUpdate = () => fetchWishlist();
 
-  window.addEventListener("wishlistUpdated", handleWishlistUpdate);
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
 
-  return () => {
-    window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
-  };
-}, [user]);
-
-
+    return () => {
+      window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
+    };
+  }, [user]);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -118,7 +115,10 @@ const Header = () => {
       try {
         const res = await getCartAPI();
         const totalQty =
-          res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+          res.items?.reduce(
+            (sum: number, item: any) => sum + item.quantity,
+            0,
+          ) || 0;
 
         setCartCount(totalQty);
       } catch (err) {
@@ -139,10 +139,8 @@ const Header = () => {
     };
   }, [user]);
 
-
   return (
     <header className={styles.headerContainer}>
-
       {/* Announcement Bar */}
       <div className={styles.announcementBar}>
         <div className={styles.marquee}>
@@ -162,7 +160,6 @@ const Header = () => {
 
       {/* Main Header */}
       <nav className={styles.mainHeader}>
-
         {/* Hamburger */}
         <div
           className={styles.hamburger}
@@ -181,15 +178,21 @@ const Header = () => {
         {/* Nav Links */}
         <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
           <li data-text="HOME">
-            <Link href="/" onClick={() => setMenuOpen(false)}>HOME</Link>
+            <Link href="/" onClick={() => setMenuOpen(false)}>
+              HOME
+            </Link>
           </li>
 
           <li data-text="PRODUCTS">
-            <Link href="/products" onClick={() => setMenuOpen(false)}>PRODUCTS</Link>
+            <Link href="/products" onClick={() => setMenuOpen(false)}>
+              PRODUCTS
+            </Link>
           </li>
 
           <li data-text="NEW ARRIVALS">
-            <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>NEW ARRIVALS</Link>
+            <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>
+              NEW ARRIVALS
+            </Link>
           </li>
 
           {oversizedCategory && (
@@ -212,7 +215,6 @@ const Header = () => {
         {/* Icons */}
         <div className={styles.iconActions}>
           <div className={styles.searchContainer}>
-
             {showSearch ? (
               <div className={styles.searchFull}>
                 <Search size={20} className={styles.searchIcon} />
@@ -254,12 +256,14 @@ const Header = () => {
 
           <Link href="/cart" className={styles.iconWrapper}>
             <ShoppingCart size={20} />
-            {cartCount > 0 && (
-              <span className={styles.badge}>{cartCount}</span>
-            )}
+            {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
           </Link>
           {user ? (
-            <Link href="/profile" className={styles.iconWrapper} title="Profile">
+            <Link
+              href="/profile"
+              className={styles.iconWrapper}
+              title="Profile"
+            >
               <User size={20} />
             </Link>
           ) : (
@@ -273,10 +277,7 @@ const Header = () => {
         </div>
       </nav>
       {/* LOGIN MODAL */}
-      <LoginModal
-        isOpen={showLogin}
-        onClose={() => setShowLogin(false)}
-      />
+      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </header>
   );
 };
