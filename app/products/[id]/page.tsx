@@ -293,6 +293,7 @@ const handleAddToCart = async () => {
         price: Number(selectedVariant.sellingPrice),
         size: selectedVariant.size,
         color: selectedVariant.color,
+        availableStock: selectedVariant.totalStock ?? 0,
       });
     }
          // ✅🔥 ADD THIS (VERY IMPORTANT)
@@ -340,6 +341,7 @@ const handleBuyNow = async () => {
         price: Number(selectedVariant.sellingPrice),
         size: selectedVariant.size,
         color: selectedVariant.color,
+        availableStock: selectedVariant.totalStock ?? 0,
       });
     }
      window.dispatchEvent(new Event("cartUpdated"));
