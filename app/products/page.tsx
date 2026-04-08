@@ -64,27 +64,32 @@ const ProductsPage = () => {
   }, []);
 
   const handleWishlist = async (id: number) => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      showToast("Please login", "info");
-      return;
+  if (!token) {
+    showToast("Please login", "info");
+    return;
+  }
+
+  try {
+    if (wishlist.includes(id)) {
+      await removeFromWishlist(id);
+      setWishlist((prev) => prev.filter((i) => i !== id));
+
+      showToast("Removed from wishlist", "info"); // ✅ ADD THIS
+    } else {
+      await addToWishlist(id);
+      setWishlist((prev) => [...prev, id]);
+
+      showToast("Added to wishlist", "success"); // ✅ ADD THIS
     }
 
-    try {
-      if (wishlist.includes(id)) {
-        await removeFromWishlist(id);
-        setWishlist((prev) => prev.filter((i) => i !== id));
-      } else {
-        await addToWishlist(id);
-        setWishlist((prev) => [...prev, id]);
-      }
-
-      window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    window.dispatchEvent(new Event("wishlistUpdated"));
+  } catch (err) {
+    console.error(err);
+    showToast("Something went wrong", "error"); // ✅ ADD THIS
+  }
+};
   useEffect(() => {
     const categoryFromURL = searchParams.get("categoryId");
     const tagFromURL = searchParams.get("tag");

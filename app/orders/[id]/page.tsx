@@ -282,44 +282,40 @@ const OrderDetailsPage = () => {
                     <span className={styles.subtotal}>₹{item.subtotal}</span>
                   </div>
                   <div className={styles.reviewSection}>
-                    {item.review ? (
-                      // ⭐ SHOW REVIEW
-                      <div className={styles.reviewBox}>
-                        <div className={styles.stars}>
-                          {"★".repeat(item.review.rating)}
-                          {"☆".repeat(5 - item.review.rating)}
-                        </div>
+  {item.review ? (
+    // ⭐ SHOW REVIEW
+    <div className={styles.reviewBox}>
+      <div className={styles.stars}>
+        {"★".repeat(item.review.rating)}
+        {"☆".repeat(5 - item.review.rating)}
+      </div>
 
-                        <h4 className={styles.reviewTitle}>
-                          {item.review.title}
-                        </h4>
-                        <p className={styles.reviewText}>{item.review.body}</p>
+      <h4 className={styles.reviewTitle}>
+        {item.review.title}
+      </h4>
+      <p className={styles.reviewText}>{item.review.body}</p>
 
-                        {item.review.images?.length > 0 && (
-                          <div className={styles.reviewImages}>
-                            {item.review.images.map(
-                              (img: string, i: number) => (
-                                <img key={i} src={img} />
-                              ),
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : order.status === "DELIVERED" ? (
-                      // ✅ ONLY AFTER DELIVERY
-                      <button
-                        className={styles.addReviewBtn}
-                        onClick={() => openReviewModal(item)}
-                      >
-                        ⭐ Add Review
-                      </button>
-                    ) : (
-                      // ❌ BEFORE DELIVERY
-                      <p className={styles.reviewDisabled}>
-                        Review available after delivery
-                      </p>
-                    )}
-                  </div>
+      {item.review.images?.length > 0 && (
+        <div className={styles.reviewImages}>
+          {item.review.images.map((img: string, i: number) => (
+            <img key={i} src={img} />
+          ))}
+        </div>
+      )}
+    </div>
+  ) : order.status === "SHIPPED" ? (   // ✅ FIXED HERE
+    <button
+      className={styles.addReviewBtn}
+      onClick={() => openReviewModal(item)}
+    >
+      ⭐ Add Review
+    </button>
+  ) : (
+    <p className={styles.reviewDisabled}>
+      Review available after shipping
+    </p>
+  )}
+</div>
                 </div>
               </div>
             ))}

@@ -1385,6 +1385,35 @@
         ]
       }
     },
+    "/v1/products/slug/{slug}": {
+      "get": {
+        "operationId": "ProductsController_findOneBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get product by slug",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
     "/v1/products/{id}/variants": {
       "post": {
         "operationId": "ProductsController_addVariant",
@@ -3056,6 +3085,25 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "CLOSED"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -4605,6 +4653,37 @@
           }
         ],
         "summary": "Get product details by ID (for website users)",
+        "tags": [
+          "User - Products"
+        ]
+      }
+    },
+    "/v1/user/products/slug/{slug}": {
+      "get": {
+        "description": "Get detailed product information using product slug. Authentication optional - if authenticated, includes wishlist/cart status.",
+        "operationId": "UserProductsController_getProductDetailsBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Product slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get product details by slug (for website users)",
         "tags": [
           "User - Products"
         ]
@@ -6217,7 +6296,32 @@
     "/v1/admin-dashboard/app/market-analytics": {
       "get": {
         "operationId": "AdminDashboardController_getAppMarketAnalytics",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -6237,7 +6341,50 @@
     "/v1/admin-dashboard/app/staff-performance": {
       "get": {
         "operationId": "AdminDashboardController_getAppStaffPerformance",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 10)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -6727,6 +6874,11 @@
             "type": "string",
             "example": "Classic Cotton Tee",
             "description": "Product name"
+          },
+          "slug": {
+            "type": "string",
+            "example": "classic-cotton-tee",
+            "description": "Optional SEO-friendly slug. Auto-generated from name when omitted."
           },
           "description": {
             "type": "string",

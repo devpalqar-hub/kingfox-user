@@ -192,7 +192,7 @@ useEffect(() => {
 
       setIsWishlisted(exists);
     } catch (err) {
-      console.error(err);
+      showToast("Something went wrong", "error");
     }
   };
 
@@ -277,7 +277,7 @@ const isOutOfStock = selectedVariant?.totalStock === 0;
 
 const handleAddToCart = async () => {
   if (!product || !selectedVariant) {
-    alert("Please select size & color");
+    showToast("Please select size & color", "error");
     return;
   }
 
@@ -318,7 +318,7 @@ const handleAddToCart = async () => {
 
 const handleBuyNow = async () => {
   if (!product || !selectedVariant) {
-    alert("Please select size & color");
+    showToast("Please select size & color", "error");
     return;
   }
 
@@ -439,6 +439,13 @@ const handleBuyNow = async () => {
         <div className={styles.section}>
           <div className={styles.labelRow}>
             <span className={styles.label}>SELECT SIZE</span>
+
+            <span
+              className={styles.sizeGuide}
+              onClick={() => setShowSizeChart(true)}
+            >
+              SIZE CHART
+            </span>
           </div>
           <div className={styles.sizeGrid}>
             {sizes.map((size) => (
@@ -821,7 +828,41 @@ const handleBuyNow = async () => {
 
         </div>
       </div>
+{showSizeChart && (
+  <div className={styles.sizeChartOverlay}>
+    <div className={styles.sizeChartModal}>
 
+      {/* CLOSE BUTTON */}
+      <button
+        className={styles.closeBtn}
+        onClick={() => setShowSizeChart(false)}
+      >
+        ✕
+      </button>
+
+      <h2>Size Chart</h2>
+
+      <table className={styles.sizeTable}>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>Chest (in)</th>
+            <th>Length (in)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr><td>XS</td><td>36</td><td>26</td></tr>
+          <tr><td>S</td><td>38</td><td>27</td></tr>
+          <tr><td>M</td><td>40</td><td>28</td></tr>
+          <tr><td>L</td><td>42</td><td>29</td></tr>
+          <tr><td>XL</td><td>44</td><td>30</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+)}
   </>
   );
 };

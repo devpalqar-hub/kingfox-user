@@ -29,64 +29,66 @@ const HotDeals = () => {
 
   // ✅ GET WISHLIST
   useEffect(() => {
-  const fetchWishlist = async () => {
-    if (!user) return;
+    const fetchWishlist = async () => {
+      if (!user) return;
 
-    try {
-      const res = await getWishList();
+      try {
+        const res = await getWishList();
 
-      // 🔥 ADD THIS LINE
-      console.log("WISHLIST API RESPONSE 👉", res);
+        // 🔥 ADD THIS LINE
+        console.log("WISHLIST API RESPONSE 👉", res);
 
-      const items = res?.data || res?.items || [];
+        const items = res?.data || res?.items || [];
 
         const ids = items.map((item: any) => item.productId);
 
         setWishlistIds(ids);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  fetchWishlist();
-}, [user]);
+    fetchWishlist();
+  }, [user]);
   // ✅ TOGGLE FUNCTION
   const handleWishlistToggle = async (productId: number) => {
-  if (!user) {
-    alert("Please login first");
-    return;
-  }
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
 
-  try {
-    if (wishlistIds.includes(productId)) {
-      // ✅ REMOVE
-      await removeFromWishlist(productId);
+    try {
+      if (wishlistIds.includes(productId)) {
+        // ✅ REMOVE
+        await removeFromWishlist(productId);
 
-      setWishlistIds((prev) =>
-        prev.filter((id) => id !== productId)
-      );
-    } else {
-      try {
-        // ✅ ADD
-        await addToWishlist(productId);
+        setWishlistIds((prev) =>
+          prev.filter((id) => id !== productId)
+        );
+      } else {
+        try {
+          // ✅ ADD
+          await addToWishlist(productId);
 
-        setWishlistIds((prev) => [...prev, productId]);
-      } catch (err: any) {
-        // 🔥 HANDLE 409
-        if (err.response?.status === 409) {
-          console.log("Already in wishlist");
-
-          // sync UI anyway
           setWishlistIds((prev) => [...prev, productId]);
-        } else {
-          throw err;
+        } catch (err: any) {
+          // 🔥 HANDLE 409
+          if (err.response?.status === 409) {
+            console.log("Already in wishlist");
+
+            // sync UI anyway
+            setWishlistIds((prev) => [...prev, productId]);
+          } else {
+            throw err;
+          }
         }
       }
+
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (err) {
+      console.error("Wishlist error", err);
     }
-  } catch (err) {
-    console.error("Wishlist error", err);
-  }
-};
+  };
 
   return (
     <section className={styles.section}>
@@ -113,9 +115,14 @@ const HotDeals = () => {
         ))}
       </div>
 
-      <button onClick={() => router.push('/products?tag=HOT%20SALE')}>
-        VIEW ALL
-      </button>
+      <div className={styles.viewAllWrapper}>
+        <button
+          className={styles.viewAll}
+          onClick={() => router.push('/products?tag=HOT%20SALE')}
+        >
+          VIEW ALL PRODUCTS
+        </button>
+      </div>
     </section>
   );
 };
