@@ -67,7 +67,7 @@ useEffect(() => {
         behavior: "smooth",
       });
     }
-  }, 3000); // ⏱️ 3 seconds
+  }, 3000); 
 
   return () => clearInterval(interval);
 }, [campaigns]);
@@ -98,7 +98,7 @@ useEffect(() => {
                 src={item.image || "/card1.png"}
                 alt={item.name}
                 fill
-                sizes="(max-width: 768px) 100vw, 50vw"  // ✅ fix warning
+                sizes="(max-width: 768px) 100vw, 50vw" 
                 style={{ objectFit: "cover" }}
                 priority
               />
