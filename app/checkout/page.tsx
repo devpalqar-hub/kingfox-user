@@ -246,7 +246,7 @@ const handlePlaceOrder = async () => {
       console.log("FULL RESPONSE:", response);
 
       setTimeout(() => {
-        router.replace("/orderplaced");
+        router.replace(`/order-confirmation?orderId=${response.order.id}`);
       }, 1200);
     }
 

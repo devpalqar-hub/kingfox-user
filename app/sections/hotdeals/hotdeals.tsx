@@ -35,10 +35,7 @@ const HotDeals = () => {
       try {
         const res = await getWishList();
 
-        // 🔥 ADD THIS LINE
-        console.log("WISHLIST API RESPONSE 👉", res);
-
-        const items = res?.data || res?.items || [];
+        const items = res?.data || res?.items || res || [];
 
         const ids = items.map((item: any) => item.productId);
 
@@ -115,14 +112,9 @@ const HotDeals = () => {
         ))}
       </div>
 
-      <div className={styles.viewAllWrapper}>
-        <button
-          className={styles.viewAll}
-          onClick={() => router.push('/products?tag=HOT%20SALE')}
-        >
-          VIEW ALL PRODUCTS
-        </button>
-      </div>
+      <button onClick={() => router.push('/products?tag=HOT%20SALE')}>
+        VIEW ALL
+      </button>
     </section>
   );
 };
