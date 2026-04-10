@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./orderconfirmation.module.css";
+import styles from "./orderplaced.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function OrderConfirmation() {
   const router = useRouter();
   const params = useSearchParams();
-  const orderId = params.get("orderId");
+  const orderId =
+  params.get("orderId") || params.get("orderid");
 
   const [order, setOrder] = useState<any>(null);
 
