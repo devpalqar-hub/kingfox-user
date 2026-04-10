@@ -57,7 +57,7 @@ const LimitedDeals = () => {
   // ✅ TOGGLE FUNCTION
    const handleWishlistToggle = async (productId: number) => {
       if (!user) {
-        alert("Please login first");
+        window.dispatchEvent(new Event("openLoginModal"));
         return;
       }
   
@@ -115,7 +115,7 @@ const LimitedDeals = () => {
             name={product.name}
             price={String(product.priceRange?.min || 0)}
             rating={4}
-            image={product.images?.[0] || "/placeholder-product.png"}
+            image={product.images?.[0]}
 
             // ✅ THIS IS THE MAGIC
             isWishlisted={wishlistIds.includes(product.id)}

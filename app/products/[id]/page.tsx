@@ -26,11 +26,11 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductDetailType | null>(null);
   const metaSections = product?.metaInfo || [];
-  const { user } = useAuth();
+  const { user, token, logout } = useAuth();
   const params = useParams();
-  const { token } = useAuth();
   const { showToast } = useToast();
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // reviews
  const [reviewData, setReviewData] = useState<{
@@ -209,8 +209,7 @@ useEffect(() => {
 
 const handleWishlist = async () => {
   if (!user) {
-    showToast("Please login first", "error");
-    router.push("/login");
+    window.dispatchEvent(new Event("openLoginModal"));
     return;
   }
 
@@ -366,6 +365,15 @@ const handleBuyNow = async () => {
     console.error(err);
   }
 };
+
+// Token expiry effect
+useEffect(() => {
+  if (!token && user) {
+    // Token expired or missing, force logout and show login modal
+    logout && logout();
+    setShowLoginModal(true);
+  }
+}, [token, user, logout]);
 
    if (!product) {
   return <div>Loading...</div>;
@@ -862,6 +870,18 @@ const handleBuyNow = async () => {
         </tbody>
       </table>
 
+    </div>
+  </div>
+)}
+
+{/* Render login modal if needed */}
+{showLoginModal && (
+  <div className={styles.loginModalOverlay}>
+    <div className={styles.loginModalContent}>
+      <h2>Session Expired</h2>
+      <p>Your session has expired. Please log in again.</p>
+      {/* You can replace this with your actual login form or modal component */}
+      <button onClick={() => router.push("/auth/login")}>Go to Login</button>
     </div>
   </div>
 )}

@@ -407,25 +407,31 @@ const ProductsPage = () => {
         {/* PRODUCT AREA */}
         <main className={styles.mainContent}>
           <div className={styles.productGrid}>
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={String(product.priceRange?.min || 0)}
-                rating={reviewMap[product.id]?.rating ?? 0}
-                reviews={reviewMap[product.id]?.total ?? 0}
-                colors={product.colors}
-                image={
-                  product.images && product.images.length > 0
-                    ? product.images[0]
-                    : "/placeholder-product.png"
-                }
-                isWishlisted={wishlist.includes(product.id)}
-                onWishlistToggle={() => handleWishlist(product.id)}
-                isNew={false}
-              />
-            ))}
+            {products.length === 0 ? (
+              <div className={styles.noProductsMsg}>
+                No products to display
+              </div>
+            ) : (
+              products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={String(product.priceRange?.min || 0)}
+                  rating={reviewMap[product.id]?.rating ?? 0}
+                  reviews={reviewMap[product.id]?.total ?? 0}
+                  colors={product.colors}
+                  image={
+                    product.images && product.images.length > 0
+                      ? product.images[0]
+                      : "/placeholder-product.png"
+                  }
+                  isWishlisted={wishlist.includes(product.id)}
+                  onWishlistToggle={() => handleWishlist(product.id)}
+                  isNew={false}
+                />
+              ))
+            )}
           </div>
 
           {/* PAGINATION */}

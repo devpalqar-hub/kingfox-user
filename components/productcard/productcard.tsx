@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import styles from "./productcard.module.css";
 import { Eye, Star } from "lucide-react";
-import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
 import { useAuth } from "@/context/AuthContext";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
