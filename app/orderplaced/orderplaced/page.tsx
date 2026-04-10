@@ -10,6 +10,7 @@ export default function FixRedirect() {
   useEffect(() => {
     const orderId =
       params.get("orderId") || params.get("orderid");
+    
 
     if (orderId) {
       router.replace(`/orderplaced?orderId=${orderId}`);
