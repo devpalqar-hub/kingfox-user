@@ -216,8 +216,6 @@ const handlePlaceOrder = async () => {
 
   if (response?.order?.id) {
   localStorage.setItem("lastOrderId", response.order.id.toString());
-
-  // ✅ ADD THIS
   localStorage.setItem("lastOrderData", JSON.stringify(response.order));
 }
   if (paymentUrl) {
@@ -244,7 +242,6 @@ const handlePlaceOrder = async () => {
       showToast("Order placed successfully", "success", 2500);
       console.log("FULL RESPONSE:", response);
       localStorage.setItem("lastOrderId", response.order.id.toString());
-
       localStorage.setItem("lastOrderData", JSON.stringify(response.order));
 
       setTimeout(() => {
