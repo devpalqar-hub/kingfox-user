@@ -13,17 +13,24 @@ export default function OrderConfirmation() {
   const [order, setOrder] = useState<any>(null);
 
   useEffect(() => {
+  const storedId = localStorage.getItem("lastOrderId");
   const data = localStorage.getItem("lastOrderData");
 
-  if (data) {
+  if (!storedId || !data || !orderId) {
+    setOrder(null);
+    return;
+  }
+
+  // ✅ ONLY show if IDs match
+  if (storedId === orderId) {
     setOrder(JSON.parse(data));
   } else {
     setOrder(null);
   }
-}, []);
+}, [orderId]);
 
-  if (!order) {
-  return <p>Order not found</p>;
+if (!order) {
+  return <p>Loading correct order...</p>;
 }
   return (
     <div className={styles.wrapper}>
