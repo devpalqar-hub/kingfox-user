@@ -4,33 +4,32 @@ import { useEffect, useState } from "react";
 import styles from "./orderplaced.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MdLocalShipping } from "react-icons/md";
+import { getOrderDetailsAPI } from "@/services/order-details.service";
 export default function OrderConfirmation() {
+
   const router = useRouter();
   const params = useSearchParams();
   const orderId =
   params.get("orderId") || params.get("orderid");
 
   const [order, setOrder] = useState<any>(null);
+useEffect(() => {
+  const fetchOrder = async () => {
+    if (!orderId) return;
 
-  useEffect(() => {
-  const storedId = localStorage.getItem("lastOrderId");
-  const data = localStorage.getItem("lastOrderData");
+    try {
+      const res = await getOrderDetailsAPI(orderId);
 
-  console.log("URL orderId:", orderId);
-  console.log("Stored orderId:", storedId);
+      console.log("API ORDER 👉", res);
 
-  if (!orderId) {
-    setOrder(null);
-    return;
-  }
+      setOrder(res); // ✅ FIXED
+    } catch (err) {
+      console.error(err);
+      setOrder(null);
+    }
+  };
 
-  // ✅ Only load if IDs match
-  if (storedId && data && storedId === orderId) {
-    setOrder(JSON.parse(data));
-  } else {
-    // ❌ DO NOT fallback to old data
-    setOrder(null);
-  }
+  fetchOrder();
 }, [orderId]);
 
 if (!order) {
@@ -47,7 +46,7 @@ if (!order) {
 
         {/* STATUS */}
         <div className={styles.status}>
-          Payment: <b>{order.paymentStatus}</b>
+          Payment: <b>{order.payments?.[0]?.paymentMethod || "N/A"}</b>
         </div>
 
         {/* ITEMS */}
