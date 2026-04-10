@@ -13,11 +13,19 @@ export default function OrderConfirmation() {
   const [order, setOrder] = useState<any>(null);
 
   useEffect(() => {
-    const data = localStorage.getItem("lastOrderData");
-    if (data) {
-      setOrder(JSON.parse(data));
-    }
-  }, []);
+  const storedId = localStorage.getItem("lastOrderId");
+  const data = localStorage.getItem("lastOrderData");
+
+  if (!data || !storedId) return;
+
+  // ✅ IMPORTANT FIX
+  if (storedId === orderId) {
+    setOrder(JSON.parse(data));
+  } else {
+    console.warn("Order mismatch!");
+    setOrder(null);
+  }
+}, [orderId]);
 
   if (!order) return <p>Loading...</p>;
 
