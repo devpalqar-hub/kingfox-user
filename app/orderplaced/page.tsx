@@ -36,67 +36,115 @@ if (!order) {
   return <p>Loading correct order...</p>;
 }
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.card}>
-        
-        <h1 className={styles.title}>🎉 Order Confirmed</h1>
-        <p className={styles.subtitle}>
-          Order #{order.orderNumber}
-        </p>
+  <div className={styles.container}>
 
-        {/* STATUS */}
-        <div className={styles.status}>
-          Payment: <b>{order.payments?.[0]?.paymentMethod || "N/A"}</b>
-        </div>
-
-        {/* ITEMS */}
-        <div className={styles.section}>
-          <h3>Items</h3>
-          {order.items.map((item: any) => (
-            <div key={item.id} className={styles.item}>
-              <img src={item.variant.product.images[0]} />
-              <div>
-                <p>{item.variant.product.name}</p>
-                <p>{item.variant.size} / {item.variant.color}</p>
-                <p>Qty: {item.quantity}</p>
-              </div>
-              <b>₹{item.price}</b>
-            </div>
-          ))}
-        </div>
-
-        {/* ADDRESS */}
-        <div className={styles.section}>
-          <h3>Shipping Address</h3>
-          <p>{order.shippingAddress}</p>
-        </div>
-
-        {/* PAYMENT */}
-        <div className={styles.section}>
-          <h3>Payment Method</h3>
-          <p>{order.paymentMethod}</p>
-        </div>
-
-        {/* TOTAL */}
-        <div className={styles.total}>
-          Total Paid: ₹{order.finalAmount}
-        </div>
-
-        {/* ACTIONS */}
-        <div className={styles.actions}>
-          <button onClick={() => router.push("/")}>
-            Continue Shopping
-          </button>
-
-          <button
-            className={styles.secondary}
-            onClick={() => router.push("/profile")}
-          >
-            View Orders
-          </button>
-        </div>
-
-      </div>
+    {/* ✅ Success Icon */}
+    <div className={styles.successIcon}>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+      </svg>
     </div>
-  );
+
+    {/* ✅ Header */}
+    <header className={styles.header}>
+      <h1>Thank you for your order, Fox!</h1>
+      <p className={styles.orderNumber}>
+        Order #{order.orderNumber}
+      </p>
+    </header>
+
+    <div className={styles.divider}></div>
+
+    {/* ✅ Order Details */}
+    <div className={styles.sectionTitle}>ORDER DETAILS</div>
+
+    {order.items.map((item: any) => (
+      <div key={item.id} className={styles.itemRow}>
+        
+        {/* ✅ FIXED IMAGE */}
+        <img
+          src={item.variant?.image }
+          alt={item.variant?.product?.name}
+          className={styles.productImg}
+        />
+
+        <div className={styles.itemInfo}>
+          <span className={styles.itemName}>
+            {item.variant?.product?.name}
+          </span>
+
+          <span className={styles.itemMeta}>
+            {item.variant?.color}, {item.variant?.size} | Qty: {item.quantity}
+          </span>
+        </div>
+
+        <div className={styles.price}>
+          ₹{item.price}
+        </div>
+      </div>
+    ))}
+
+    {/* ✅ Pricing */}
+    <div className={styles.summaryRow}>
+      <span>Subtotal</span>
+      <span>₹{order.subtotal}</span>
+    </div>
+
+    <div className={styles.summaryRow}>
+      <span>Shipping</span>
+      <span className={styles.shippingFree}>
+        {order.shippingCharge == 0 ? "FREE" : `₹${order.shippingCharge}`}
+      </span>
+    </div>
+
+    <div className={styles.totalRow}>
+      <span>Total</span>
+      <span>₹{order.finalAmount}</span>
+    </div>
+
+    {/* ✅ Delivery Card */}
+    <div className={styles.deliveryCard}>
+      <div className={styles.deliveryGrid}>
+
+        <div>
+          <span className={styles.cardLabel}>DELIVERY ADDRESS</span>
+          <p className={styles.cardContent}>
+            {order.shippingAddress}
+          </p>
+        </div>
+
+        <div>
+          <span className={styles.cardLabel}>ESTIMATED DELIVERY</span>
+          <p className={styles.cardContent}>
+            <MdLocalShipping className={styles.deliveryIcon} />
+            3 - 5 Business Days
+          </p>
+        </div>
+      </div>
+
+      {/* ✅ Track Button */}
+      <button
+        className={styles.trackButton}
+        onClick={() => router.push("/profile")}
+      >
+        <MdLocalShipping className={styles.trackIcon} />
+        TRACK ORDER
+      </button>
+    </div>
+
+    {/* ✅ Footer */}
+    <div className={styles.footerLinks}>
+      <span>NEED HELP?</span>
+      <span>RETURN POLICY</span>
+    </div>
+
+    <button
+      className={styles.continueBtn}
+      onClick={() => router.push("/")}
+    >
+      CONTINUE SHOPPING
+    </button>
+
+  </div>
+);
 }
