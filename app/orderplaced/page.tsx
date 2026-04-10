@@ -19,20 +19,18 @@ export default function OrderConfirmation() {
   console.log("URL orderId:", orderId);
   console.log("Stored orderId:", storedId);
 
-  if (!data) {
+  if (!data || !storedId || !orderId) {
     setOrder(null);
     return;
   }
 
-  // ✅ Allow fallback (IMPORTANT)
+  // ✅ ONLY show correct order
   if (storedId === orderId) {
     setOrder(JSON.parse(data));
   } else {
-    // ⚠️ fallback (so no infinite loading)
-    setOrder(JSON.parse(data));
+    setOrder(null); // ❌ don't show wrong order
   }
 }, [orderId]);
-
 if (!order) {
   return <p>Loading correct order...</p>;
 }
