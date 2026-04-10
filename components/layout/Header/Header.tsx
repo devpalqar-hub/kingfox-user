@@ -10,6 +10,7 @@ import { getWishList } from "@/services/wishlist.service";
 import { useRouter } from "next/navigation";
 import { getAllCategories } from "@/services/category.service";
 import { getCartAPI } from "@/services/cart.service";
+import { useSearchParams } from "next/navigation";
 
 const Header = () => {
   const router = useRouter();
@@ -20,6 +21,8 @@ const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
+  const params = useSearchParams();
+  const search = params.get("search");
 type Category = {
   id: number;
   name: string;
@@ -39,6 +42,7 @@ useEffect(() => {
 const oversizedCategory = categories.find((cat) =>
   cat.name.toLowerCase().includes("oversize")
 );
+
 
 
 const handleSearch = async () => {
@@ -61,7 +65,7 @@ const handleSearch = async () => {
     if (products && products.length > 0) {
       const firstProduct = products[0];
 
-      router.push(`/products/${firstProduct.id}`);
+      router.push(`/products?search=${searchTerm}`);
     } else {
       alert("No products found");
     }
@@ -74,52 +78,78 @@ const handleSearch = async () => {
    if (loading) return null;
 
 
-   useEffect(() => {
-  const fetchWishlist = async () => {
-    const token = localStorage.getItem("token");
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
 
-    // ❌ not logged in → skip
-    if (!token) {
-      setWishlistCount(0);
-      return;
-    }
+      // ❌ not logged in → skip
+      if (!token) {
+        setWishlistCount(0);
+        return;
+      }
 
-    try {
-      const res = await getWishList();
+      try {
+        const res = await getWishList();
+        const items = Array.isArray(res)
+          ? res
+          : res?.items || res?.data || [];
 
-      // ✅ API returns array
-      setWishlistCount(res.length);
-    } catch (err) {
-      console.error("Wishlist error:", err);
-      setWishlistCount(0);
-    }
+        setWishlistCount(items.length);
+      } catch (err: any) {
+        if (err?.response?.status === 401) {
+          localStorage.removeItem("token");
+          setWishlistCount(0);
+          setShowLogin(true);
+          return;
+        }
+
+        console.error("Wishlist error:", err);
+        setWishlistCount(0);
+      }
+    };
+
+    fetchWishlist();
+
+
+  // ✅ LISTENER (ADD THIS)
+  const handleWishlistUpdate = () => fetchWishlist();
+
+  window.addEventListener("wishlistUpdated", handleWishlistUpdate);
+
+  return () => {
+    window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
   };
-
-  fetchWishlist();
 }, [user]); // ✅ runs when login changes
 
 useEffect(() => {
-  const fetchCart = async () => {
-    const token = localStorage.getItem("token");
+    const fetchCart = async () => {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      setCartCount(0);
-      return;
-    }
+      if (!token) {
+        setCartCount(0);
+        return;
+      }
 
-    try {
-      const res = await getCartAPI();
-      const totalQty =
-        res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+      try {
+        const res = await getCartAPI();
+        const totalQty =
+          res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
 
-      setCartCount(totalQty);
-    } catch (err) {
-      console.error("Cart error:", err);
-      setCartCount(0);
-    }
-  };
+        setCartCount(totalQty);
+      } catch (err: any) {
+        if (err?.response?.status === 401) {
+          localStorage.removeItem("token");
+          setCartCount(0);
+          setShowLogin(true);
+          return;
+        }
 
-  fetchCart();
+        console.error("Cart error:", err);
+        setCartCount(0);
+      }
+    };
+
+    fetchCart();
 
   // ✅ LISTENER
   const handleCartUpdate = () => fetchCart();

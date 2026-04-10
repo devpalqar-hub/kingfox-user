@@ -328,7 +328,6 @@ const handlePlaceOrder = async () => {
                     setForm({ ...form, pincode: e.target.value })
                   }
                 />
-                <span className={styles.locationTag}><MdLocationOn /> BENGALURU, KA</span>
               </div>
             </div>
             <div className={styles.inputGroup}>

@@ -6,7 +6,6 @@ import { getOrdersAPI } from "@/services/order-history.service";
 import { OrderHistoryItem } from "@/types/order-history";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-
 import { useSearchParams } from "next/navigation";
 
 const OrdersPage = () => {

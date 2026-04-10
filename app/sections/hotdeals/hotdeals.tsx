@@ -34,6 +34,7 @@ const HotDeals = () => {
 
       try {
         const res = await getWishList();
+        window.dispatchEvent(new Event("wishlistUpdated"));
 
         const items = res?.data || res?.items || res || [];
 
@@ -58,6 +59,7 @@ const HotDeals = () => {
       if (wishlistIds.includes(productId)) {
         // ✅ REMOVE
         await removeFromWishlist(productId);
+        window.dispatchEvent(new Event("wishlistUpdated"));
 
         setWishlistIds((prev) =>
           prev.filter((id) => id !== productId)
