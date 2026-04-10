@@ -23,7 +23,7 @@ import { getProfileAPI } from '@/services/profile.service';
 import { getCartAPI, updateCartItemAPI} from "@/services/cart.service";
 import { previewOrderAPI } from "@/services/order.service";
 import { MdCreditCard, MdAccountBalance } from "react-icons/md";
-
+ 
 export default function CheckoutPage() {
 const router = useRouter();
 const [isPending, setIsPending] = useState(false);
@@ -35,7 +35,6 @@ const { showToast } = useToast();
 const [branches, setBranches] = useState<any[]>([]);
 const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
 const [couponCode, setCouponCode] = useState("");
-
 
 const [form, setForm] = useState({
   firstName: "",
@@ -244,6 +243,9 @@ const handlePlaceOrder = async () => {
 
       showToast("Order placed successfully", "success", 2500);
       console.log("FULL RESPONSE:", response);
+      localStorage.setItem("lastOrderId", response.order.id.toString());
+
+      localStorage.setItem("lastOrderData", JSON.stringify(response.order));
 
       setTimeout(() => {
         router.replace(`/orderplaced?orderId=${response.order.id}`);
