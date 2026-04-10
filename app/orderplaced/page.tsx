@@ -13,22 +13,18 @@ export default function OrderConfirmation() {
   const [order, setOrder] = useState<any>(null);
 
   useEffect(() => {
-  const storedId = localStorage.getItem("lastOrderId");
   const data = localStorage.getItem("lastOrderData");
 
-  if (!data || !storedId) return;
-
-  // ✅ IMPORTANT FIX
-  if (storedId === orderId) {
+  if (data) {
     setOrder(JSON.parse(data));
   } else {
-    console.warn("Order mismatch!");
     setOrder(null);
   }
-}, [orderId]);
+}, []);
 
-  if (!order) return <p>Loading...</p>;
-
+  if (!order) {
+  return <p>Order not found</p>;
+}
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
