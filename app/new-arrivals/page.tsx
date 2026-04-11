@@ -8,6 +8,7 @@ import { FiEye } from "react-icons/fi";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
+import { getProductPath } from "@/lib/product-path";
 import { 
   addToWishlist, 
   removeFromWishlist, 
@@ -23,8 +24,6 @@ const NewArrivals = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [availableSizes, setAvailableSizes] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  
-  const inStockSizes = ['5XL', '6XL', '8XL', '10XL'];
   const [filterOpen, setFilterOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -239,7 +238,14 @@ const handleWishlist = async (id: number) => {
 
                   <button
                     className={styles.iconBtn}
-                    onClick={() => router.push(`/products/${product.id}`)}
+                    onClick={() =>
+                      router.push(
+                        getProductPath({
+                          id: product.id,
+                          slug: product.slug,
+                        }),
+                      )
+                    }
                   >
                     <FiEye size={16} />
                   </button>

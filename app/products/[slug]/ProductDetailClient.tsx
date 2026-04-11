@@ -1,12 +1,11 @@
 'use client'
-import { useEffect,useMemo,useState, useRef  } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './productdetail.module.css';
 import { LuShieldCheck, LuRotateCcw, LuCircleCheck,LuBox, LuAward } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
-import { useParams } from "next/navigation";
-import { getProductById } from "@/services/product.service";
 import { ProductDetail as ProductDetailType } from "@/types/product";
 import { useRouter } from "next/navigation";
+import { getProductById, getProductBySlug } from "@/services/product.service";
 import { getReviewsByProductId } from "@/services/review.service";
 import { addToGuestCart } from "@/lib/cart";
 import { addToCartAPI } from "@/services/cart.service";
@@ -17,17 +16,39 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from '@/context/ToastContext';
 import { getWishList } from "@/services/wishlist.service";
 
-const ProductDetail = () => {
+type ReviewItem = {
+  id: number;
+  rating: number | string;
+  body: string;
+  images?: string[];
+  customer?: {
+    name?: string | null;
+  } | null;
+};
+
+type WishlistEntry = {
+  productId: number;
+};
+
+const hasResponseStatus = (
+  error: unknown,
+): error is { response?: { status?: number } } =>
+  typeof error === "object" && error !== null && "response" in error;
+
+type ProductDetailClientProps = {
+  initialProduct: ProductDetailType;
+};
+
+const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('DESCRIPTION');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [product, setProduct] = useState<ProductDetailType | null>(null);
+  const [product, setProduct] = useState<ProductDetailType | null>(initialProduct);
   const metaSections = product?.metaInfo || [];
   const { user } = useAuth();
-  const params = useParams();
   const { token } = useAuth();
   const { showToast } = useToast();
   const [showSizeChart, setShowSizeChart] = useState(false);
@@ -37,16 +58,46 @@ const ProductDetail = () => {
   rating: number;
   total: number;
   distribution: Record<number, number>;
-  reviews: any[];
+  reviews: ReviewItem[];
 } | null>(null);
+
+useEffect(() => {
+  setProduct(initialProduct);
+}, [initialProduct]);
+
+useEffect(() => {
+  if (!token || !initialProduct.id) {
+    return;
+  }
+
+  let isMounted = true;
+
+  const refreshProduct = async () => {
+    try {
+      const nextProduct = initialProduct.slug
+        ? await getProductBySlug(initialProduct.slug)
+        : await getProductById(String(initialProduct.id));
+
+      if (isMounted) {
+        setProduct(nextProduct);
+      }
+    } catch (error) {
+      console.error("Failed to refresh product state", error);
+    }
+  };
+
+  refreshProduct();
+
+  return () => {
+    isMounted = false;
+  };
+}, [initialProduct.id, initialProduct.slug, token]);
 
 useEffect(() => {
   const fetchReviews = async () => {
     if (!product?.id) return;
 
     const res = await getReviewsByProductId(product.id);
-
-    console.log("DETAIL PAGE REVIEW:", res);
 
     if (res) {
       const distribution: Record<number, number> = {
@@ -55,14 +106,13 @@ useEffect(() => {
         3: 0,
       };
 
-      res.reviews.forEach((r: any) => {
+      res.reviews.forEach((r: ReviewItem) => {
         const rating = Number(r.rating);
         if (distribution[rating] !== undefined) {
           distribution[rating] += 1;
         }
       });
 
-      console.log("FINAL DISTRIBUTION:", distribution); // ✅ debug
 
       setReviewData({
         rating: res.averageRating,
@@ -144,21 +194,6 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [isHovered]);
 
-  useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      const data = await getProductById(params.id as string);
-      setProduct(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  if (params.id) {
-    fetchProduct();
-  }
-}, [params.id]);
-
 useEffect(() => {
   if (product?.variants?.length) {
     const firstSize = product.variants[0].size;
@@ -187,19 +222,19 @@ useEffect(() => {
       const res = await getWishList();
 
       const exists = res.some(
-        (item: any) => item.productId === product?.id
+        (item: WishlistEntry) => item.productId === product?.id
       );
 
       setIsWishlisted(exists);
-    } catch (err) {
+    } catch {
       showToast("Something went wrong", "error");
     }
   };
 
-  if (product?.id) {
+  if (user && product?.id) {
     syncWishlist();
   }
-}, [product?.id]);
+}, [product?.id, user, showToast]);
 
 useEffect(() => {
   if (product) {
@@ -210,7 +245,7 @@ useEffect(() => {
 const handleWishlist = async () => {
   if (!user) {
     showToast("Please login first", "error");
-    router.push("/login");
+    router.push("/auth/login");
     return;
   }
 
@@ -232,8 +267,8 @@ const handleWishlist = async () => {
     // 🔥 update header count
     window.dispatchEvent(new Event("wishlistUpdated"));
 
-  } catch (err: any) {
-    if (err?.response?.status === 409) {
+  } catch (err: unknown) {
+    if (hasResponseStatus(err) && err.response?.status === 409) {
       // already exists → fix UI
       setIsWishlisted(true);
       showToast("Already in wishlist", "info");
@@ -293,6 +328,7 @@ const handleAddToCart = async () => {
         price: Number(selectedVariant.sellingPrice),
         size: selectedVariant.size,
         color: selectedVariant.color,
+        availableStock: selectedVariant.totalStock ?? 0,
       });
     }
          // ✅🔥 ADD THIS (VERY IMPORTANT)
@@ -340,6 +376,7 @@ const handleBuyNow = async () => {
         price: Number(selectedVariant.sellingPrice),
         size: selectedVariant.size,
         color: selectedVariant.color,
+        availableStock: selectedVariant.totalStock ?? 0,
       });
     }
      window.dispatchEvent(new Event("cartUpdated"));
@@ -736,7 +773,7 @@ const handleBuyNow = async () => {
   <div className={styles.carouselTrack}>
     
     {reviewData?.reviews?.length ? (
-  reviewData.reviews.map((review: any) => {
+  reviewData.reviews.map((review: ReviewItem) => {
     const name = review.customer?.name || "User";
 
     
@@ -771,7 +808,7 @@ const handleBuyNow = async () => {
 
             {/* TEXT */}
             <p className={styles.reviewText}>
-              "{review.body}"
+              {`"${review.body}"`}
             </p>
 
             {/* IMAGE */}
@@ -779,6 +816,7 @@ const handleBuyNow = async () => {
              <div className={styles.reviewWrapper}>
               <img
                 src={review.images[0]}
+                alt={`Review from ${name}`}
                 className={styles.reviewImg}
               />
               </div>
@@ -867,4 +905,4 @@ const handleBuyNow = async () => {
   );
 };
 
-export default ProductDetail;
+export default ProductDetailClient;

@@ -5,11 +5,21 @@ import ProductCard from '@/components/productcard/productcard';
 import styles from './hotdeals.module.css';
 import { getProducts } from '@/services/product.service';
 import { getWishList, addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
+import type { Product } from '@/types/product';
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/context/AuthContext";
 
+type WishlistEntry = {
+  productId: number;
+};
+
+const hasResponseStatus = (
+  error: unknown,
+): error is { response?: { status?: number } } =>
+  typeof error === "object" && error !== null && "response" in error;
+
 const HotDeals = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [wishlistIds, setWishlistIds] = useState<number[]>([]);
   const router = useRouter();
   const { user } = useAuth();
@@ -35,9 +45,8 @@ const HotDeals = () => {
       try {
         const res = await getWishList();
 
-        const items = res?.data || res?.items || res || [];
-
-        const ids = items.map((item: any) => item.productId);
+        const items: WishlistEntry[] = res?.data || res?.items || res || [];
+        const ids = items.map((item) => item.productId);
 
         setWishlistIds(ids);
       } catch (err) {
@@ -68,9 +77,9 @@ const HotDeals = () => {
           await addToWishlist(productId);
 
           setWishlistIds((prev) => [...prev, productId]);
-        } catch (err: any) {
+        } catch (err: unknown) {
           // 🔥 HANDLE 409
-          if (err.response?.status === 409) {
+          if (hasResponseStatus(err) && err.response?.status === 409) {
             console.log("Already in wishlist");
 
             // sync UI anyway
@@ -98,6 +107,7 @@ const HotDeals = () => {
           <ProductCard
             key={product.id}
             id={product.id}
+            slug={product.slug}
             name={product.name}
             price={String(product.priceRange?.min || 0)}
             rating={4}

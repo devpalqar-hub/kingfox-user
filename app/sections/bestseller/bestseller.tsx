@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import ProductCard from '@/components/productcard/productcard';
 import styles from './bestseller.module.css';
 import { getProducts } from '@/services/product.service';
+import type { Product } from '@/types/product';
 import { useRouter } from 'next/navigation';
 
 const Bestseller = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,6 +45,7 @@ const Bestseller = () => {
           <ProductCard
             key={product.id}
             id={product.id}
+            slug={product.slug}
             name={product.name}
             price={String(product.priceRange?.min || 0)}
             rating={4}

@@ -1,141 +1,131 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import styles from "./Header.module.css";
-import { Search, Heart, ShoppingCart, User, Menu, X } from "lucide-react";
-import LoginModal from "@/app/auth/login/page";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { getWishList } from "@/services/wishlist.service";
 import { useRouter } from "next/navigation";
+import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
+
+import LoginModal from "@/app/auth/login/page";
+import { useAuth } from "@/context/AuthContext";
+import { getProductPath } from "@/lib/product-path";
 import { getAllCategories } from "@/services/category.service";
 import { getCartAPI } from "@/services/cart.service";
+import { getProducts } from "@/services/product.service";
+import { getWishList } from "@/services/wishlist.service";
+import type { CartItem } from "@/types/cart";
+
+import styles from "./Header.module.css";
+
+type Category = {
+  id: number;
+  name: string;
+};
 
 const Header = () => {
   const router = useRouter();
-  const { user, loading } = useAuth(); // ✅ ADD loading
+  const { user, loading } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
-type Category = {
-  id: number;
-  name: string;
-};
+  const [categories, setCategories] = useState<Category[]>([]);
 
-const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => {
+    const loadCategories = async () => {
+      const data = await getAllCategories();
+      setCategories(data || []);
+    };
 
-useEffect(() => {
-  const loadCategories = async () => {
-    const data = await getAllCategories();
-    setCategories(data || []);
-  };
+    loadCategories();
+  }, []);
 
-  loadCategories();
-}, []);
+  const oversizedCategory = categories.find((cat) =>
+    cat.name.toLowerCase().includes("oversize"),
+  );
 
-const oversizedCategory = categories.find((cat) =>
-  cat.name.toLowerCase().includes("oversize")
-);
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
 
+    try {
+      const response = await getProducts({
+        search: searchTerm,
+        limit: 1,
+      });
+      const products = response.items;
 
-const handleSearch = async () => {
-  if (!searchTerm.trim()) return;
-
-  try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/products`,
-      {
-        params: {
-          search: searchTerm, // ✅ better way
-        },
+      if (products && products.length > 0) {
+        router.push(getProductPath(products[0]));
+      } else {
+        alert("No products found");
       }
-    );
-
-    console.log("API:", response.data);
-
-    const products = response.data.items; // ✅ FIXED
-
-    if (products && products.length > 0) {
-      const firstProduct = products[0];
-
-      router.push(`/products/${firstProduct.id}`);
-    } else {
-      alert("No products found");
-    }
-  } catch (error) {
-    console.error("Search error:", error);
-  }
-
-  setShowSearch(false);
-};
-   if (loading) return null;
-
-
-   useEffect(() => {
-  const fetchWishlist = async () => {
-    const token = localStorage.getItem("token");
-
-    // ❌ not logged in → skip
-    if (!token) {
-      setWishlistCount(0);
-      return;
+    } catch (error) {
+      console.error("Search error:", error);
     }
 
-    try {
-      const res = await getWishList();
-
-      // ✅ API returns array
-      setWishlistCount(res.length);
-    } catch (err) {
-      console.error("Wishlist error:", err);
-      setWishlistCount(0);
-    }
+    setShowSearch(false);
   };
 
-  fetchWishlist();
-}, [user]); // ✅ runs when login changes
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
 
-useEffect(() => {
-  const fetchCart = async () => {
-    const token = localStorage.getItem("token");
+      if (!token) {
+        setWishlistCount(0);
+        return;
+      }
 
-    if (!token) {
-      setCartCount(0);
-      return;
-    }
+      try {
+        const res = await getWishList();
+        setWishlistCount(res.length);
+      } catch (err) {
+        console.error("Wishlist error:", err);
+        setWishlistCount(0);
+      }
+    };
 
-    try {
-      const res = await getCartAPI();
-      const totalQty =
-        res.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+    fetchWishlist();
+  }, [user]);
 
-      setCartCount(totalQty);
-    } catch (err) {
-      console.error("Cart error:", err);
-      setCartCount(0);
-    }
-  };
+  useEffect(() => {
+    const fetchCart = async () => {
+      const token = localStorage.getItem("token");
 
-  fetchCart();
+      if (!token) {
+        setCartCount(0);
+        return;
+      }
 
-  // ✅ LISTENER
-  const handleCartUpdate = () => fetchCart();
+      try {
+        const res = await getCartAPI();
+        const totalQty =
+          res.items?.reduce(
+            (sum: number, item: CartItem) => sum + item.quantity,
+            0,
+          ) || 0;
 
-  window.addEventListener("cartUpdated", handleCartUpdate);
+        setCartCount(totalQty);
+      } catch (err) {
+        console.error("Cart error:", err);
+        setCartCount(0);
+      }
+    };
 
-  return () => {
-    window.removeEventListener("cartUpdated", handleCartUpdate);
-  };
-}, [user]);
+    fetchCart();
 
+    const handleCartUpdate = () => fetchCart();
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
+  }, [user]);
+
+  if (loading) return null;
 
   return (
     <header className={styles.headerContainer}>
-      
-      {/* Announcement Bar */}
       <div className={styles.announcementBar}>
         <div className={styles.marquee}>
           <span>OUR FIRST 50000 MILESTONE GIVEAWAY, ONLY</span>
@@ -152,10 +142,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Main Header */}
       <nav className={styles.mainHeader}>
-
-        {/* Hamburger */}
         <div
           className={styles.hamburger}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -163,37 +150,41 @@ useEffect(() => {
           {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </div>
 
-        {/* Logo */}
         <div className={styles.logo}>
           <img src="/logo.png" alt="Logo" className={styles.logoImg} />
           <span className={styles.logoText}>KINGFOX</span>
         </div>
 
-        {/* Nav Links */}
-        {/* Nav Links */}
         <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
           <li data-text="HOME">
-            <Link href="/" onClick={() => setMenuOpen(false)}>HOME</Link>
+            <Link href="/" onClick={() => setMenuOpen(false)}>
+              HOME
+            </Link>
           </li>
 
           <li data-text="PRODUCTS">
-            <Link href="/products" onClick={() => setMenuOpen(false)}>PRODUCTS</Link>
+            <Link href="/products" onClick={() => setMenuOpen(false)}>
+              PRODUCTS
+            </Link>
           </li>
 
           <li data-text="NEW ARRIVALS">
-            <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>NEW ARRIVALS</Link>
-          </li>
-
-         {oversizedCategory && (
-          <li data-text={oversizedCategory.name}>
-            <Link
-              href={`/products?categoryId=${oversizedCategory.id}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              {oversizedCategory.name.toUpperCase()}
+            <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>
+              NEW ARRIVALS
             </Link>
           </li>
-        )}
+
+          {oversizedCategory && (
+            <li data-text={oversizedCategory.name}>
+              <Link
+                href={`/products?categoryId=${oversizedCategory.id}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {oversizedCategory.name.toUpperCase()}
+              </Link>
+            </li>
+          )}
+
           <li data-text="CONTACT">
             <Link href="/contact" onClick={() => setMenuOpen(false)}>
               CONTACT
@@ -201,43 +192,40 @@ useEffect(() => {
           </li>
         </ul>
 
-        {/* Icons */}
         <div className={styles.iconActions}>
-  
-          {/* 🔍 SEARCH BUTTON */}
           <div
             className={styles.iconWrapper}
             onClick={() => setShowSearch(true)}
           >
             <Search size={20} />
           </div>
-           {showSearch && (
-                <div className={styles.searchOverlay}>
-                  <div
-                    className={styles.searchBox}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Search size={20} />
 
-                    <input
-                      type="text"
-                      placeholder="Search products..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                      autoFocus
-                    />
+          {showSearch && (
+            <div className={styles.searchOverlay}>
+              <div
+                className={styles.searchBox}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Search size={20} />
 
-                    <div
-                      className={styles.closeBtn}
-                      onClick={() => setShowSearch(false)}
-                    >
-                      <X size={18} />
-                    </div>
-                  </div>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  autoFocus
+                />
+
+                <div
+                  className={styles.closeBtn}
+                  onClick={() => setShowSearch(false)}
+                >
+                  <X size={18} />
                 </div>
-              )}
-         
+              </div>
+            </div>
+          )}
 
           <Link href="/wishlist" className={styles.wishlistLink}>
             <div className={styles.iconWrapper}>
@@ -250,10 +238,9 @@ useEffect(() => {
 
           <Link href="/cart" className={styles.iconWrapper}>
             <ShoppingCart size={20} />
-            {cartCount > 0 && (
-                <span className={styles.badge}>{cartCount}</span>
-              )}
+            {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
           </Link>
+
           {user ? (
             <Link href="/profile" className={styles.iconWrapper} title="Profile">
               <User size={20} />
@@ -268,11 +255,8 @@ useEffect(() => {
           )}
         </div>
       </nav>
-      {/* LOGIN MODAL */}
-      <LoginModal
-        isOpen={showLogin}
-        onClose={() => setShowLogin(false)}
-      />
+
+      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </header>
   );
 };

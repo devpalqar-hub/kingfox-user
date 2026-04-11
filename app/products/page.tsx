@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import ProductCard from "@/components/productcard/productcard";
 import styles from "./Products.module.css";
-import Link from "next/link";
 import { getProducts } from "@/services/product.service";
 import { Product } from "@/types/product";
 import { getReviewsByProductId } from "@/services/review.service";
@@ -30,7 +29,6 @@ const ProductsPage = () => {
   const [availableCategories, setAvailableCategories] = useState<
     { id: number; name: string }[]
   >([]);
-  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<
     "newly_arrived" | "low_to_high" | "high_to_low" | null
   >(null);
@@ -38,7 +36,6 @@ const ProductsPage = () => {
   const [reviewMap, setReviewMap] = useState<any>({});
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [availableColors, setAvailableColors] = useState<string[]>([]);
-  const [loadingColors, setLoadingColors] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [tag, setTag] = useState<string | null>(null);
   const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -398,6 +395,7 @@ const ProductsPage = () => {
               <ProductCard
                 key={product.id}
                 id={product.id}
+                slug={product.slug}
                 name={product.name}
                 price={String(product.priceRange?.min || 0)}
                 rating={reviewMap[product.id]?.rating ?? 0}

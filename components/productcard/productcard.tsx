@@ -1,16 +1,19 @@
 "use client";
-import React, { useState } from "react";
-import styles from "./productcard.module.css";
+import React from "react";
 import { Eye, Star } from "lucide-react";
-import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
-import { useAuth } from "@/context/AuthContext";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { getProductPath } from "@/lib/product-path";
+
+import styles from "./productcard.module.css";
 
 interface ProductCardProps {
   id: number;
+  slug?: string | null;
   image: string;
   name: string;
   price: string;
@@ -24,6 +27,7 @@ interface ProductCardProps {
 
 const ProductCard = ({
   id,
+  slug,
   image,
   name,
   price,
@@ -37,7 +41,6 @@ const ProductCard = ({
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const [wishlist, setWishlist] = useState<number[]>([]);
 
   const handleWishlist = async () => {
     if (!user) {
@@ -46,7 +49,7 @@ const ProductCard = ({
     }
 
     if (onWishlistToggle) {
-      onWishlistToggle(); // ✅ delegate to parent
+      onWishlistToggle();
     }
   };
 
@@ -59,16 +62,16 @@ const ProductCard = ({
         <div className={styles.iconOverlay}>
           <button className={styles.iconBtn} onClick={handleWishlist}>
             {isWishlisted ? (
-              <FaHeart size={18} color="black" /> // ✅ always black when saved
+              <FaHeart size={18} color="black" />
             ) : (
-              <FiHeart size={18} /> // ✅ outline when not saved
+              <FiHeart size={18} />
             )}
           </button>
         </div>
 
         <button
           className={styles.viewBtn}
-          onClick={() => router.push(`/products/${id}`)}
+          onClick={() => router.push(getProductPath({ id, slug }))}
         >
           <Eye size={18} />
           VIEW
@@ -78,8 +81,9 @@ const ProductCard = ({
       <div className={styles.details}>
         <div className={styles.row}>
           <h3 className={styles.productName}>{name}</h3>
-          <p className={styles.price}>₹{price}</p>
+          <p className={styles.price}>â‚¹{price}</p>
         </div>
+
         <div className={styles.colorOptions}>
           {(colors || ["#f1b941", "#777", "#000"]).map((color, i) => (
             <span
@@ -89,6 +93,7 @@ const ProductCard = ({
             />
           ))}
         </div>
+
         {reviews !== undefined && reviews > 0 && (
           <div className={styles.ratingRow}>
             <div className={styles.stars}>
