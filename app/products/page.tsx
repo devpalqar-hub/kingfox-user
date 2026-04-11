@@ -1,8 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ProductCard from "@/components/productcard/productcard";
 import styles from "./Products.module.css";
-import Link from "next/link";
 import { getProducts } from "@/services/product.service";
 import { Product } from "@/types/product";
 import { getReviewsByProductId } from "@/services/review.service";
@@ -23,14 +22,13 @@ const ProductsPage = () => {
   const [page, setPage] = useState(1);
   const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
-  const [minPrice, setMinPrice] = useState(100);
+  const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(5000);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [availableSizes, setAvailableSizes] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<
     { id: number; name: string }[]
   >([]);
-  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<
     "newly_arrived" | "low_to_high" | "high_to_low" | null
   >(null);
@@ -38,7 +36,6 @@ const ProductsPage = () => {
   const [reviewMap, setReviewMap] = useState<any>({});
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [availableColors, setAvailableColors] = useState<string[]>([]);
-  const [loadingColors, setLoadingColors] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [tag, setTag] = useState<string | null>(null);
   const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -55,7 +52,14 @@ const ProductsPage = () => {
         const res = await getWishList();
         const ids = res.map((item: any) => item.productId);
         setWishlist(ids);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.response?.status === 401) {
+          localStorage.removeItem("token");
+          setWishlist([]);
+          setIsLoginOpen(true);
+          return;
+        }
+
         console.error(err);
       }
     };
@@ -64,32 +68,38 @@ const ProductsPage = () => {
   }, []);
 
   const handleWishlist = async (id: number) => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    showToast("Please login", "info");
-    return;
-  }
-
-  try {
-    if (wishlist.includes(id)) {
-      await removeFromWishlist(id);
-      setWishlist((prev) => prev.filter((i) => i !== id));
-
-      showToast("Removed from wishlist", "info"); // ✅ ADD THIS
-    } else {
-      await addToWishlist(id);
-      setWishlist((prev) => [...prev, id]);
-
-      showToast("Added to wishlist", "success"); // ✅ ADD THIS
+    if (!token) {
+      setIsLoginOpen(true);
+      return;
     }
 
-    window.dispatchEvent(new Event("wishlistUpdated"));
-  } catch (err) {
-    console.error(err);
-    showToast("Something went wrong", "error"); // ✅ ADD THIS
-  }
-};
+    try {
+      if (wishlist.includes(id)) {
+        await removeFromWishlist(id);
+        setWishlist((prev) => prev.filter((i) => i !== id));
+
+        showToast("Removed from wishlist", "info"); // ✅ ADD THIS
+      } else {
+        await addToWishlist(id);
+        setWishlist((prev) => [...prev, id]);
+
+        showToast("Added to wishlist", "success"); // ✅ ADD THIS
+      }
+
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        localStorage.removeItem("token");
+        setIsLoginOpen(true);
+        return;
+      }
+
+      console.error(err);
+      showToast("Something went wrong", "error"); // ✅ ADD THIS
+    }
+  };
   useEffect(() => {
     const categoryFromURL = searchParams.get("categoryId");
     const tagFromURL = searchParams.get("tag");
@@ -109,13 +119,16 @@ const ProductsPage = () => {
 
     const loadProducts = async () => {
       try {
+        const appliedMinPrice = minPrice > 0 ? minPrice : undefined;
+        const appliedMaxPrice = maxPrice < 5000 ? maxPrice : undefined;
+
         const data = await getProducts({
           page,
           limit: 8,
           size: size || undefined,
           color: color || undefined,
-          minPrice: minPrice,
-          maxPrice: maxPrice,
+          minPrice: appliedMinPrice,
+          maxPrice: appliedMaxPrice,
           categoryId: categoryId || undefined,
           tags: tag ? [tag] : undefined,
           sortBy: sortBy || undefined,
@@ -188,7 +201,7 @@ const ProductsPage = () => {
   const handleClearFilters = () => {
     setSize(null);
     setColor(null);
-    setMinPrice(100);
+    setMinPrice(0);
     setMaxPrice(5000);
     setCategoryId(null);
     setSortBy(null);
@@ -248,9 +261,9 @@ const ProductsPage = () => {
                   value === ""
                     ? null
                     : (value as
-                        | "newly_arrived"
-                        | "low_to_high"
-                        | "high_to_low"),
+                      | "newly_arrived"
+                      | "low_to_high"
+                      | "high_to_low"),
                 );
                 setPage(1);
               }}
@@ -272,9 +285,8 @@ const ProductsPage = () => {
                 {FIXED_SIZES.map((s) => (
                   <button
                     key={s}
-                    className={`${styles.sizeBtn} ${
-                      size === s ? styles.activeSize : ""
-                    }`}
+                    className={`${styles.sizeBtn} ${size === s ? styles.activeSize : ""
+                      }`}
                     onClick={() => {
                       setSize((prev) => (prev === s ? null : s));
                       setColor(null); // ✅ IMPORTANT (reset color when size changes)
@@ -295,9 +307,8 @@ const ProductsPage = () => {
                 {availableColors.map((c) => (
                   <span
                     key={c}
-                    className={`${styles.colorCircle} ${
-                      color === c ? styles.activeColor : ""
-                    }`}
+                    className={`${styles.colorCircle} ${color === c ? styles.activeColor : ""
+                      }`}
                     style={{ backgroundColor: c.toLowerCase() }}
                     onClick={() => {
                       setColor((prev) => (prev === c ? null : c));
@@ -329,7 +340,7 @@ const ProductsPage = () => {
                 {/* MIN */}
                 <input
                   type="range"
-                  min="100"
+                  min="0"
                   max="5000"
                   value={minPrice}
                   onChange={(e) => {
@@ -345,7 +356,7 @@ const ProductsPage = () => {
                 {/* MAX */}
                 <input
                   type="range"
-                  min="100"
+                  min="0"
                   max="5000"
                   value={maxPrice}
                   onChange={(e) => {
@@ -373,9 +384,8 @@ const ProductsPage = () => {
               {availableCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className={`${styles.fitOption} ${
-                    categoryId === cat.id ? styles.fitOptionActive : ""
-                  }`}
+                  className={`${styles.fitOption} ${categoryId === cat.id ? styles.fitOptionActive : ""
+                    }`}
                   onClick={() => {
                     setCategoryId((prev) => (prev === cat.id ? null : cat.id));
                     setPage(1);
@@ -394,25 +404,32 @@ const ProductsPage = () => {
         {/* PRODUCT AREA */}
         <main className={styles.mainContent}>
           <div className={styles.productGrid}>
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
+            {products.length === 0 ? (
+              <div className={styles.noProductsMsg}>
+                No products to display
+              </div>
+            ) : (
+              products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  slug={product.slug}
                 name={product.name}
-                price={String(product.priceRange?.min || 0)}
-                rating={reviewMap[product.id]?.rating ?? 0}
-                reviews={reviewMap[product.id]?.total ?? 0}
-                colors={product.colors}
-                image={
-                  product.images && product.images.length > 0
-                    ? product.images[0]
-                    : "/placeholder-product.png"
-                }
-                isWishlisted={wishlist.includes(product.id)}
-                onWishlistToggle={() => handleWishlist(product.id)}
-                isNew={false}
-              />
-            ))}
+                  price={String(product.priceRange?.min || 0)}
+                  rating={reviewMap[product.id]?.rating ?? 0}
+                  reviews={reviewMap[product.id]?.total ?? 0}
+                  colors={product.colors}
+                  image={
+                    product.images && product.images.length > 0
+                      ? product.images[0]
+                      : "/placeholder-product.png"
+                  }
+                  isWishlisted={wishlist.includes(product.id)}
+                  onWishlistToggle={() => handleWishlist(product.id)}
+                  isNew={false}
+                />
+              ))
+            )}
           </div>
 
           {/* PAGINATION */}

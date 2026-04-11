@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./orderplaced.module.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MdLocalShipping } from "react-icons/md";
+import Link from "next/link";
 import { getOrderDetailsAPI } from "@/services/order-details.service";
 export default function OrderConfirmation() {
 
@@ -135,7 +136,10 @@ if (!order) {
     {/* ✅ Footer */}
     <div className={styles.footerLinks}>
       <span>NEED HELP?</span>
-      <span>RETURN POLICY</span>
+
+      <Link href="/returnpolicy" className={styles.link}>
+        RETURN POLICY
+      </Link>
     </div>
 
     <button
