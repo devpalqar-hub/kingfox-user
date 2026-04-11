@@ -1,7 +1,8 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
 
 import LoginModal from "@/app/auth/login/page";
@@ -9,9 +10,9 @@ import { useAuth } from "@/context/AuthContext";
 import { getProductPath } from "@/lib/product-path";
 import { getAllCategories } from "@/services/category.service";
 import { getCartAPI } from "@/services/cart.service";
-import { useSearchParams } from "next/navigation";
 import { getProducts } from "@/services/product.service";
 import { getWishList } from "@/services/wishlist.service";
+
 import type { CartItem } from "@/types/cart";
 
 import styles from "./Header.module.css";
@@ -24,25 +25,28 @@ type Category = {
 const Header = () => {
   const router = useRouter();
   const { user, loading } = useAuth();
+
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
-  const params = useSearchParams();
-  const search = params.get("search");
-type Category = {
-  id: number;
-  name: string;
-};
+  const [categories, setCategories] = useState<Category[]>([]);
 
-const [categories, setCategories] = useState<Category[]>([]);
+  const params = useSearchParams(); // (keep if you plan to use later)
 
+  /* =========================
+     LOAD CATEGORIES
+  ========================= */
   useEffect(() => {
     const loadCategories = async () => {
-      const data = await getAllCategories();
-      setCategories(data || []);
+      try {
+        const data = await getAllCategories();
+        setCategories(data || []);
+      } catch (err) {
+        console.error("Category error:", err);
+      }
     };
 
     loadCategories();
@@ -52,6 +56,9 @@ const [categories, setCategories] = useState<Category[]>([]);
     cat.name.toLowerCase().includes("oversize"),
   );
 
+  /* =========================
+     SEARCH HANDLER
+  ========================= */
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
 
@@ -60,9 +67,10 @@ const [categories, setCategories] = useState<Category[]>([]);
         search: searchTerm,
         limit: 1,
       });
-      const products = response.items;
 
-      if (products && products.length > 0) {
+      const products = response?.items || [];
+
+      if (products.length > 0) {
         router.push(getProductPath(products[0]));
       } else {
         alert("No products found");
@@ -74,9 +82,9 @@ const [categories, setCategories] = useState<Category[]>([]);
     setShowSearch(false);
   };
 
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      const token = localStorage.getItem("token");
+  /* =========================
+     WISHLIST COUNT
+  ========================= */
   useEffect(() => {
     const fetchWishlist = async () => {
       const token = localStorage.getItem("token");
@@ -88,9 +96,7 @@ const [categories, setCategories] = useState<Category[]>([]);
 
       try {
         const res = await getWishList();
-        const items = Array.isArray(res)
-          ? res
-          : res?.items || res?.data || [];
+        const items = Array.isArray(res) ? res : res?.items || res?.data || [];
 
         setWishlistCount(items.length);
       } catch (err: any) {
@@ -108,17 +114,18 @@ const [categories, setCategories] = useState<Category[]>([]);
 
     fetchWishlist();
 
+    const handleWishlistUpdate = () => fetchWishlist();
 
-  // ✅ LISTENER (ADD THIS)
-  const handleWishlistUpdate = () => fetchWishlist();
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
 
-  window.addEventListener("wishlistUpdated", handleWishlistUpdate);
+    return () => {
+      window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
+    };
+  }, [user]);
 
-  return () => {
-    window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
-  };
-}, [user]); // ✅ runs when login changes
-
+  /* =========================
+     CART COUNT
+  ========================= */
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
@@ -127,13 +134,10 @@ const [categories, setCategories] = useState<Category[]>([]);
         setCartCount(0);
         return;
       }
-      if (!token) {
-        setCartCount(0);
-        return;
-      }
 
       try {
         const res = await getCartAPI();
+
         const totalQty =
           res.items?.reduce(
             (sum: number, item: CartItem) => sum + item.quantity,
@@ -169,6 +173,7 @@ const [categories, setCategories] = useState<Category[]>([]);
 
   return (
     <header className={styles.headerContainer}>
+      {/* ANNOUNCEMENT */}
       <div className={styles.announcementBar}>
         <div className={styles.marquee}>
           <span>OUR FIRST 50000 MILESTONE GIVEAWAY, ONLY</span>
@@ -185,7 +190,9 @@ const [categories, setCategories] = useState<Category[]>([]);
         </div>
       </div>
 
+      {/* NAVBAR */}
       <nav className={styles.mainHeader}>
+        {/* MENU */}
         <div
           className={styles.hamburger}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -193,32 +200,34 @@ const [categories, setCategories] = useState<Category[]>([]);
           {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </div>
 
+        {/* LOGO */}
         <div className={styles.logo}>
           <img src="/logo.png" alt="Logo" className={styles.logoImg} />
           <span className={styles.logoText}>KINGFOX</span>
         </div>
 
+        {/* LINKS */}
         <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
-          <li data-text="HOME">
+          <li>
             <Link href="/" onClick={() => setMenuOpen(false)}>
               HOME
             </Link>
           </li>
 
-          <li data-text="PRODUCTS">
+          <li>
             <Link href="/products" onClick={() => setMenuOpen(false)}>
               PRODUCTS
             </Link>
           </li>
 
-          <li data-text="NEW ARRIVALS">
+          <li>
             <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>
               NEW ARRIVALS
             </Link>
           </li>
 
           {oversizedCategory && (
-            <li data-text={oversizedCategory.name}>
+            <li>
               <Link
                 href={`/products?categoryId=${oversizedCategory.id}`}
                 onClick={() => setMenuOpen(false)}
@@ -228,14 +237,16 @@ const [categories, setCategories] = useState<Category[]>([]);
             </li>
           )}
 
-          <li data-text="CONTACT">
+          <li>
             <Link href="/contact" onClick={() => setMenuOpen(false)}>
               CONTACT
             </Link>
           </li>
         </ul>
 
+        {/* ICONS */}
         <div className={styles.iconActions}>
+          {/* SEARCH */}
           <div
             className={styles.iconWrapper}
             onClick={() => setShowSearch(true)}
@@ -270,6 +281,7 @@ const [categories, setCategories] = useState<Category[]>([]);
             </div>
           )}
 
+          {/* WISHLIST */}
           <Link href="/wishlist" className={styles.wishlistLink}>
             <div className={styles.iconWrapper}>
               <Heart size={20} />
@@ -279,13 +291,19 @@ const [categories, setCategories] = useState<Category[]>([]);
             </div>
           </Link>
 
+          {/* CART */}
           <Link href="/cart" className={styles.iconWrapper}>
             <ShoppingCart size={20} />
             {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
           </Link>
 
+          {/* USER */}
           {user ? (
-            <Link href="/profile" className={styles.iconWrapper} title="Profile">
+            <Link
+              href="/profile"
+              className={styles.iconWrapper}
+              title="Profile"
+            >
               <User size={20} />
             </Link>
           ) : (
