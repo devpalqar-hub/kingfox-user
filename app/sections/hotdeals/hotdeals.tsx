@@ -44,6 +44,7 @@ const HotDeals = () => {
 
       try {
         const res = await getWishList();
+        window.dispatchEvent(new Event("wishlistUpdated"));
 
         const items: WishlistEntry[] = res?.data || res?.items || res || [];
         const ids = items.map((item) => item.productId);
@@ -59,7 +60,7 @@ const HotDeals = () => {
   // ✅ TOGGLE FUNCTION
   const handleWishlistToggle = async (productId: number) => {
     if (!user) {
-      alert("Please login first");
+      window.dispatchEvent(new Event("openLoginModal"));
       return;
     }
 
@@ -67,6 +68,7 @@ const HotDeals = () => {
       if (wishlistIds.includes(productId)) {
         // ✅ REMOVE
         await removeFromWishlist(productId);
+        window.dispatchEvent(new Event("wishlistUpdated"));
 
         setWishlistIds((prev) =>
           prev.filter((id) => id !== productId)
@@ -111,7 +113,7 @@ const HotDeals = () => {
             name={product.name}
             price={String(product.priceRange?.min || 0)}
             rating={4}
-            image={product.images?.[0] || "/placeholder-product.png"}
+            image={product.images?.[0] }
 
             // ✅ THIS IS THE MAGIC
             isWishlisted={wishlistIds.includes(product.id)}
@@ -122,9 +124,11 @@ const HotDeals = () => {
         ))}
       </div>
 
-      <button onClick={() => router.push('/products?tag=HOT%20SALE')}>
-        VIEW ALL
-      </button>
+      <button
+          className={styles.viewAll}
+      onClick={() => router.push('/products?tag=HOT%20SALE')}>
+          VIEW ALL PRODUCTS
+        </button>
     </section>
   );
 };

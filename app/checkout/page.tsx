@@ -23,7 +23,7 @@ import { getProfileAPI } from '@/services/profile.service';
 import { getCartAPI, updateCartItemAPI} from "@/services/cart.service";
 import { previewOrderAPI } from "@/services/order.service";
 import { MdCreditCard, MdAccountBalance } from "react-icons/md";
-
+ 
 export default function CheckoutPage() {
 const router = useRouter();
 const [isPending, setIsPending] = useState(false);
@@ -35,7 +35,6 @@ const { showToast } = useToast();
 const [branches, setBranches] = useState<any[]>([]);
 const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
 const [couponCode, setCouponCode] = useState("");
-
 
 const [form, setForm] = useState({
   firstName: "",
@@ -217,8 +216,6 @@ const handlePlaceOrder = async () => {
 
   if (response?.order?.id) {
   localStorage.setItem("lastOrderId", response.order.id.toString());
-
-  // ✅ ADD THIS
   localStorage.setItem("lastOrderData", JSON.stringify(response.order));
 }
   if (paymentUrl) {
@@ -244,9 +241,11 @@ const handlePlaceOrder = async () => {
 
       showToast("Order placed successfully", "success", 2500);
       console.log("FULL RESPONSE:", response);
+      localStorage.setItem("lastOrderId", response.order.id.toString());
+      localStorage.setItem("lastOrderData", JSON.stringify(response.order));
 
       setTimeout(() => {
-        router.replace(`/order-confirmation?orderId=${response.order.id}`);
+        router.replace(`/orderplaced?orderId=${response.order.id}`);
       }, 1200);
     }
 
@@ -329,7 +328,6 @@ const handlePlaceOrder = async () => {
                     setForm({ ...form, pincode: e.target.value })
                   }
                 />
-                <span className={styles.locationTag}><MdLocationOn /> BENGALURU, KA</span>
               </div>
             </div>
             <div className={styles.inputGroup}>

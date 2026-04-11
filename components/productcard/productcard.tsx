@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Eye, Star } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import { useRouter } from "next/navigation";

@@ -9,6 +9,8 @@ import {
   Eye,
 } from "lucide-react"; // Using Lucide for icons
 import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   getWishList,
   removeFromWishlist,
@@ -18,10 +20,12 @@ import { getNewArrivals } from "@/services/product.service";
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { useConfirm } from "@/context/ConfirmContext";
+import { addToCartAPI } from "@/services/cart.service";
 
 export default function WishlistPage() {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const router = useRouter();
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [newArrivals, setNewArrivals] = useState<any[]>([]);
@@ -109,6 +113,23 @@ export default function WishlistPage() {
     }
   };
 
+  const handleMoveToCart = async (item: any) => {
+    try {
+      const variantId = item.product.variants?.[0]?.id;
+      if (!variantId) {
+        showToast("No variant found for this product", "error");
+        return;
+      }
+      await addToCartAPI(variantId, 1);
+      showToast("Moved to cart", "success");
+      setWishlist((prev) => prev.filter((w) => w.id !== item.id));
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      showToast("Failed to move to cart", "error");
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const fetchNewArrivals = async () => {
       try {
@@ -179,7 +200,12 @@ export default function WishlistPage() {
                   </div>
                 </div>
 
-                <button className={styles.actionBtn}>Move To Cart</button>
+                <button
+                  className={styles.actionBtn}
+                  onClick={() => handleMoveToCart(item)}
+                >
+                  Move To Cart
+                </button>
               </div>
             );
           })}
@@ -206,7 +232,11 @@ export default function WishlistPage() {
                 <div className={styles.imageWrapper}>
                   <img src={item.images?.[0]} alt={item.name} />
 
-                  <div className={styles.quickViewIcon}>
+                  <div
+                    className={styles.quickViewIcon}
+                    onClick={() => router.push(`/products/${item.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <Eye size={18} />
                   </div>
 

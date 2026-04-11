@@ -6,10 +6,14 @@ import styles from './bestseller.module.css';
 import { getProducts } from '@/services/product.service';
 import type { Product } from '@/types/product';
 import { useRouter } from 'next/navigation';
+import { getWishList, addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
+import { useAuth } from "@/context/AuthContext";
 
 const Bestseller = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
+  const [wishlistIds, setWishlistIds] = useState<number[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchBestSellers = async () => {
@@ -27,6 +31,69 @@ const Bestseller = () => {
 
     fetchBestSellers();
   }, []);
+
+
+  // ✅ GET WISHLIST
+    useEffect(() => {
+      const fetchWishlist = async () => {
+        if (!user) return;
+  
+        try {
+          const res = await getWishList();
+          window.dispatchEvent(new Event("wishlistUpdated"));
+  
+          const items = res?.data || res?.items || res || [];
+  
+          const ids = items.map((item: any) => item.productId);
+  
+          setWishlistIds(ids);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+  
+      fetchWishlist();
+    }, [user]);
+    // ✅ TOGGLE FUNCTION
+    const handleWishlistToggle = async (productId: number) => {
+      if (!user) {
+        alert("Please login first");
+        return;
+      }
+  
+      try {
+        if (wishlistIds.includes(productId)) {
+          // ✅ REMOVE
+          await removeFromWishlist(productId);
+          window.dispatchEvent(new Event("wishlistUpdated"));
+  
+          setWishlistIds((prev) =>
+            prev.filter((id) => id !== productId)
+          );
+        } else {
+          try {
+            // ✅ ADD
+            await addToWishlist(productId);
+  
+            setWishlistIds((prev) => [...prev, productId]);
+          } catch (err: any) {
+            // 🔥 HANDLE 409
+            if (err.response?.status === 409) {
+              console.log("Already in wishlist");
+  
+              // sync UI anyway
+              setWishlistIds((prev) => [...prev, productId]);
+            } else {
+              throw err;
+            }
+          }
+        }
+  
+        window.dispatchEvent(new Event("wishlistUpdated"));
+      } catch (err) {
+        console.error("Wishlist error", err);
+      }
+    };
 
   // ✅ Hide section if no products
   if (!products || products.length === 0) {

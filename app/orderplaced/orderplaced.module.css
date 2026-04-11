@@ -1,0 +1,201 @@
+/* Container */
+.container {
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 20px;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  color: #1a1a1a;
+}
+
+/* Success Icon */
+.successIcon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.successIcon svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+/* Header */
+.header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.orderNumber {
+  font-size: 12px;
+  color: #7d8ca3;
+  letter-spacing: 1px;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 30px 0;
+}
+
+/* Section Title */
+.sectionTitle {
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Item Row */
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.productImg {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Item Info */
+.itemInfo {
+  flex: 1;
+  text-align: left;
+}
+
+.itemName {
+  display: block;
+  font-weight: 600;
+}
+
+.itemMeta {
+  font-size: 13px;
+  color: #7d8ca3;
+}
+
+.price {
+  font-weight: 600;
+}
+
+/* Summary */
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.shippingFree {
+  color: green;
+  font-weight: 500;
+}
+
+/* Total */
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Delivery Card */
+.deliveryCard {
+  background: #f3f4f6;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 30px;
+}
+
+.deliveryGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  text-align: left;
+}
+
+.cardLabel {
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.cardContent {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Delivery Icon */
+.deliveryIcon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Track Button */
+.trackButton {
+  margin-top: 20px;
+  width: 100%;
+  background: black;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  transition: 0.3s;
+}
+
+.trackButton:hover {
+  background: #111;
+}
+
+.trackIcon {
+  font-size: 18px;
+}
+
+/* Footer Links */
+.footerLinks {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Continue Button */
+.continueBtn {
+  margin-top: 20px;
+  padding: 12px 30px;
+  border-radius: 12px;
+  border: 1px solid #000;
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.continueBtn:hover {
+  background: black;
+  color: white;
+}

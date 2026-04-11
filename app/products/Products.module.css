@@ -380,6 +380,20 @@
   background:rgba(0,0,0,0.4);
   z-index:90;
 }
+
+/* No products message */
+.noProductsMsg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: #888;
+  text-align: center;
+  margin: 0 auto;
+}
+
 @media (max-width:1200px){
 
 .container{
@@ -579,4 +593,16 @@
   font-size:12px;
 }
 
+}
+
+/* No products message */
+.noProductsMsg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: #888;
+  text-align: center;
 }

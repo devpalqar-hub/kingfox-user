@@ -78,13 +78,13 @@ export const getProducts = async (params: {
 }) => {
   const query = new URLSearchParams();
 
-  if (params.page) query.append("page", params.page.toString());
-  if (params.limit) query.append("limit", params.limit.toString());
+  if (params.page !== undefined) query.append("page", params.page.toString());
+  if (params.limit !== undefined) query.append("limit", params.limit.toString());
   if (params.search) query.append("search", params.search);
   if (params.size) query.append("size", params.size);
-  if (params.minPrice) query.append("minPrice", params.minPrice.toString());
-  if (params.maxPrice) query.append("maxPrice", params.maxPrice.toString());
-  if (params.categoryId) query.append("categoryId", params.categoryId.toString());
+  if (params.minPrice !== undefined) query.append("minPrice", params.minPrice.toString());
+  if (params.maxPrice !== undefined) query.append("maxPrice", params.maxPrice.toString());
+  if (params.categoryId !== undefined) query.append("categoryId", params.categoryId.toString());
   if (params.color) query.append("color", params.color);
   if (params.sortBy) query.append("sortBy", params.sortBy);
   if (params.tags) {

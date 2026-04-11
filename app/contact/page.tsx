@@ -9,9 +9,10 @@ import { ChevronRight, Truck } from 'lucide-react';
 import { sendContactForm } from '@/services/contact.service';
 import { FaCheckCircle } from "react-icons/fa";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const ContactPage = () => {
-
+  const router = useRouter();
   const [formData, setFormData] = useState({
   name: '',
   email: '',
@@ -112,7 +113,10 @@ const handleSubmit = async (e: React.FormEvent) => {
             Got questions about your order or sizing? Our <br />
             street-ops team is here to help you gear up.
           </p>
-          <button className={styles.trackButton}>
+          <button
+            className={styles.trackButton}
+            onClick={() => router.push("/orders")}
+          >
             TRACK ORDER
           </button>
         </div>

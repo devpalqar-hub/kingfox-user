@@ -50,3 +50,11 @@
 .content p {
   margin-bottom: 18px;
 }
+.link {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: black;
+}
