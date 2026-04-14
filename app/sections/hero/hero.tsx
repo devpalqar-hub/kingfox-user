@@ -47,8 +47,8 @@ const handleOversizedClick = () => {
       <div className={styles.content}>
         <span className={styles.badge}>FREE SHIPPING ACROSS INDIA</span>
         <h1 className={styles.title}>
-          BUILT FOR <br /> THE <span className={styles.highlight}>STREETS.</span> <br /> 
-          WORN BY YOU.
+          BUILT FOR <br /> THE <span className={styles.highlight}>STREETS</span> <br /> 
+          WORN BY YOU
         </h1>
         <p className={styles.description}>
           High-quality oversized streetwear designed for the modern fit. 

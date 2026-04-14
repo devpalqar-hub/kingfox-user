@@ -33,8 +33,24 @@ const Header = () => {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const params = useSearchParams(); // (keep if you plan to use later)
+
+  /* =========================
+     GLOBAL LOGIN MODAL EVENT
+  ========================= */
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setShowLogin(true);
+    };
+
+    window.addEventListener("openLoginModal", handleOpenLoginModal);
+
+    return () => {
+      window.removeEventListener("openLoginModal", handleOpenLoginModal);
+    };
+  }, []);
 
   /* =========================
      LOAD CATEGORIES
@@ -207,6 +223,7 @@ const Header = () => {
         </div>
 
         {/* LINKS */}
+
         <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
           <li>
             <Link href="/" onClick={() => setMenuOpen(false)}>
@@ -214,10 +231,39 @@ const Header = () => {
             </Link>
           </li>
 
-          <li>
-            <Link href="/products" onClick={() => setMenuOpen(false)}>
+          {/* PRODUCTS with Dropdown */}
+          <li
+            className={styles.dropdown}
+            onMouseEnter={() => setShowCategoryDropdown(true)}
+            onMouseLeave={() => setShowCategoryDropdown(false)}
+          >
+            <span
+              className={styles.navLink}
+              tabIndex={0}
+              onClick={() => setShowCategoryDropdown((v) => !v)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  setShowCategoryDropdown((v) => !v);
+              }}
+            >
               PRODUCTS
-            </Link>
+            </span>
+            {showCategoryDropdown && categories.length > 0 && (
+              <div className={styles.dropdownMenu}>
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/products?categoryId=${cat.id}`}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setShowCategoryDropdown(false);
+                    }}
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </li>
 
           <li>

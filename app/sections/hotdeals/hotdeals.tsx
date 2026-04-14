@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import ProductCard from '@/components/productcard/productcard';
-import styles from './hotdeals.module.css';
-import { getProducts } from '@/services/product.service';
-import { getWishList, addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
-import type { Product } from '@/types/product';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import ProductCard from "@/components/productcard/productcard";
+import styles from "./hotdeals.module.css";
+import { getProducts } from "@/services/product.service";
+import {
+  getWishList,
+  addToWishlist,
+  removeFromWishlist,
+} from "@/services/wishlist.service";
+import type { Product } from "@/types/product";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 type WishlistEntry = {
@@ -70,9 +74,7 @@ const HotDeals = () => {
         await removeFromWishlist(productId);
         window.dispatchEvent(new Event("wishlistUpdated"));
 
-        setWishlistIds((prev) =>
-          prev.filter((id) => id !== productId)
-        );
+        setWishlistIds((prev) => prev.filter((id) => id !== productId));
       } else {
         try {
           // ✅ ADD
@@ -97,7 +99,25 @@ const HotDeals = () => {
       console.error("Wishlist error", err);
     }
   };
+  if (!products || products.length === 0) {
+    return (
+      <section className={styles.section}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>HOT DEALS</h2>
+        </div>
 
+        <div className={styles.emptyState}>
+          <p>No hot deals available right now </p>
+          <button
+            className={styles.viewAll}
+            onClick={() => router.push("/products")}
+          >
+            BROWSE ALL PRODUCTS
+          </button>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className={styles.section}>
       <div className={styles.header}>
@@ -113,11 +133,9 @@ const HotDeals = () => {
             name={product.name}
             price={String(product.priceRange?.min || 0)}
             rating={4}
-            image={product.images?.[0] }
-
+            image={product.images?.[0]}
             // ✅ THIS IS THE MAGIC
             isWishlisted={wishlistIds.includes(product.id)}
-
             // ✅ THIS HANDLES CLICK
             onWishlistToggle={() => handleWishlistToggle(product.id)}
           />
@@ -125,10 +143,11 @@ const HotDeals = () => {
       </div>
 
       <button
-          className={styles.viewAll}
-      onClick={() => router.push('/products?tag=HOT%20SALE')}>
-          VIEW ALL PRODUCTS
-        </button>
+        className={styles.viewAll}
+        onClick={() => router.push("/products?tag=HOT%20SALE")}
+      >
+        VIEW ALL PRODUCTS
+      </button>
     </section>
   );
 };
