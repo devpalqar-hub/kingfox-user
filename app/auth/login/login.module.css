@@ -138,6 +138,7 @@
   border-radius: 6px;
   transition: 0.2s;
   box-sizing: border-box; /* ✅ IMPORTANT */
+  color: black;
 }
 
 .phoneInput:focus {
@@ -158,6 +159,7 @@
   padding: 15px;
   font-weight: 900;
   border: 2px solid black;
+  color: black;
   cursor: pointer;
   font-size: 16px;
   margin-bottom: 22px;
@@ -182,4 +184,10 @@
   color: #0b1a33;
   text-decoration: underline;
   cursor: pointer;
+}
+
+@media (max-width: 460px) {
+  .overlay {
+    padding: 20px;
+  }
 }

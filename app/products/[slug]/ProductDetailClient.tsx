@@ -62,7 +62,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const { showToast } = useToast();
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  
 
   // reviews
   const [reviewData, setReviewData] = useState<{
@@ -320,27 +319,16 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       showToast("Please select size & color", "error");
       return;
     }
-
+    // if (!token) {
+    //   setShowLoginModal(true);
+    //   showToast("Please login to add to cart", "info");
+    //   return;
+    // }
     try {
-      if (token) {
-        await addToCartAPI(selectedVariant.id, 1);
-      } else {
-        addToGuestCart({
-          variantId: selectedVariant.id,
-          quantity: 1,
-          productName: product.name,
-          productImage: product.images?.[0] || "",
-          price: Number(selectedVariant.sellingPrice),
-          size: selectedVariant.size,
-          color: selectedVariant.color,
-          availableStock: selectedVariant.totalStock ?? 0,
-        });
-      }
-      // ✅🔥 ADD THIS (VERY IMPORTANT)
+      await addToCartAPI(selectedVariant.id, 1);
       window.dispatchEvent(new Event("cartUpdated"));
       setProduct((prev) => {
         if (!prev) return prev;
-
         return {
           ...prev,
           variants: prev.variants.map((v) =>
@@ -348,7 +336,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           ),
         };
       });
-
       showToast("Added to cart", "success");
     } catch (err) {
       console.error(err);
@@ -360,34 +347,20 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       showToast("Please select size & color", "error");
       return;
     }
-
-    // ❌ Prevent if out of stock
     if (selectedVariant.totalStock === 0) {
       showToast("Out of stock", "error");
       return;
     }
-
+    if (!token) {
+      setShowLoginModal(true);
+      showToast("Please login to continue", "info");
+      return;
+    }
     try {
-      if (token) {
-        await addToCartAPI(selectedVariant.id, 1);
-      } else {
-        addToGuestCart({
-          variantId: selectedVariant.id,
-          quantity: 1,
-          productName: product.name,
-          productImage: product.images?.[0] || "",
-          price: Number(selectedVariant.sellingPrice),
-          size: selectedVariant.size,
-          color: selectedVariant.color,
-          availableStock: selectedVariant.totalStock ?? 0,
-        });
-      }
+      await addToCartAPI(selectedVariant.id, 1);
       window.dispatchEvent(new Event("cartUpdated"));
-
-      // ✅ update UI state
       setProduct((prev) => {
         if (!prev) return prev;
-
         return {
           ...prev,
           variants: prev.variants.map((v) =>
@@ -395,7 +368,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           ),
         };
       });
-
       router.push("/cart");
     } catch (err) {
       console.error(err);
@@ -799,7 +771,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                     <p className={styles.reviewText}>{`"${review.body}"`}</p>
 
                     {/* IMAGE */}
-                  
+
                     {images.length > 0 && (
                       <div className={styles.reviewWrapper}>
                         <img
@@ -825,24 +797,21 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           <h2 className={styles.newsletterTitle}>JOIN THE FOX PACK</h2>
 
           <p className={styles.newsletterSubtitle}>
-            Get exclusive access to underground drops, private events, and 15%
-            off your first order.
+            Follow us on Instagram for exclusive drops, early access & special
+            offers
           </p>
 
-          <form
-            className={styles.newsletterForm}
-            onSubmit={(e) => e.preventDefault()}
+          <button
+            className={styles.subscribeBtn}
+            onClick={() =>
+              window.open(
+                "https://www.instagram.com/kingfoxclothingstore/",
+                "_blank",
+              )
+            }
           >
-            <input
-              type="email"
-              placeholder="Your email address"
-              className={styles.newsletterInput}
-            />
-
-            <button type="submit" className={styles.subscribeBtn}>
-              SUBSCRIBE
-            </button>
-          </form>
+            FOLLOW US ON INSTAGRAM
+          </button>
         </div>
       </div>
       {showSizeChart && (

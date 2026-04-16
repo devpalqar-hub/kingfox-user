@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
@@ -33,8 +33,31 @@ const Header = () => {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+  // Search suggestion states
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [searchTouched, setSearchTouched] = useState(false);
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const params = useSearchParams(); // (keep if you plan to use later)
+
+  /* =========================
+     GLOBAL LOGIN MODAL EVENT
+  ========================= */
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setShowLogin(true);
+    };
+
+    window.addEventListener("openLoginModal", handleOpenLoginModal);
+
+    return () => {
+      window.removeEventListener("openLoginModal", handleOpenLoginModal);
+    };
+  }, []);
 
   /* =========================
      LOAD CATEGORIES
@@ -59,27 +82,52 @@ const Header = () => {
   /* =========================
      SEARCH HANDLER
   ========================= */
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
-
-    try {
-      const response = await getProducts({
-        search: searchTerm,
-        limit: 1,
-      });
-
-      const products = response?.items || [];
-
-      if (products.length > 0) {
-        router.push(getProductPath(products[0]));
-      } else {
-        alert("No products found");
-      }
-    } catch (error) {
-      console.error("Search error:", error);
+  // Debounced search for suggestions
+  useEffect(() => {
+    if (!showSearch) return;
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      setSearchError("");
+      setSearchLoading(false);
+      return;
     }
+    setSearchLoading(true);
+    setSearchError("");
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const response = await getProducts({
+          search: searchTerm,
+          limit: 8,
+        });
+        setSearchResults(response?.items || []);
+        setSearchError("");
+      } catch (error) {
+        setSearchResults([]);
+        setSearchError("Failed to fetch products");
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 350);
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, showSearch]);
 
+  // On select suggestion or enter
+  const handleSearchSelect = (product: any) => {
     setShowSearch(false);
+    setSearchTerm("");
+    setSearchResults([]);
+    router.push(getProductPath(product));
+  };
+
+  // On enter, if suggestions exist, go to first
+  const handleSearch = () => {
+    if (searchResults.length > 0) {
+      handleSearchSelect(searchResults[0]);
+    }
   };
 
   /* =========================
@@ -207,6 +255,7 @@ const Header = () => {
         </div>
 
         {/* LINKS */}
+
         <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
           <li>
             <Link href="/" onClick={() => setMenuOpen(false)}>
@@ -214,10 +263,39 @@ const Header = () => {
             </Link>
           </li>
 
-          <li>
-            <Link href="/products" onClick={() => setMenuOpen(false)}>
+          {/* PRODUCTS with Dropdown */}
+          <li
+            className={styles.dropdown}
+            onMouseEnter={() => setShowCategoryDropdown(true)}
+            onMouseLeave={() => setShowCategoryDropdown(false)}
+          >
+            <span
+              className={styles.navLink}
+              tabIndex={0}
+              onClick={() => setShowCategoryDropdown((v) => !v)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  setShowCategoryDropdown((v) => !v);
+              }}
+            >
               PRODUCTS
-            </Link>
+            </span>
+            {showCategoryDropdown && categories.length > 0 && (
+              <div className={styles.dropdownMenu}>
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/products?categoryId=${cat.id}`}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setShowCategoryDropdown(false);
+                    }}
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </li>
 
           <li>
@@ -255,28 +333,160 @@ const Header = () => {
           </div>
 
           {showSearch && (
-            <div className={styles.searchOverlay}>
+            <div
+              className={styles.searchOverlay}
+              onClick={() => setShowSearch(false)}
+            >
               <div
                 className={styles.searchBox}
                 onClick={(e) => e.stopPropagation()}
+                style={{ position: "relative", flexDirection: "column" }}
               >
-                <Search size={20} />
-
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  autoFocus
-                />
-
                 <div
-                  className={styles.closeBtn}
-                  onClick={() => setShowSearch(false)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
                 >
-                  <X size={18} />
+                  <Search size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setSearchTouched(true);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSearch();
+                    }}
+                    autoFocus
+                    className={styles.searchInput}
+                  />
+                  <div
+                    className={styles.closeBtn}
+                    onClick={() => setShowSearch(false)}
+                  >
+                    <X size={18} />
+                  </div>
                 </div>
+                {/* Suggestions Dropdown */}
+                {searchTouched && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      width: "100%",
+                      background: "#fff",
+                      borderRadius: "0 0 16px 16px",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      zIndex: 100,
+                      marginTop: 4,
+                      maxHeight: 340,
+                      overflowY: "auto",
+                    }}
+                  >
+                    {searchLoading && (
+                      <div
+                        style={{
+                          padding: 16,
+                          textAlign: "center",
+                          color: "#888",
+                        }}
+                      >
+                        Loading...
+                      </div>
+                    )}
+                    {!searchLoading && searchError && (
+                      <div
+                        style={{
+                          padding: 16,
+                          textAlign: "center",
+                          color: "#d00",
+                        }}
+                      >
+                        {searchError}
+                      </div>
+                    )}
+                    {!searchLoading &&
+                      !searchError &&
+                      searchResults.length === 0 &&
+                      searchTerm.trim() && (
+                        <div
+                          style={{
+                            padding: 16,
+                            textAlign: "center",
+                            color: "#888",
+                          }}
+                        >
+                          No products found.
+                        </div>
+                      )}
+                    {!searchLoading &&
+                      !searchError &&
+                      searchResults.length > 0 && (
+                        <ul
+                          style={{ listStyle: "none", margin: 0, padding: 0 }}
+                        >
+                          {searchResults.map((product: any) => (
+                            <li
+                              key={product.id}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                                padding: "10px 18px",
+                                borderBottom: "1px solid #f0f0f0",
+                                cursor: "pointer",
+                                transition: "background 0.15s",
+                              }}
+                              onClick={() => handleSearchSelect(product)}
+                            >
+                              <img
+                                src={
+                                  product.images && product.images.length > 0
+                                    ? product.images[0]
+                                    : "/no-image.png"
+                                }
+                                alt={product.name}
+                                style={{
+                                  width: 48,
+                                  height: 48,
+                                  objectFit: "cover",
+                                  borderRadius: 8,
+                                  background: "#f3f3f3",
+                                }}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    "/no-image.png";
+                                }}
+                              />
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 600, fontSize: 15 }}>
+                                  {product.name}
+                                </div>
+                                <div
+                                  style={{
+                                    color: "#888",
+                                    fontSize: 13,
+                                    marginTop: 2,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    maxWidth: 220,
+                                  }}
+                                >
+                                  {product.description}
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                  </div>
+                )}
               </div>
             </div>
           )}

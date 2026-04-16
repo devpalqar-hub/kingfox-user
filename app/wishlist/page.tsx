@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { useConfirm } from "@/context/ConfirmContext";
 import { addToCartAPI } from "@/services/cart.service";
+import { moveAllWishlistToCartAPI } from "@/services/cart.service";
 
 export default function WishlistPage() {
   const { showToast } = useToast();
@@ -77,10 +78,9 @@ export default function WishlistPage() {
     try {
       await clearWishlist();
 
-      setWishlist([]); // UI update
+      setWishlist([]);
       showToast("Wishlist cleared", "success");
 
-      // ✅🔥 ADD THIS
       window.dispatchEvent(new Event("wishlistUpdated"));
     } catch (err) {
       console.error(err);
@@ -135,7 +135,7 @@ export default function WishlistPage() {
       try {
         const data = await getNewArrivals();
 
-        setNewArrivals(data.items); // ✅ FIXED
+        setNewArrivals(data.items); 
       } catch (err) {
         console.error(err);
       }
@@ -143,6 +143,44 @@ export default function WishlistPage() {
 
     fetchNewArrivals();
   }, []);
+  const handleMoveAllToCart = async () => {
+    if (wishlist.length === 0) {
+      showToast("Wishlist is empty", "info");
+      return;
+    }
+
+    const confirmed = await confirm({
+      title: "Move All To Cart",
+      message: "Are you sure you want to move all items to cart?",
+      confirmText: "Move All",
+      cancelText: "Cancel",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      const res = await moveAllWishlistToCartAPI();
+
+      const data = res.data;
+
+      if (data.addedCount > 0) {
+        showToast(`${data.addedCount} items moved to cart`, "success");
+      }
+
+      if (data.skippedCount > 0) {
+        showToast(`${data.skippedCount} items already in cart`, "info");
+      }
+
+      const updatedWishlist = await getWishList();
+      setWishlist(updatedWishlist);
+
+      window.dispatchEvent(new Event("cartUpdated"));
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to move items", "error");
+    }
+  };
   return (
     <>
       <div className={styles.container}>
@@ -155,7 +193,11 @@ export default function WishlistPage() {
           </div>
 
           <div className={styles.headerButtons}>
-            <button className={styles.moveAllBtn}>
+            <button
+              className={styles.moveAllBtn}
+              onClick={handleMoveAllToCart}
+              disabled={wishlist.length === 0}
+            >
               <ShoppingCart size={16} /> Move All To Cart
             </button>
             <button

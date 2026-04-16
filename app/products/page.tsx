@@ -35,6 +35,7 @@ const ProductsPage = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [reviewMap, setReviewMap] = useState<any>({});
   const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState<number | null>(null); // id of loading item
   const [availableColors, setAvailableColors] = useState<string[]>([]);
   const [initialized, setInitialized] = useState(false);
   const [tag, setTag] = useState<string | null>(null);
@@ -69,36 +70,52 @@ const ProductsPage = () => {
 
   const handleWishlist = async (id: number) => {
     const token = localStorage.getItem("token");
-
     if (!token) {
       setIsLoginOpen(true);
       return;
     }
-
-    try {
-      if (wishlist.includes(id)) {
+    // Prevent duplicate clicks
+    if (wishlistLoading === id) return;
+    setWishlistLoading(id);
+    // Optimistic update
+    let rollback = false;
+    if (wishlist.includes(id)) {
+      setWishlist((prev) => prev.filter((i) => i !== id));
+      showToast("Removing from wishlist...", "info");
+      try {
         await removeFromWishlist(id);
-        setWishlist((prev) => prev.filter((i) => i !== id));
-
-        showToast("Removed from wishlist", "info"); // ✅ ADD THIS
-      } else {
+        showToast("Removed from wishlist", "info");
+      } catch (err: any) {
+        setWishlist((prev) => [...prev, id]); // rollback
+        rollback = true;
+        if (err?.response?.status === 401) {
+          localStorage.removeItem("token");
+          setIsLoginOpen(true);
+          setWishlistLoading(null);
+          return;
+        }
+        showToast("Something went wrong", "error");
+      }
+    } else {
+      setWishlist((prev) => [...prev, id]);
+      showToast("Adding to wishlist...", "info");
+      try {
         await addToWishlist(id);
-        setWishlist((prev) => [...prev, id]);
-
-        showToast("Added to wishlist", "success"); // ✅ ADD THIS
+        showToast("Added to wishlist", "success");
+      } catch (err: any) {
+        setWishlist((prev) => prev.filter((i) => i !== id)); // rollback
+        rollback = true;
+        if (err?.response?.status === 401) {
+          localStorage.removeItem("token");
+          setIsLoginOpen(true);
+          setWishlistLoading(null);
+          return;
+        }
+        showToast("Something went wrong", "error");
       }
-
-      window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch (err: any) {
-      if (err?.response?.status === 401) {
-        localStorage.removeItem("token");
-        setIsLoginOpen(true);
-        return;
-      }
-
-      console.error(err);
-      showToast("Something went wrong", "error"); // ✅ ADD THIS
     }
+    window.dispatchEvent(new Event("wishlistUpdated"));
+    setWishlistLoading(null);
   };
   useEffect(() => {
     const categoryFromURL = searchParams.get("categoryId");
@@ -261,9 +278,9 @@ const ProductsPage = () => {
                   value === ""
                     ? null
                     : (value as
-                      | "newly_arrived"
-                      | "low_to_high"
-                      | "high_to_low"),
+                        | "newly_arrived"
+                        | "low_to_high"
+                        | "high_to_low"),
                 );
                 setPage(1);
               }}
@@ -285,8 +302,9 @@ const ProductsPage = () => {
                 {FIXED_SIZES.map((s) => (
                   <button
                     key={s}
-                    className={`${styles.sizeBtn} ${size === s ? styles.activeSize : ""
-                      }`}
+                    className={`${styles.sizeBtn} ${
+                      size === s ? styles.activeSize : ""
+                    }`}
                     onClick={() => {
                       setSize((prev) => (prev === s ? null : s));
                       setColor(null); // ✅ IMPORTANT (reset color when size changes)
@@ -307,8 +325,9 @@ const ProductsPage = () => {
                 {availableColors.map((c) => (
                   <span
                     key={c}
-                    className={`${styles.colorCircle} ${color === c ? styles.activeColor : ""
-                      }`}
+                    className={`${styles.colorCircle} ${
+                      color === c ? styles.activeColor : ""
+                    }`}
                     style={{ backgroundColor: c.toLowerCase() }}
                     onClick={() => {
                       setColor((prev) => (prev === c ? null : c));
@@ -384,8 +403,9 @@ const ProductsPage = () => {
               {availableCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className={`${styles.fitOption} ${categoryId === cat.id ? styles.fitOptionActive : ""
-                    }`}
+                  className={`${styles.fitOption} ${
+                    categoryId === cat.id ? styles.fitOptionActive : ""
+                  }`}
                   onClick={() => {
                     setCategoryId((prev) => (prev === cat.id ? null : cat.id));
                     setPage(1);
@@ -405,16 +425,14 @@ const ProductsPage = () => {
         <main className={styles.mainContent}>
           <div className={styles.productGrid}>
             {products.length === 0 ? (
-              <div className={styles.noProductsMsg}>
-                No products to display
-              </div>
+              <div className={styles.noProductsMsg}>No products to display</div>
             ) : (
               products.map((product) => (
                 <ProductCard
                   key={product.id}
                   id={product.id}
                   slug={product.slug}
-                name={product.name}
+                  name={product.name}
                   price={String(product.priceRange?.min || 0)}
                   rating={reviewMap[product.id]?.rating ?? 0}
                   reviews={reviewMap[product.id]?.total ?? 0}
@@ -426,7 +444,8 @@ const ProductsPage = () => {
                   }
                   isWishlisted={wishlist.includes(product.id)}
                   onWishlistToggle={() => handleWishlist(product.id)}
-                  isNew={false}
+                  wishlistLoading={wishlistLoading === product.id}
+                  // isNew removed: not present on Product type
                 />
               ))
             )}
@@ -475,34 +494,21 @@ const ProductsPage = () => {
           <h2 className={styles.newsletterTitle}>JOIN THE FOX PACK</h2>
 
           <p className={styles.newsletterSubtitle}>
-            Get exclusive access to underground drops, private events, and 15%
-            off your first order.
+            Follow us on Instagram for exclusive drops, early access & special
+            offers
           </p>
-          <form
-            className={styles.newsletterForm}
-            onSubmit={(e) => {
-              e.preventDefault();
 
-              const form = e.currentTarget;
-              const email = form.email.value;
-
-              setPrefillEmail(email);
-              setIsLoginOpen(true);
-
-              form.reset(); // ✅ CLEAR INPUT
-            }}
+          <button
+            className={styles.subscribeBtn}
+            onClick={() =>
+              window.open(
+                "https://www.instagram.com/kingfoxclothingstore/",
+                "_blank",
+              )
+            }
           >
-            <input
-              name="email" // 🔥 MUST ADD THIS
-              type="email"
-              placeholder="Your email address"
-              className={styles.newsletterInput}
-            />
-
-            <button type="submit" className={styles.subscribeBtn}>
-              SUBSCRIBE
-            </button>
-          </form>
+            FOLLOW US ON INSTAGRAM
+          </button>
         </div>
       </div>
       <LoginModal

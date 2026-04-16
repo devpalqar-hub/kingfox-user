@@ -23,6 +23,7 @@ interface ProductCardProps {
   isNew?: boolean;
   isWishlisted?: boolean;
   onWishlistToggle?: () => void;
+  wishlistLoading?: boolean;
 }
 
 const ProductCard = ({
@@ -37,6 +38,7 @@ const ProductCard = ({
   isNew,
   isWishlisted,
   onWishlistToggle,
+  wishlistLoading,
 }: ProductCardProps) => {
   const router = useRouter();
   const { user } = useAuth();
@@ -47,7 +49,7 @@ const ProductCard = ({
       showToast("Please login first", "info");
       return;
     }
-
+    if (wishlistLoading) return;
     if (onWishlistToggle) {
       onWishlistToggle();
     }
@@ -60,8 +62,14 @@ const ProductCard = ({
         <img src={image} alt={name} className={styles.productImage} />
 
         <div className={styles.iconOverlay}>
-          <button className={styles.iconBtn} onClick={handleWishlist}>
-            {isWishlisted ? (
+          <button
+            className={styles.iconBtn}
+            onClick={handleWishlist}
+            disabled={wishlistLoading}
+          >
+            {wishlistLoading ? (
+              <span className={styles.spinner} />
+            ) : isWishlisted ? (
               <FaHeart size={18} color="black" />
             ) : (
               <FiHeart size={18} />
@@ -81,7 +89,12 @@ const ProductCard = ({
       <div className={styles.details}>
         <div className={styles.row}>
           <h3 className={styles.productName}>{name}</h3>
-          <p className={styles.price}>â‚¹{price}</p>
+          <p>
+            {new Intl.NumberFormat("en-IN", {
+              style: "currency",
+              currency: "INR",
+            }).format(Number(price))}
+          </p>
         </div>
 
         <div className={styles.colorOptions}>
