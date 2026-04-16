@@ -319,11 +319,11 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       showToast("Please select size & color", "error");
       return;
     }
-    if (!token) {
-      setShowLoginModal(true);
-      showToast("Please login to add to cart", "info");
-      return;
-    }
+    // if (!token) {
+    //   setShowLoginModal(true);
+    //   showToast("Please login to add to cart", "info");
+    //   return;
+    // }
     try {
       await addToCartAPI(selectedVariant.id, 1);
       window.dispatchEvent(new Event("cartUpdated"));
