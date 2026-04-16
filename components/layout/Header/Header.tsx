@@ -1,5 +1,5 @@
 "use client";
-
+import type { Product } from "@/types/product";
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -36,7 +36,7 @@ const Header = () => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   // Search suggestion states
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchTouched, setSearchTouched] = useState(false);
