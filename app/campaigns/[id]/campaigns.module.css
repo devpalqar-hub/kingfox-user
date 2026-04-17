@@ -1,0 +1,366 @@
+.wrapper {
+  background-color: #f3f4f6;
+  min-height: 100vh;
+  color: #111;
+  padding-bottom:0px;
+     font-family: var(--Space_Grotesk);
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+  font-family: var(--Space_Grotesk);
+}
+
+/* HERO */
+.hero {
+  position: relative;
+  height: 720px;
+  background: var(--bg-image) center/cover no-repeat; /* ✅ dynamic */
+  display: flex;
+  align-items: flex-end;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.4) 40%,
+    rgba(0, 0, 0, 0.85) 75%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.heroContent {
+  padding: 50px 60px; /* 🔥 spacing like design */
+  max-width: 900px;
+}
+
+/* TAG */
+.tag {
+  background: #f1e91e;
+  color: black;
+  font-weight: 800;
+  font-size: 10px;
+  padding: 5px 10px;
+  display: inline-block;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+}
+
+/* TITLE */
+.mainTitle {
+  color: white;
+  font-size: 64px; /* 🔥 BIG text */
+  font-weight: 900;
+  line-height: 1.05;
+  margin-bottom: 25px;
+}
+
+/* META */
+.metaRow {
+  display: flex;
+  gap: 12px;
+}
+
+.metaItem {
+  
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.icon {
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  color: #f1e91e;
+}
+/* Content Layout */
+.container {
+  max-width: 1350px;  /* 🔥 increase width */
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* 🔥 exact proportion */
+  gap: 30px;
+  margin-top: 40px;
+  align-items: stretch;
+}
+.missionCard {
+  background: white;
+  padding: 45px; /* 🔥 more spacing */
+  border-radius: 10px;
+  min-height: 320px; /* 🔥 match height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sectionTitle {
+  font-size: 26px;
+  font-weight: 900;
+  margin-bottom: 20px;
+  letter-spacing: -0.3px;
+}
+
+.description {
+  color: #555;
+  line-height: 1.7;
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 18px;
+}
+
+.list li {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.dot {
+  color: #f1e91e;
+  font-size: 20px;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+/* Sidebar Elements */
+.claimButton {
+  width: 100%;
+  background: #f1e91e;
+  border: none;
+  border-radius: 10px;
+  padding: 28px; /* 🔥 bigger like design */
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.claimButton:active {
+  transform: scale(0.98);
+}
+
+.btnText {
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.btnSubtext {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.availabilityCard {
+  background: #0b1220; /* 🔥 exact dark */
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  min-height: 260px;
+}
+.sidebarLabel {
+  color: #f1e91e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+
+.capacityHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.capacityHeader p {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.capacityAmount {
+  font-size: 36px; /* 🔥 bigger number */
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+
+.unit {
+  font-size: 12px;
+  color: #f1e91e;
+}
+
+.progressTrack {
+  height: 6px;
+  background: #1e293b;
+  border-radius: 20px;
+  margin: 20px 0 30px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #f1e91e;
+  border-radius: 20px;
+}
+
+.branchItem {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Timeline Footer */
+.timelineCard {
+  background: white;
+  margin-top: 25px;
+  padding: 30px 40px;
+  border-radius: 8px;
+}
+
+.timelineTitle {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+  color: #666;
+}
+
+.timelineRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timePoint label {
+  display: block;
+  font-size: 10px;
+  color: #999;
+  font-weight: 700;
+}
+
+.timePoint p {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.timelineLine {
+  flex: 1;
+  height: 1px;
+  background: #eee;
+  margin: 0 40px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.arrow {
+  position: absolute;
+  top: -10px;
+  color: #ccc;
+}
+/* SUBSCRIBE SECTION */
+.subscribeSection {
+  width: 100%;
+  background: #f1e91e;
+  padding: 70px 0;
+  margin-top: 50px; /* 🔥 ADD GAP ABOVE */
+}
+
+.subscribeContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* LEFT TEXT */
+.subscribeTitle {
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: black;
+}
+
+/* RIGHT FORM */
+.subscribeForm {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* INPUT */
+.input {
+  padding: 14px 18px;
+  width: 320px;
+  border: 2px solid black;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  outline: none;
+}
+
+/* BUTTON */
+.subscribeBtn {
+  background: black;
+  color: #f1e91e;
+  padding: 14px 24px;
+  border: none;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+@media (max-width: 768px) {
+  .subscribeContainer {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .subscribeTitle {
+    font-size: 36px;
+  }
+
+  .subscribeForm {
+    width: 100%;
+  }
+
+  .input {
+    flex: 1;
+    width: 100%;
+  }
+}

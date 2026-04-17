@@ -29,6 +29,7 @@ export interface Variant {
 }
 export interface ProductDetail {
   id: number;
+  slug?: string | null;
   name: string;
   description: string;
   images: string[];
@@ -55,6 +56,7 @@ export interface PriceRange {
 
 export interface Product {
   id: number;
+  slug?: string | null;
   name: string;
   description: string;
   images: string[];
@@ -65,6 +67,7 @@ export interface Product {
   colors: string[];
   sizes: string[];
   variantCount: number;
+  variants?: Variant[];
   isWishlisted?: boolean;
   isAddedInCart?: boolean;
 }

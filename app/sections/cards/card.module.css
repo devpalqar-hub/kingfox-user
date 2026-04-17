@@ -34,23 +34,44 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 .cardWrapper {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
   gap: 20px;
   width: 100%;
+  overflow-x: auto;
+  scroll-behavior: smooth;
 }
 .cardWrapper::-webkit-scrollbar {
   display: none;
 }
 .card {
+  flex: 0 0 calc(50% - 10px);   /* ✅ FORCE 2 CARDS */
   position: relative;
-  width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 40px;
   overflow: hidden;
 }
 .card:hover {
   transform: scale(1.02);
+}
+.rightArrow {
+  position: absolute;
+  right: -50px;  /* opposite of left */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
+  width: 20px;
+  height: 20px;
+  background-color: #1a1a1a;
+  border-radius: 50%;
+  border: none;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Pagination stays below the carouselContainer naturally */

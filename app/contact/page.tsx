@@ -8,9 +8,11 @@ import { Mail, MessageSquare, Instagram, MapPin } from 'lucide-react';
 import { ChevronRight, Truck } from 'lucide-react';
 import { sendContactForm } from '@/services/contact.service';
 import { FaCheckCircle } from "react-icons/fa";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const ContactPage = () => {
-
+  const router = useRouter();
   const [formData, setFormData] = useState({
   name: '',
   email: '',
@@ -111,7 +113,10 @@ const handleSubmit = async (e: React.FormEvent) => {
             Got questions about your order or sizing? Our <br />
             street-ops team is here to help you gear up.
           </p>
-          <button className={styles.trackButton}>
+          <button
+            className={styles.trackButton}
+            onClick={() => router.push("/orders")}
+          >
             TRACK ORDER
           </button>
         </div>
@@ -221,8 +226,17 @@ const handleSubmit = async (e: React.FormEvent) => {
             <div className={styles.supportCard}>
               <h3>SUPPORT CENTER</h3>
               <ul className={styles.supportLinks}>
-                <li>Shipping Information <ChevronRight size={18} /></li>
-                <li>Return Policy <ChevronRight size={18} /></li>
+                <li>
+                  <Link href="/terms-and-condition">
+                    Shipping Information <ChevronRight size={18} />
+                  </Link>
+                </li>
+
+                <li>
+                  <Link href="/privacypolicy">
+                    Return Policy <ChevronRight size={18} />
+                  </Link>
+                </li>
               </ul>
               <div className={styles.deliveryBadge}>
                 <Truck size={24} />
@@ -234,18 +248,21 @@ const handleSubmit = async (e: React.FormEvent) => {
             </div>
 
             <div className={styles.mapPlaceholder}>
-               {/* Replace with an <iframe> or actual Map component */}
-               <div className={styles.mapPin}>
-                 <span className={styles.pinIcon}>📍</span>
-                 <p>kerela, India</p>
-               </div>
+              <iframe
+                src="https://www.google.com/maps?q=King+Fox+Clothing+Calicut&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </div>
 
         </div>
       </section>
       {/* NEW FAQ SECTION */}
-      <section className={styles.faqSection}>
+      <section id="faq" className={styles.faqSection}>
         <h2 className={styles.faqMainTitle}>QUICK HELP FAQ</h2>
         <div className={styles.faqContainer}>
           {faqData.map((item, index) => (

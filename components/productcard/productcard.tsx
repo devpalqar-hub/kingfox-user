@@ -1,15 +1,19 @@
 "use client";
-import React, { useState } from 'react';
-import styles from './productcard.module.css';
-import { Eye, Star } from 'lucide-react';
-import { addToWishlist, removeFromWishlist } from "@/services/wishlist.service";
-import { useAuth } from "@/context/AuthContext";
+import React from "react";
+import { Eye, Star } from "lucide-react";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import { getProductPath } from "@/lib/product-path";
+
+import styles from "./productcard.module.css";
 
 interface ProductCardProps {
   id: number;
+  slug?: string | null;
   image: string;
   name: string;
   price: string;
@@ -18,10 +22,13 @@ interface ProductCardProps {
   rating: number;
   isNew?: boolean;
   isWishlisted?: boolean;
+  onWishlistToggle?: () => void;
+  wishlistLoading?: boolean;
 }
 
 const ProductCard = ({
   id,
+  slug,
   image,
   name,
   price,
@@ -29,36 +36,22 @@ const ProductCard = ({
   reviews,
   colors,
   isNew,
-  isWishlisted: initialWishlisted
+  isWishlisted,
+  onWishlistToggle,
+  wishlistLoading,
 }: ProductCardProps) => {
-
   const router = useRouter();
   const { user } = useAuth();
-
-  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted ?? false);
+  const { showToast } = useToast();
 
   const handleWishlist = async () => {
     if (!user) {
-      alert("Please login first");
+      showToast("Please login first", "info");
       return;
     }
-
-    try {
-      if (isWishlisted) {
-
-        await removeFromWishlist(id);
-        setIsWishlisted(false);
-      } else {
-
-        await addToWishlist(id);
-        setIsWishlisted(true);
-      }
-    } catch (err: any) {
-      if (err?.response?.status === 409) {
-        setIsWishlisted(true);
-      } else {
-        console.error(err);
-      }
+    if (wishlistLoading) return;
+    if (onWishlistToggle) {
+      onWishlistToggle();
     }
   };
 
@@ -69,8 +62,14 @@ const ProductCard = ({
         <img src={image} alt={name} className={styles.productImage} />
 
         <div className={styles.iconOverlay}>
-          <button className={styles.iconBtn} onClick={handleWishlist}>
-            {isWishlisted ? (
+          <button
+            className={styles.iconBtn}
+            onClick={handleWishlist}
+            disabled={wishlistLoading}
+          >
+            {wishlistLoading ? (
+              <span className={styles.spinner} />
+            ) : isWishlisted ? (
               <FaHeart size={18} color="black" />
             ) : (
               <FiHeart size={18} />
@@ -80,7 +79,7 @@ const ProductCard = ({
 
         <button
           className={styles.viewBtn}
-          onClick={() => router.push(`/products/${id}`)}
+          onClick={() => router.push(getProductPath({ id, slug }))}
         >
           <Eye size={18} />
           VIEW
@@ -90,21 +89,12 @@ const ProductCard = ({
       <div className={styles.details}>
         <div className={styles.row}>
           <h3 className={styles.productName}>{name}</h3>
-          <p className={styles.price}>₹{price}</p>
-        </div>
-
-        <div className={styles.ratingRow}>
-          <div className={styles.stars}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                size={14}
-                className={i < Math.round(rating) ? styles.starFilled : styles.starEmpty}
-                fill={i < Math.round(rating) ? "#c28b5a" : "none"}
-              />
-            ))}
-          </div>
-          <span className={styles.reviewCount}>({reviews || 42})</span>
+          <p>
+            {new Intl.NumberFormat("en-IN", {
+              style: "currency",
+              currency: "INR",
+            }).format(Number(price))}
+          </p>
         </div>
 
         <div className={styles.colorOptions}>
@@ -116,6 +106,23 @@ const ProductCard = ({
             />
           ))}
         </div>
+
+        {reviews !== undefined && reviews > 0 && (
+          <div className={styles.ratingRow}>
+            <div className={styles.stars}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={14}
+                  color={i < Math.round(rating) ? "#c28b5a" : "#ccc"}
+                  fill={i < Math.round(rating) ? "#c28b5a" : "none"}
+                />
+              ))}
+            </div>
+
+            <span className={styles.reviewCount}>({reviews}) Reviews</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,14 +2,34 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./Footer.module.css";
+import { useEffect } from "react";
+import { getAllCategories } from "@/services/category.service";
 
 const Footer = () => {
 
   const [open, setOpen] = useState<string | null>(null);
-
+  const [categories, setCategories] = useState<any[]>([]);
   const toggle = (section: string) => {
   setOpen(open === section ? null : section);
 };
+
+
+useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const data = await getAllCategories();
+
+      // ✅ TAKE FIRST 4 DIRECTLY
+      const firstFour = data.slice(0, 4);
+
+      setCategories(firstFour);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCategories();
+}, []);
 
   return (
     <footer className={styles.footer}>
@@ -31,7 +51,14 @@ const Footer = () => {
             <div className={`${styles.mobileContent} ${open === "company" ? styles.show : ""}`}>
               <div className={styles.addressText}>
                 <p>King Fox Clothing, MNS Avenue,<br/> Near 4th Gate, Calicut 673001</p>
-                <Link href="#" className={`${styles.link} ${styles.mapLink}`}>Visit Map</Link>
+                <a
+                    href="https://www.google.com/maps?q=King+Fox+Clothing,+MNS+Avenue,+Near+4th+Gate,+Calicut+673001"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${styles.link} ${styles.mapLink}`}
+                  >
+                    Visit Map
+                  </a>
                 <p style={{marginTop:'20px'}}>+91 8129 8822 45</p>
                 <p style={{textTransform:'lowercase'}}>kingfoxclothingstore@gmail.com</p>
               </div>
@@ -51,11 +78,22 @@ const Footer = () => {
             </h3>
 
             <ul className={`${styles.list} ${styles.mobileContent} ${open === "shop" ? styles.show : ""}`}>
-              <li><Link href="/products" className={styles.link}>Oversized Tees</Link></li>
-              <li><Link href="/products" className={styles.link}>Half Sleeves</Link></li>
-              <li><Link href="/products" className={styles.link}>Full Sleeves</Link></li>
-              <li><Link href="/products" className={styles.link}>Casual Shirts</Link></li>
-              <li><Link href="/custom" className={styles.link}>Custom Designer</Link></li>
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link
+                    href={`/products?categoryId=${cat.id}`}
+                    className={styles.link}
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+
+              <li>
+                <Link href="/custom" className={styles.link}>
+                  Custom Designer
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -72,11 +110,11 @@ const Footer = () => {
             </h3>
 
             <ul className={`${styles.list} ${styles.mobileContent} ${open === "info" ? styles.show : ""}`}>
-              <li><Link href="/account" className={styles.link}>My Account</Link></li>
+              <li><Link href="/profile" className={styles.link}>My Account</Link></li>
               <li><Link href="/products" className={styles.link}>Products</Link></li>
               <li><Link href="/cart" className={styles.link}>My Cart</Link></li>
               <li><Link href="/wishlist" className={styles.link}>Wishlist</Link></li>
-              <li><Link href="/faq" className={styles.link}>Faq</Link></li>
+              <li><Link href="/contact#faq" className={styles.link}>Faq</Link></li>
             </ul>
           </div>
 
@@ -96,7 +134,8 @@ const Footer = () => {
               <li><Link href="/" className={styles.link}>Home</Link></li>
               <li><Link href="/about" className={styles.link}>About Us</Link></li>
               <li><Link href="/contact" className={styles.link}>Contact Us</Link></li>
-              <li><Link href="/privacy" className={styles.link}>Privacy Policy</Link></li>
+              <li><Link href="/privacypolicy" className={styles.link}>Privacy Policy</Link></li>
+              <li><Link href="/terms-and-condition" className={styles.link}>Terms & Conditions</Link></li>
             </ul>
           </div>
 

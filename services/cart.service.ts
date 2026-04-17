@@ -22,3 +22,7 @@ export const updateCartItemAPI = (variantId: number, quantity: number) => {
 export const removeCartItemAPI = (variantId: number) => {
   return axiosInstance.delete(`/v1/user/cart/items/${variantId}`);
 };
+
+export const moveAllWishlistToCartAPI = () => {
+  return axiosInstance.post("/v1/user/wishlist/wishlist/add-all-to-cart");
+};

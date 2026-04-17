@@ -5,7 +5,7 @@
   justify-content: center;
   align-items: center;
   background-color: #ffffff;
-  min-height: 500px;
+  /* min-height: 500px; */
 
 }
 
@@ -73,6 +73,7 @@
 .infoSection {
   padding: 60px 20px;
   background-color: #ffffff;
+   margin-top: -20px;
 }
 
 .infoGrid {
@@ -228,7 +229,14 @@
   padding: 30px;
   background: #f9f9f9;
 }
-
+.supportLinks li a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
 .supportCard h3 {
   font-weight: 800;
   margin-bottom: 20px;
@@ -435,6 +443,8 @@
 
 .container{
   gap:40px;
+  min-height: auto;   /* ✅ remove forced height */
+    padding: 30px 20px;
 }
 
 .title{
@@ -463,10 +473,17 @@
 }
 @media (max-width: 720px){
 
+  .contactHero {
+  min-height: auto !important;
+  padding: 30px 20px;
+}
+
 /* HERO */
 .container{
   flex-direction:column;
   text-align:center;
+  padding: 30px 20px;
+  min-height: auto;
 }
 
 .textContent{
@@ -509,9 +526,10 @@
 
 @media (max-width: 460px){
 
-.contactHero{
-  padding:50px 20px;
-}
+.contactHero {
+    min-height: auto !important;
+    padding: 20px 16px;
+  }
 
 .title{
   font-size:38px;

@@ -9,6 +9,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   lineTotal?: number;
+  availableStock: number; 
 }
 
 export interface CartResponse {

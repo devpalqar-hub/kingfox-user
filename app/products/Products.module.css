@@ -197,7 +197,63 @@
   grid-template-columns: repeat(4, 1fr); /* 4 CARDS PER ROW */
   gap: 20px;
 }
+.sliderWrapper {
+  position: relative;
+  width: 100%;
+  height: 30px;
+}
 
+/* Gray track */
+.sliderTrack {
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: #ddd;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 5px;
+}
+
+/* Black selected range */
+.sliderRange {
+  position: absolute;
+  height: 4px;
+  background: #000;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 5px;
+}
+
+/* Overlay sliders */
+.thumb {
+  position: absolute;
+  width: 100%;
+  height: 30px;
+  pointer-events: none;
+  appearance: none;
+  background: none;
+}
+
+/* Circle */
+.thumb::-webkit-slider-thumb {
+  pointer-events: all;
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  background: black;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.thumb::-moz-range-thumb {
+  pointer-events: all;
+  height: 16px;
+  width: 16px;
+  background: black;
+  border-radius: 50%;
+  cursor: pointer;
+}
 /* Pagination Styles */
 .paginationArea {
   margin-top: 60px;
@@ -324,6 +380,20 @@
   background:rgba(0,0,0,0.4);
   z-index:90;
 }
+
+/* No products message */
+.noProductsMsg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: #888;
+  text-align: center;
+  margin: 0 auto;
+}
+
 @media (max-width:1200px){
 
 .container{
@@ -523,4 +593,16 @@
   font-size:12px;
 }
 
+}
+
+/* No products message */
+.noProductsMsg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: #888;
+  text-align: center;
 }

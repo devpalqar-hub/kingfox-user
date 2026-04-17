@@ -5,27 +5,51 @@ import styles from "./login.module.css";
 import { sendOtp, verifyOtp } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  prefillPhone?: string;
+  prefillEmail?: string;
 };
 
-export default function LoginModal({ isOpen, onClose }: Props) {
+export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
-    const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const { login } = useAuth();
+  const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const [step, setStep] = useState<"phone" | "otp">("phone");
   const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
 
+  useEffect(() => {
+    if (prefillPhone) {
+      setPhone(prefillPhone);
+      return;
+    }
+
+    if (prefillEmail) {
+      setPhone(prefillEmail);
+    }
+  }, [prefillPhone, prefillEmail]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep("phone");
+      setPhone("");
+      setOtp("");
+    }
+  }, [isOpen]);
   if (!isOpen) return null;
 
   // 👉 Send OTP
   const handleSendOtp = async () => {
     try {
       setLoading(true);
-      const res = await sendOtp(email);
+      const res = await sendOtp(phone);
 
       showToast("OTP sent successfully", "success", 3000);
       setStep("otp");
@@ -39,37 +63,54 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   };
 
   // 👉 Verify OTP
-const handleVerifyOtp = async () => {
-  try {
-    setLoading(true);
-    const res = await verifyOtp(email, otp);
+  const handleVerifyOtp = async () => {
+    try {
+      setLoading(true);
+      const res = await verifyOtp(phone, otp);
 
-    if (res.isNew) {
-      showToast("Account not found. Continue signup ", "info", 3000);
+      if (res.user) {
+        const user = {
+          id: Number(res.user.id) || 1,
+          name: res.user.name || "User",
+          email: res.user.email || "",
+          role: res.user.role || "customer",
+        };
 
-      router.push(`/auth/register?email=${email}&token=${res.access_token}`);
-    } else {
-      const user = {
-        id: 1,
-        name: "User",
-        email: email,
-        role: "customer",
-      };
+        login(res.access_token, user);
 
-      login(res.access_token, user);
+        showToast("Login successful ", "success", 2500);
 
-      showToast("Login successful ", "success", 2500);
+        onClose();
+      } else if (res.isNew) {
+        showToast("Account not found. Continue signup ", "info", 3000);
 
-      onClose();
+        router.push(`/auth/register?email=${phone}&token=${res.access_token}`);
+      } else {
+        const user = {
+          id: 1,
+          name: "User",
+          email: "",
+          role: "customer",
+        };
+
+        login(res.access_token, user);
+
+        showToast("Login successful ", "success", 2500);
+
+        onClose();
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast("Invalid OTP ", "error", 3000);
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } catch (err) {
-    console.error(err);
-    showToast("Invalid OTP ", "error", 3000);
-  } finally {
-    setLoading(false);
-  }
-};
+
+
+
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>
@@ -82,19 +123,21 @@ const handleVerifyOtp = async () => {
 
         <h2 className={styles.title}>VERIFICATION</h2>
 
-        {/* STEP 1: EMAIL INPUT */}
-        {step === "email" && (
+        {/* STEP 1: PHONE INPUT */}
+        {step === "phone" && (
           <>
             <p className={styles.subtitle}>
-              Enter your email to continue
+              Enter your phone number to continue
             </p>
 
             <input
-              type="email"
-              placeholder="Enter your email"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Enter your phone number"
               className={styles.phoneInput}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
 
             <button
@@ -111,7 +154,7 @@ const handleVerifyOtp = async () => {
         {step === "otp" && (
           <>
             <p className={styles.subtitle}>
-              Enter OTP sent to {email}
+              Enter OTP sent to {phone}
             </p>
 
             <input
@@ -133,7 +176,14 @@ const handleVerifyOtp = async () => {
         )}
 
         <p className={styles.terms}>
-          BY CONTINUING, YOU AGREE TO THE <span>TERMS</span>
+          BY CONTINUING, YOU AGREE TO THE{" "}
+          <Link
+            href="/terms-and-condition"
+            className={styles.termsLink}
+            onClick={onClose} // ✅ CLOSE MODAL
+          >
+            TERMS
+          </Link>
         </p>
 
       </div>

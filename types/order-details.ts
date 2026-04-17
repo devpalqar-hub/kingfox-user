@@ -10,10 +10,21 @@ export interface OrderDetailsItem {
     image: string;
 
     product: {
+      id: number;
       name: string;
     };
   };
+
+  review: {
+    id: number;
+    rating: number;
+    title: string;
+    body: string;
+    images: string[];
+  } | null; // ✅ VERY IMPORTANT
 }
+
+
 
 export interface Shipment {
   id: number;

@@ -28,21 +28,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true); // ✅ ADD THIS
 
   // 👉 Load from localStorage on refresh
- useEffect(() => {
-  const storedToken = localStorage.getItem("token");
-  const storedUser = localStorage.getItem("user");
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-  if (storedToken && storedUser && storedUser !== "undefined") {
-    try {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    } catch {
-      localStorage.removeItem("user");
+    if (storedToken && storedUser && storedUser !== "undefined") {
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("user");
+      }
     }
-  }
 
-  setLoading(false);
-}, []);
+    setLoading(false);
+  }, []);
+
+  // 👉 Listen for external storage changes (token removal by interceptor)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const token = localStorage.getItem("token");
+      const user = localStorage.getItem("user");
+
+      // If token or user is removed externally, reset auth state
+      if (!token || !user) {
+        setToken(null);
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   // 👉 Login
   const login = (token: string, user: User) => {
     localStorage.setItem("token", token);
@@ -53,19 +74,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // 👉 Logout
-const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-  setToken(null);
-  setUser(null);
+    setToken(null);
+    setUser(null);
 
-  showToast("Logged out successfully", "success", 2000);
+    showToast("Logged out successfully", "success", 2000);
 
-  setTimeout(() => {
-    router.push("/");
-  }, 800); // allow toast to show
-};
+    setTimeout(() => {
+      router.push("/");
+    }, 800); // allow toast to show
+  };
 
   // ⛔ Prevent rendering until auth is ready
   if (loading) return null;

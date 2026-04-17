@@ -29,6 +29,7 @@ export interface OrderPreviewResponse {
   shippingCharge: number;
   totalWeight: number;
   finalAmount: number;
+  discountAmount?: number;
   items: OrderPreviewItem[];
 }
 
@@ -46,7 +47,7 @@ export interface CheckoutPayload {
   customerPhone?: string;
 
   couponCode?: string;
-  paymentMethod: "COD";
+  paymentMethod: "COD" | "RAZORPAY";
   shippingAddress: string;
 }
 
@@ -57,10 +58,12 @@ export interface OrderItem {
   quantity: number;
   price: string;
   subtotal: string;
+
 }
 
 export interface OrderResponse {
   message: string;
+
   order: {
     id: number;
     orderNumber: string;
@@ -73,4 +76,12 @@ export interface OrderResponse {
     createdAt: string;
     items: OrderItem[];
   };
+
+  // 🔥 ADD THIS
+  paymentLink?: {
+    url: string;
+  };
 }
+
+
+
