@@ -312,7 +312,7 @@ const OrderDetailsPage = () => {
     </button>
   ) : (
     <p className={styles.reviewDisabled}>
-      Review available after shipping
+      Review available after product delivered
     </p>
   )}
 </div>

@@ -114,6 +114,7 @@ const CartPage = () => {
 
                 <div className={styles.quantity}>
                   <button
+                    disabled={item.quantity <= 1}
                     onClick={async () => {
                       if (item.quantity > 1) {
                         await updateCartItemAPI(item.variantId, item.quantity - 1);
@@ -182,6 +183,7 @@ const CartPage = () => {
 
                 <div className={styles.quantity}>
                   <button
+                    disabled={item.quantity <= 1}
                     onClick={async () => {
                       if (item.quantity > 1) {
                         updateGuestCart(item.variantId, item.quantity - 1);

@@ -100,23 +100,7 @@ const HotDeals = () => {
     }
   };
   if (!products || products.length === 0) {
-    return (
-      <section className={styles.section}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>HOT DEALS</h2>
-        </div>
-
-        <div className={styles.emptyState}>
-          <p>No hot deals available right now </p>
-          <button
-            className={styles.viewAll}
-            onClick={() => router.push("/products")}
-          >
-            BROWSE ALL PRODUCTS
-          </button>
-        </div>
-      </section>
-    );
+    return null;
   }
   return (
     <section className={styles.section}>

@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  EyeIcon,
 } from "lucide-react"; // Using Lucide for icons
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirm } from "@/context/ConfirmContext";
 import { addToCartAPI } from "@/services/cart.service";
 import { moveAllWishlistToCartAPI } from "@/services/cart.service";
+import { getProductPath } from "@/lib/product-path";
 
 export default function WishlistPage() {
   const { showToast } = useToast();
@@ -34,6 +36,7 @@ export default function WishlistPage() {
     const fetchWishlist = async () => {
       try {
         const data = await getWishList();
+        console.log("here",data)
         setWishlist(data);
       } catch (err) {
         console.error(err);
@@ -88,7 +91,7 @@ export default function WishlistPage() {
     }
   };
 
-  const handleRemove = async (productId: number) => {
+  const handleRemove = async (variantId: number) => {
     const confirmed = await confirm({
       title: "Remove Item",
       message: "Are you sure you want to remove this item from your wishlist?",
@@ -99,13 +102,13 @@ export default function WishlistPage() {
     if (!confirmed) return;
 
     try {
-      await removeFromWishlist(productId);
-      showToast("Removed from wishlist", "success");
+      await removeFromWishlist(variantId);
 
       setWishlist((prev) =>
-        prev.filter((item) => item.productId !== productId),
+        prev.filter((item) => item.variantId !== variantId)
       );
 
+      showToast("Removed from wishlist", "success");
       window.dispatchEvent(new Event("wishlistUpdated"));
     } catch (err) {
       console.error(err);
@@ -115,7 +118,7 @@ export default function WishlistPage() {
 
   const handleMoveToCart = async (item: any) => {
     try {
-      const variantId = item.product.variants?.[0]?.id;
+      const variantId = item.variantId;
       if (!variantId) {
         showToast("No variant found for this product", "error");
         return;
@@ -216,24 +219,41 @@ export default function WishlistPage() {
             const product = item.product;
 
             return (
-              <div key={item.id} className={styles.card}>
+              <div key={item.id} className={styles.card}
+                >
                 <div className={styles.imageWrapper}>
                   <img src={product.images?.[0]} alt={product.name} />
                   <div
                     className={styles.wishlistIcon}
-                    onClick={() => handleRemove(item.productId)}
-                    style={{ cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemove(item.variantId);
+                    }}
                   >
                     <Heart size={18} fill="black" />
+                  </div>
+                  <div
+                    className={styles.viewIcon}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(getProductPath({ id: product.id, slug: product.slug }));
+                    }}
+                  >
+                    <EyeIcon size={18}/>
                   </div>
                 </div>
 
                 <div className={styles.productInfo}>
                   <h3>{product.name}</h3>
 
+                  {/* ✅ Variant Info */}
+                  <div className={styles.variantInfo}>
+                    {item.variant?.color} / {item.variant?.size}
+                  </div>
+
                   <div className={styles.priceRow}>
                     <span className={styles.price}>
-                      ₹{product.priceRange?.min || 0}
+                      ₹{item.variant?.price || 0}
                     </span>
 
                     <span className={styles.sizeTag}>
@@ -244,7 +264,10 @@ export default function WishlistPage() {
 
                 <button
                   className={styles.actionBtn}
-                  onClick={() => handleMoveToCart(item)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMoveToCart(item);
+                  }}
                 >
                   Move To Cart
                 </button>

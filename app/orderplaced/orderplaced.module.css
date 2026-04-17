@@ -125,6 +125,7 @@
   justify-content: space-between;
   gap: 20px;
   text-align: left;
+  margin-bottom: 20px;
 }
 
 .cardLabel {
@@ -146,7 +147,6 @@
 
 /* Track Button */
 .trackButton {
-  margin-top: 20px;
   width: 100%;
   background: black;
   color: white;

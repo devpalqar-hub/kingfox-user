@@ -16,6 +16,7 @@ import { getWishList } from "@/services/wishlist.service";
 import type { CartItem } from "@/types/cart";
 
 import styles from "./Header.module.css";
+import { Campaign, getCampaignsAPI } from "@/services/campaign.service";
 
 type Category = {
   id: number;
@@ -41,6 +42,8 @@ const Header = () => {
   const [searchError, setSearchError] = useState("");
   const [searchTouched, setSearchTouched] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
 
   const params = useSearchParams(); // (keep if you plan to use later)
 
@@ -76,8 +79,25 @@ const Header = () => {
   }, []);
 
   const oversizedCategory = categories.find((cat) =>
-    cat.name.toLowerCase().includes("oversize"),
+    cat.name.toLowerCase().includes("over"),
   );
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      try {
+        const data = await getCampaignsAPI();
+
+        // assuming first active campaign
+        if (data && data.length > 0) {
+          setCampaign(data[0]);
+        }
+      } catch (err) {
+        console.error("Campaign error:", err);
+      }
+    };
+
+    fetchCampaign();
+  }, []);
 
   /* =========================
      SEARCH HANDLER
@@ -224,17 +244,29 @@ const Header = () => {
       {/* ANNOUNCEMENT */}
       <div className={styles.announcementBar}>
         <div className={styles.marquee}>
-          <span>OUR FIRST 50000 MILESTONE GIVEAWAY, ONLY</span>
+          <span className={styles.campaignName}>
+            &quot;{campaign?.name?.toUpperCase()}&quot;
+          </span>
+
+          <span className={styles.onlyText}>ONLY</span>
 
           <div className={styles.voucherCount}>
-            <span className={styles.digit}>3</span>
-            <span className={styles.digit}>8</span>
-            <span className={styles.digit}>1</span>
-            <span className={styles.digit}>8</span>
-            <span className={styles.digit}>0</span>
+            {(campaign?.vouchersLeft?.toString() || "0")
+              .split("")
+              .map((digit, i) => (
+                <span key={i} className={styles.digit}>
+                  {digit}
+                </span>
+              ))}
           </div>
 
-          <span>VOUCHERS LEFT. GRAB YOURS BEFORE THEY&apos;RE GONE!</span>
+          <span>
+            VOUCHERS LEFT. GRAB YOURS BEFORE{" "}
+            {campaign?.endDate
+              ? new Date(campaign.endDate).toLocaleDateString("en-IN")
+              : "THEY'RE GONE"}
+            !
+          </span>
         </div>
       </div>
 
@@ -250,7 +282,10 @@ const Header = () => {
 
         {/* LOGO */}
         <div className={styles.logo}>
-          <img src="/logo.png" alt="Logo" className={styles.logoImg} />
+          
+          <Link href="/" onClick={() => setMenuOpen(false)}>
+            <img src="/logo.png" alt="Logo" className={styles.logoImg} />
+          </Link>
           <span className={styles.logoText}>KINGFOX</span>
         </div>
 

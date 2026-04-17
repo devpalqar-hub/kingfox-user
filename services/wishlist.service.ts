@@ -1,9 +1,9 @@
 import axiosInstance from "@/lib/axios";
 
 // ✅ Add
-export const addToWishlist = async (productId: number) => {
+export const addToWishlist = async (variantId: number) => {
   const res = await axiosInstance.post("/v1/user/wishlist", {
-    productId,
+    variantId,
   });
   return res.data;
 };
