@@ -16,6 +16,7 @@ const OrdersPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 5;
   const searchParams = useSearchParams();
+  
 
   const paymentId = searchParams.get("razorpay_payment_id");
   const orderId = searchParams.get("razorpay_order_id");
@@ -41,7 +42,10 @@ const OrdersPage = () => {
     new Date(date).toISOString().split("T")[0];
 
   const formatStatus = (status: string) =>
-    status.charAt(0) + status.slice(1).toLowerCase();
+  status
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 const getStatusClass = (status: string) => {
   switch (status) {

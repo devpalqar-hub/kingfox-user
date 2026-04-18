@@ -25,6 +25,11 @@ const ProfilePage = () => {
   const [cartTotal, setCartTotal] = useState<number>(0);
   const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
 
+  const formatStatus = (status: string) =>
+    status
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-IN", {
       day: "numeric",
@@ -257,7 +262,7 @@ const handleSave = async () => {
               <span>{new Date(o.createdAt).toDateString()}</span>
               <span>{o.items.length} ITEMS</span>
               <span>₹{o.finalAmount}</span>
-              <span className={styles.status}>{o.status}</span>
+              <span className={styles.status}>{formatStatus(o.status)}</span>
             </div>
           ))}
         </div>

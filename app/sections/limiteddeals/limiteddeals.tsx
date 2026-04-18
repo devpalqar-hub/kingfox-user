@@ -104,24 +104,7 @@ const LimitedDeals = () => {
   };
 
   if (!products || products.length === 0) {
-    return (
-      <section className={styles.section}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>LIMITED DEALS</h2>
-        </div>
-
-        <div className={styles.emptyState}>
-          <p>No limited edition products available right now ⏳</p>
-
-          <button
-            className={styles.viewAll}
-            onClick={() => router.push("/products")}
-          >
-            EXPLORE ALL PRODUCTS
-          </button>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (

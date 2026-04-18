@@ -1,165 +1,493 @@
+
+/* ── Container ─────────────────────────────── */
 .container {
   width: 100%;
-  padding: 40px 20px;
+  padding: 48px 24px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: #0b0c10;
+  font-family: "Sora", "DM Sans", sans-serif;
 }
 
+/* ── Section Header ─────────────────────────── */
+.sectionHeader {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.headerEyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9a84c;
+}
+
+.headerTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: #f5f0e8;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.headerCount {
+  font-size: 13px;
+  color: #6b6b7a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Carousel Wrapper ───────────────────────── */
 .carouselContainer {
-  position: relative; /* This is the anchor for the arrow */
+  position: relative;
   width: 100%;
   max-width: 1200px;
 }
 
-.leftArrow {
-  position: absolute;
-  /* Exactly on the left edge */
-  left:-50px; 
-  /* Perfect vertical center relative to the cards */
-  top: 50%;
-  transform: translateY(-50%);
-  
-  z-index: 10;
-  /* UI Size: Usually 40px-48px for this design style */
-  width: 20px;
-  height:20px;
-  background-color: #1a1a1a;
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
 .cardWrapper {
   display: flex;
   gap: 20px;
   width: 100%;
   overflow-x: auto;
   scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
 }
+
 .cardWrapper::-webkit-scrollbar {
   display: none;
 }
+
+.transitioning .card {
+  pointer-events: none;
+}
+
+/* ── Card ───────────────────────────────────── */
 .card {
-  flex: 0 0 calc(50% - 10px);   /* ✅ FORCE 2 CARDS */
+  flex: 0 0 100%;
   position: relative;
-  aspect-ratio: 16 / 9;
-  border-radius: 40px;
+  aspect-ratio: 16 / 5;
+  border-radius: 28px;
   overflow: hidden;
+  scroll-snap-align: start;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .card:hover {
-  transform: scale(1.02);
+  transform: scale(1.012);
 }
+
+.cardActive {
+  border-color: rgba(201, 168, 76, 0.35);
+}
+
+/* ── Gradient Overlay ───────────────────────── */
+.cardGradient {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.38) 50%,
+      rgba(0, 0, 0, 0.15) 100%
+    ),
+    linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 55%);
+  z-index: 1;
+}
+
+/* ── Shimmer Border (active card only) ──────── */
+.shimmerBorder {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgba(201, 168, 76, 0);
+  transition: opacity 0.4s ease;
+}
+
+.cardActive .shimmerBorder {
+  opacity: 1;
+  animation: shimmerPulse 2.8s ease-in-out infinite;
+  box-shadow: inset 0 0 0 1.5px rgba(201, 168, 76, 0.5);
+}
+
+@keyframes shimmerPulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1.5px rgba(201, 168, 76, 0.5),
+      0 0 22px rgba(201, 168, 76, 0.12);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 215, 100, 0.85),
+      0 0 32px rgba(201, 168, 76, 0.28);
+  }
+}
+
+/* ── Status Badge ───────────────────────────── */
+.badge {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 5;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 5px 12px;
+  border-radius: 100px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.badgeLive {
+  background: rgba(255, 120, 0, 0.2);
+  color: #ffbf7f;
+  border: 1px solid rgba(255, 120, 0, 0.35);
+}
+
+.badgeClosed {
+  background: rgba(201, 168, 76, 0.18);
+  color: #f0c040;
+  border: 1px solid rgba(201, 168, 76, 0.38);
+}
+
+.badgeUpcoming {
+  background: rgba(100, 160, 255, 0.15);
+  color: #82b4ff;
+  border: 1px solid rgba(100, 160, 255, 0.3);
+}
+
+/* ── Glass Info Panel ───────────────────────── */
+.glassPanel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  padding: 20px 28px 22px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.glassPanelLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.campaignLabel {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.85);
+  font-weight: 600;
+  margin: 0;
+}
+
+.campaignName {
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 700;
+  color: #f5f0e8;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+
+.prize {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.7);
+  margin: 2px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prizeIcon {
+  font-size: 13px;
+}
+
+/* ── Right Panel ────────────────────────────── */
+.glassPanelRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.countdownBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.countdownLabel {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.7);
+  font-weight: 600;
+}
+
+.countdownValue {
+  font-size: clamp(13px, 1.6vw, 16px);
+  font-weight: 700;
+  color: #f0c040;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.enterBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, #c9a84c, #e8c96a);
+  color: #1a1200;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 4px 18px rgba(201, 168, 76, 0.38);
+  white-space: nowrap;
+}
+
+.card:hover .enterBtn {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(201, 168, 76, 0.5);
+}
+
+/* ── Ticket Notches ─────────────────────────── */
+.notchLeft,
+.notchRight {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0b0c10;
+  z-index: 6;
+  transform: translateY(-50%);
+}
+
+.notchLeft {
+  left: -9px;
+}
+.notchRight {
+  right: -9px;
+}
+
+/* ── Nav Arrows ─────────────────────────────── */
+.leftArrow,
 .rightArrow {
   position: absolute;
-  right: -50px;  /* opposite of left */
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-
-  width: 20px;
-  height: 20px;
-  background-color: #1a1a1a;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  border: none;
-
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  background: rgba(15, 14, 20, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #c9a84c;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
-/* Pagination stays below the carouselContainer naturally */
+.leftArrow {
+  left: -58px;
+}
+.rightArrow {
+  right: -58px;
+}
+
+.leftArrow:hover:not(:disabled),
+.rightArrow:hover:not(:disabled) {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: rgba(201, 168, 76, 0.65);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 0 18px rgba(201, 168, 76, 0.25);
+}
+
+.leftArrow:disabled,
+.rightArrow:disabled {
+  opacity: 0.22;
+  cursor: not-allowed;
+}
+
+/* ── Pagination ─────────────────────────────── */
 .pagination {
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 25px;
+  margin-top: 22px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
-  background-color: #ccc;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.3s,
+    box-shadow 0.3s;
 }
 
-.active {
-  background-color: #000;
-  border: 2px solid #000;
-  background-color: transparent;
-  width: 12px;
-  height: 12px;
+.dot:hover {
+  background: rgba(201, 168, 76, 0.5);
 }
 
-/* ===================== */
+.dotActive {
+  width: 28px;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #c9a84c, #e8c96a);
+  box-shadow: 0 0 10px rgba(201, 168, 76, 0.5);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
 /* Tablet */
-/* ===================== */
-
-@media (max-width:1024px){
-
-.container{
-  padding:35px 18px;
+@media (max-width: 1100px) {
+  .leftArrow {
+    left: -44px;
+  }
+  .rightArrow {
+    right: -44px;
+  }
 }
 
-.cardWrapper{
-  gap:18px;
+@media (max-width: 900px) {
+  .container {
+    padding: 36px 16px 32px;
+  }
+
+  .leftArrow {
+    display: none;
+  }
+  .rightArrow {
+    display: none;
+  }
+
+  .glassPanel {
+    padding: 16px 20px 18px;
+  }
+
+  .campaignName {
+    font-size: 16px;
+  }
+
+  .enterBtn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .notchLeft,
+  .notchRight {
+    display: none;
+  }
 }
 
-.card{
-  border-radius:30px;
+@media (max-width: 600px) {
+  .container {
+    padding: 28px 12px 24px;
+  }
+
+  .headerTitle {
+    font-size: 20px;
+  }
+
+  .card {
+    border-radius: 20px;
+  }
+
+  .glassPanel {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px 16px;
+  }
+
+  .glassPanelRight {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .countdownBox {
+    align-items: flex-start;
+  }
+
+  .badge {
+    top: 12px;
+    right: 14px;
+  }
 }
 
-.leftArrow{
-  left:-35px;
-}
-
-}
-
-/* ===================== */
-/* Mobile */
-/* ===================== */
-
-@media (max-width:720px){
-
-.container{
-  padding:30px 15px;
-}
-
-.cardWrapper{
-  gap:15px;
-}
-
-.card{
-  border-radius:25px;
-}
-
-.leftArrow{
-  display:none;
-}
-
-}
-
-/* ===================== */
-/* Small Mobile */
-/* ===================== */
-
-@media (max-width:460px){
-
-.container{
-  padding:25px 12px;
-}
-
-.cardWrapper{
-  gap:12px;
-}
-
-.card{
-  border-radius:20px;
-}
-
+@media (max-width: 400px) {
+  .campaignName {
+    font-size: 14px;
+  }
+  .enterBtn {
+    padding: 7px 14px;
+    font-size: 11px;
+  }
 }

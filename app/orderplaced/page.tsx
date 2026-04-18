@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MdLocalShipping } from "react-icons/md";
 import Link from "next/link";
 import { getOrderDetailsAPI } from "@/services/order-details.service";
+import { PiPhoneFill } from "react-icons/pi";
 export default function OrderConfirmation() {
 
   const router = useRouter();
@@ -91,12 +92,17 @@ if (!order) {
       <span>₹{order.subtotal}</span>
     </div>
 
-    <div className={styles.summaryRow}>
-      <span>Shipping</span>
-      <span className={styles.shippingFree}>
-        {order.shippingCharge == 0 ? "FREE" : `₹${order.shippingCharge}`}
-      </span>
-    </div>
+   
+      
+      {order.fulfillmentType !=="PICKUP" && (
+         <div className={styles.summaryRow}>
+          <span>Shipping</span>
+          <span className={styles.shippingFree}>
+            {order.shippingCharge == 0 ? "FREE" : `₹${order.shippingCharge}`}
+          </span>
+        </div>
+      )}
+    
 
     <div className={styles.totalRow}>
       <span>Total</span>
@@ -107,20 +113,44 @@ if (!order) {
     <div className={styles.deliveryCard}>
       <div className={styles.deliveryGrid}>
 
-        <div>
-          <span className={styles.cardLabel}>DELIVERY ADDRESS</span>
-          <p className={styles.cardContent}>
-            {order.shippingAddress}
-          </p>
-        </div>
+        {order.fulfillmentType === "DELIVERY" ? (
+        <>
+          <div>
+            <span className={styles.cardLabel}>DELIVERY ADDRESS</span>
+            <p className={styles.cardContent}>
+              {order.shippingAddress}
+            </p>
+          </div>
 
-        <div>
-          <span className={styles.cardLabel}>ESTIMATED DELIVERY</span>
-          <p className={styles.cardContent}>
-            <MdLocalShipping className={styles.deliveryIcon} />
-            3 - 5 Business Days
-          </p>
-        </div>
+          <div>
+            <span className={styles.cardLabel}>ESTIMATED DELIVERY</span>
+            <p className={styles.cardContent}>
+              <MdLocalShipping className={styles.deliveryIcon} />
+              3 - 5 Business Days
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <span className={styles.cardLabel}>PICKUP LOCATION</span>
+
+            <div className={styles.branchDetails}>
+              <p className={styles.branchName}>
+                {order.pickupBranch?.name}
+              </p>
+
+              <p className={styles.branchAddress}>
+                {order.pickupBranch?.address}
+              </p>
+
+              <p className={styles.branchPhone}>
+                <PiPhoneFill/> {order.pickupBranch?.phone}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
       </div>
 
       {/* ✅ Track Button */}
@@ -135,7 +165,9 @@ if (!order) {
 
     {/* ✅ Footer */}
     <div className={styles.footerLinks}>
-      <span>NEED HELP?</span>
+      <Link href="/contact" className={styles.link}>
+        NEED HELP?
+      </Link>
 
       <Link href="/returnpolicy" className={styles.link}>
         RETURN POLICY

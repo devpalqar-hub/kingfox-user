@@ -16,6 +16,7 @@ import { getWishList } from "@/services/wishlist.service";
 import type { CartItem } from "@/types/cart";
 
 import styles from "./Header.module.css";
+import { Campaign, getCampaignsAPI } from "@/services/campaign.service";
 
 type Category = {
   id: number;
@@ -42,7 +43,43 @@ const Header = () => {
   const [searchTouched, setSearchTouched] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [campaignLoading, setCampaignLoading] = useState(true);
+
   const params = useSearchParams(); // (keep if you plan to use later)
+
+const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
+  const target = parseInt(digit, 10);
+  const CELL_HEIGHT = 28;
+
+  const fullCycle = Array.from({ length: 10 }, (_, i) => i);
+  const reelDigits = [
+    ...fullCycle,
+    ...fullCycle,
+    ...fullCycle,
+    ...Array.from({ length: target + 1 }, (_, i) => i), // final: 0 → target
+  ];
+
+  const totalScroll = (reelDigits.length - 1) * CELL_HEIGHT;
+
+  return (
+    <div className={styles.digitWrap}>
+      <div
+        className={styles.digitReel}
+        style={{
+          ["--scroll" as any]: `-${totalScroll}px`,
+          ["--delay" as any]: `${delay}ms`,
+        }}
+      >
+        {reelDigits.map((d, i) => (
+          <span key={i} className={styles.digitCell}>
+            {d}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
 
   /* =========================
      GLOBAL LOGIN MODAL EVENT
@@ -76,8 +113,24 @@ const Header = () => {
   }, []);
 
   const oversizedCategory = categories.find((cat) =>
-    cat.name.toLowerCase().includes("oversize"),
+    cat.name.toLowerCase().includes("over"),
   );
+
+useEffect(() => {
+  const fetchCampaign = async () => {
+    try {
+      const data = await getCampaignsAPI();
+      if (data && data.length > 0) {
+        setCampaign(data[0]);
+      }
+    } catch (err) {
+      console.error("Campaign error:", err);
+    } finally {
+      setCampaignLoading(false); // ← add this
+    }
+  };
+  fetchCampaign();
+}, []);
 
   /* =========================
      SEARCH HANDLER
@@ -222,21 +275,43 @@ const Header = () => {
   return (
     <header className={styles.headerContainer}>
       {/* ANNOUNCEMENT */}
-      <div className={styles.announcementBar}>
-        <div className={styles.marquee}>
-          <span>OUR FIRST 50000 MILESTONE GIVEAWAY, ONLY</span>
-
-          <div className={styles.voucherCount}>
-            <span className={styles.digit}>3</span>
-            <span className={styles.digit}>8</span>
-            <span className={styles.digit}>1</span>
-            <span className={styles.digit}>8</span>
-            <span className={styles.digit}>0</span>
+      {!campaignLoading && campaign && (
+        <div className={`${styles.announcementBar} ${styles.announcementVisible}`}>
+          <div className={styles.marquee}>
+            <span className={styles.campaignName}>
+              &quot;{campaign?.name?.toUpperCase()}&quot;
+            </span>
+            <span className={styles.onlyText}>ONLY</span>
+            <div className={styles.voucherCount}>
+              {(campaign?.vouchersLeft?.toString() || "0")
+                .split("")
+                .map((digit, i) => (
+                  <SlotDigit key={i} digit={digit} delay={600 + i * 300} />
+                ))}
+            </div>
+            <span>
+              VOUCHERS LEFT. GRAB YOURS BEFORE{" "}
+              {campaign?.endDate
+                ? new Date(campaign.endDate).toLocaleDateString("en-IN")
+                : "THEY'RE GONE"}
+              !
+            </span>
           </div>
-
-          <span>VOUCHERS LEFT. GRAB YOURS BEFORE THEY&apos;RE GONE!</span>
         </div>
-      </div>
+      )}
+
+      {campaignLoading && (
+        <div className={styles.announcementSkeleton}>
+          <div className={styles.skeletonLine} style={{ width: 140 }} />
+          <div className={styles.skeletonLine} style={{ width: 40 }} />
+          <div className={styles.skeletonDigitGroup}>
+            <div className={styles.skeletonDigit} />
+            <div className={styles.skeletonDigit} />
+            <div className={styles.skeletonDigit} />
+          </div>
+          <div className={styles.skeletonLine} style={{ width: 220 }} />
+        </div>
+      )}
 
       {/* NAVBAR */}
       <nav className={styles.mainHeader}>
@@ -250,7 +325,10 @@ const Header = () => {
 
         {/* LOGO */}
         <div className={styles.logo}>
-          <img src="/logo.png" alt="Logo" className={styles.logoImg} />
+          
+          <Link href="/" onClick={() => setMenuOpen(false)}>
+            <img src="/logo.png" alt="Logo" className={styles.logoImg} />
+          </Link>
           <span className={styles.logoText}>KINGFOX</span>
         </div>
 

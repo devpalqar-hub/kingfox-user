@@ -23,7 +23,7 @@ const Designing = () => {
   ];
 
   return (
-    <section className={styles.container}>
+    <section id="designing-section" className={styles.container}>
       <header className={styles.header}>
         <p className={styles.subtext}>UNLOCK YOUR CREATIVITY</p>
         <h1 className={styles.title}>

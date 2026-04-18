@@ -56,15 +56,22 @@ const ProductCard = ({
   };
 
   return (
-    <div className={styles.cardContainer}>
+    <div
+        className={styles.cardContainer}
+        onClick={() => router.push(getProductPath({ id, slug }))}
+        style={{ cursor: "pointer" }}
+      >
       <div className={styles.imageWrapper}>
         {isNew && <span className={styles.newBadge}>NEW ARRIVAL</span>}
         <img src={image} alt={name} className={styles.productImage} />
 
-        <div className={styles.iconOverlay}>
+        {/* <div className={styles.iconOverlay}>
           <button
             className={styles.iconBtn}
-            onClick={handleWishlist}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleWishlist();
+            }}
             disabled={wishlistLoading}
           >
             {wishlistLoading ? (
@@ -75,11 +82,14 @@ const ProductCard = ({
               <FiHeart size={18} />
             )}
           </button>
-        </div>
+        </div> */}
 
         <button
           className={styles.viewBtn}
-          onClick={() => router.push(getProductPath({ id, slug }))}
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(getProductPath({ id, slug }));
+          }}
         >
           <Eye size={18} />
           VIEW

@@ -84,7 +84,6 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
 }
 .card:hover {
   transform: translateY(-10px); /* Moves the card up by 10 pixels */
@@ -112,8 +111,8 @@
 
 .wishlistIcon {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 5%;
+  right: 5%;
   background: white;
   border-radius: 50%;
   padding: 8px;
@@ -121,6 +120,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+}
+.viewIcon {
+  position: absolute;
+  top: 18%;
+  right: 5%;
+  background: white;
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .tag {
@@ -167,6 +180,12 @@
 .price {
   font-size: 18px;
   font-weight: 700;
+}
+.variantInfo {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+  text-transform: capitalize;
 }
 
 .sizeTag {

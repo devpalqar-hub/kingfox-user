@@ -125,6 +125,7 @@
   justify-content: space-between;
   gap: 20px;
   text-align: left;
+  margin-bottom: 20px;
 }
 
 .cardLabel {
@@ -144,9 +145,29 @@
   vertical-align: middle;
 }
 
+.branchDetails {
+  margin-top: 6px;
+}
+
+.branchName {
+  font-weight: 700;
+}
+
+.branchAddress {
+  font-size: 13px;
+  color: #666;
+}
+
+.branchPhone {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
 /* Track Button */
 .trackButton {
-  margin-top: 20px;
   width: 100%;
   background: black;
   color: white;
