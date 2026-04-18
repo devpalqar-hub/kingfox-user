@@ -1,5 +1,5 @@
 "use client";
-import styles from './campaigns.module.css';
+import styles from "./campaigns.module.css";
 import { Ticket, Calendar } from "lucide-react";
 import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,13 +15,15 @@ export default function CampaignPage() {
 
     const d = new Date(date);
 
-    const month = d.toLocaleString("en-US", {
-      month: "short",
-      timeZone: "UTC",   // 🔥 FIX
-    }).toUpperCase();
+    const month = d
+      .toLocaleString("en-US", {
+        month: "short",
+        timeZone: "UTC", // 🔥 FIX
+      })
+      .toUpperCase();
 
     const day = String(
-      d.getUTCDate()     // 🔥 FIX
+      d.getUTCDate(), // 🔥 FIX
     ).padStart(2, "0");
 
     return `${month} ${day}`;
@@ -44,19 +46,21 @@ export default function CampaignPage() {
       <header
         className={styles.hero}
         style={{
-          backgroundImage: `url(${campaign?.image})`,
-
+          backgroundImage: `url(${
+            campaign?.image?.startsWith("blob")
+              ? "https://picsum.photos/1200/400"
+              : campaign?.image
+          })`,
         }}
       >
         <div className={styles.heroOverlay}>
-          <div className={styles.heroContent}>   {/* ✅ CHANGE */}
-
-            <span className={styles.tag}>SUMMER EDITION 2025</span>
-
+          <div className={styles.heroContent}>
+            {" "}
+            {/* ✅ CHANGE */}
+            <span className={styles.tag}>LUCKY DRAW CAMPAIGN 2026</span>
             <h1 className={styles.mainTitle}>
               {campaign?.name?.toUpperCase() || "LOADING..."}
             </h1>
-
             <div className={styles.metaRow}>
               <div className={styles.metaItem}>
                 <Ticket size={16} className={styles.icon} />
@@ -71,7 +75,6 @@ export default function CampaignPage() {
                   : "LOADING..."}
               </div>
             </div>
-
           </div>
         </div>
       </header>
@@ -82,13 +85,19 @@ export default function CampaignPage() {
           {/* Left Column */}
           <section className={styles.missionCard}>
             <h2 className={styles.sectionTitle}>MISSION BRIEF</h2>
-            <p className={styles.description}>
-              {campaign?.description}
-            </p>
+            <p className={styles.description}>{campaign?.description}</p>
 
             <ul className={styles.list}>
-              <li><span className={styles.dot}>•</span> <strong>GRAND PRIZE:</strong> KINGFOX NEON KINETIC SERIES (COMPLETE SET)</li>
-              <li><span className={styles.dot}>•</span> <strong>SECONDARY PRIZES:</strong> LIMITED RELEASE VOUCHERS & ARCHIVE ACCESS</li>
+              <li>
+                <span className={styles.dot}>•</span>{" "}
+                <strong>GRAND PRIZE:</strong> KINGFOX NEON KINETIC SERIES
+                (COMPLETE SET)
+              </li>
+              <li>
+                <span className={styles.dot}>•</span>{" "}
+                <strong>SECONDARY PRIZES:</strong> LIMITED RELEASE VOUCHERS &
+                ARCHIVE ACCESS
+              </li>
             </ul>
           </section>
 
@@ -165,7 +174,6 @@ export default function CampaignPage() {
       </main>
       <section className={styles.subscribeSection}>
         <div className={styles.subscribeContainer}>
-
           {/* LEFT TEXT */}
           <h2 className={styles.subscribeTitle}>
             NEVER MISS <br /> A DROP AGAIN
@@ -178,11 +186,8 @@ export default function CampaignPage() {
               placeholder="ENTER EMAIL"
               className={styles.input}
             />
-            <button className={styles.subscribeBtn}>
-              SUBSCRIBE
-            </button>
+            <button className={styles.subscribeBtn}>SUBSCRIBE</button>
           </div>
-
         </div>
       </section>
     </div>
