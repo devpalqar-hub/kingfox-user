@@ -50,20 +50,16 @@ const Header = () => {
 
 const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
   const target = parseInt(digit, 10);
-  const CELL_HEIGHT = 28; // must match CSS
+  const CELL_HEIGHT = 28;
 
-  // Reel: starts at target's position scrolled above, spins through full cycles
-  // We build: [target, ...0-9 x3, ...0→target] so the reel starts showing target,
-  // spins many times, and lands back on target
   const fullCycle = Array.from({ length: 10 }, (_, i) => i);
   const reelDigits = [
-    ...fullCycle, // cycle 1
-    ...fullCycle, // cycle 2
-    ...fullCycle, // cycle 3
+    ...fullCycle,
+    ...fullCycle,
+    ...fullCycle,
     ...Array.from({ length: target + 1 }, (_, i) => i), // final: 0 → target
   ];
 
-  // Total downward scroll distance to land on last item
   const totalScroll = (reelDigits.length - 1) * CELL_HEIGHT;
 
   return (

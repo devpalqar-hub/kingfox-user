@@ -248,7 +248,6 @@
 }
 
 
-/* Slot machine */
 .digitWrap {
   overflow: hidden;
   height: 28px;
@@ -285,7 +284,6 @@
   box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15);
 }
 
-/* Announcement fade-in once loaded */
 .announcementVisible {
   animation: fadeInBar 0.5s ease both;
 }
@@ -295,7 +293,6 @@
   to   { opacity: 1; }
 }
 
-/* Skeleton bar — same height/bg as real announcement */
 .announcementSkeleton {
   background-color: #000;
   padding: 10px 0;
@@ -337,7 +334,6 @@
   animation: shimmer 1.4s infinite;
 }
 
-/* Stagger the shimmer timing slightly for each element */
 .skeletonDigitGroup .skeletonDigit:nth-child(2) {
   animation-delay: 0.15s;
 }
