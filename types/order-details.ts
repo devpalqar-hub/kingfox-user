@@ -43,18 +43,26 @@ export interface OrderDetailsResponse {
   shippingCharge: string;
   finalAmount: string;
 
-  shippingAddress: string;
+  shippingAddress: string | null;
 
   createdAt: string;
-  updatedAt: string; 
+  updatedAt: string;
 
   items: OrderDetailsItem[];
+  fulfillmentType: string;
 
   shipments: Shipment[];
 
   payments: {
     paymentMethod: string;
   }[];
+
+  pickupBranch: {
+    id: number;
+    name: string;
+    phone: string;
+    address: string;
+  } | null;
 
   voucher: {
     voucherCode: string;

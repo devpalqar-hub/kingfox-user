@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { MdLocalShipping } from "react-icons/md";
 import Link from "next/link";
 import { getOrderDetailsAPI } from "@/services/order-details.service";
+import { PiPhoneFill } from "react-icons/pi";
 export default function OrderConfirmation() {
 
   const router = useRouter();
@@ -133,9 +134,20 @@ if (!order) {
         <>
           <div>
             <span className={styles.cardLabel}>PICKUP LOCATION</span>
-            <p className={styles.cardContent}>
-              Your selected store branch
-            </p>
+
+            <div className={styles.branchDetails}>
+              <p className={styles.branchName}>
+                {order.pickupBranch?.name}
+              </p>
+
+              <p className={styles.branchAddress}>
+                {order.pickupBranch?.address}
+              </p>
+
+              <p className={styles.branchPhone}>
+                <PiPhoneFill/> {order.pickupBranch?.phone}
+              </p>
+            </div>
           </div>
         </>
       )}

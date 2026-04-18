@@ -1,3 +1,4 @@
+import Banners from './sections/banners/banners';
 import BestSeller from './sections/bestseller/bestseller';
 import Branding from './sections/brandingsection/branding';
 import Cards from './sections/cards/cards';
@@ -12,9 +13,10 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
-      <Cards/>
+      <Banners/>
       <Collections/>
       <BestSeller/>
+      <Cards/>
       <HotDeals/>
       <LimitedDeals/>
       <Designing/>

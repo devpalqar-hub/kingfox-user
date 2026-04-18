@@ -19,6 +19,7 @@ import { getOrderDetailsAPI } from "@/services/order-details.service";
 import { OrderDetailsResponse } from "@/types/order-details";
 import { getProfileAPI } from "@/services/profile.service";
 import { useToast } from "@/context/ToastContext";
+import { PiPhoneFill } from "react-icons/pi";
 
 const OrderDetailsPage = () => {
   const router = useRouter();
@@ -400,10 +401,34 @@ const OrderDetailsPage = () => {
 
               <div className={styles.divider}></div>
 
-              <div className={styles.field}>
-                <span className={styles.label}>SHIPPING ADDRESS</span>
-                <p className={styles.value}>{order?.shippingAddress}</p>
-              </div>
+              {order.fulfillmentType === "DELIVERY" ? (
+                <div className={styles.field}>
+                  <span className={styles.label}>SHIPPING ADDRESS</span>
+                  <p className={styles.value}>
+                    {order.shippingAddress || "No address available"}
+                  </p>
+                </div>
+              ) : order.pickupBranch ? (
+                <div className={styles.field}>
+                  <span className={styles.label}>PICKUP LOCATION</span>
+
+                  <div className={styles.branchDetails}>
+                    <p className={styles.branchName}>
+                      {order.pickupBranch.name}
+                    </p>
+
+                    <p className={styles.branchAddress}>
+                      {order.pickupBranch.address}
+                    </p>
+
+                    <p className={styles.branchPhone}>
+                      <PiPhoneFill /> {order.pickupBranch.phone}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p>No pickup details available</p>
+              )}
             </div>
 
             {/* DIAGONAL SHAPE */}
@@ -420,14 +445,16 @@ const OrderDetailsPage = () => {
               <span>₹{order?.subtotal}</span>
             </div>
 
-            <div className={styles.row}>
-              <span>SHIPPING</span>
-              <span>
-                {Number(order?.shippingCharge) === 0
-                  ? "FREE"
-                  : `₹${order?.shippingCharge}`}
-              </span>
-            </div>
+            {order.fulfillmentType !=="PICKUP" &&(
+              <div className={styles.row}>
+                <span>SHIPPING</span>
+                <span>
+                  {Number(order?.shippingCharge) === 0
+                    ? "FREE"
+                    : `₹${order?.shippingCharge}`}
+                </span>
+              </div>
+            )}
 
             <div className={styles.divider}></div>
 
