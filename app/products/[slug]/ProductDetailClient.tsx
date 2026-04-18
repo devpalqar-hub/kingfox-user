@@ -257,32 +257,26 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       return;
     }
 
-    if (!product?.id) return;
+    if (!selectedVariant?.id) {
+      showToast("Please select size & color", "error");
+      return;
+    }
 
     try {
       if (isWishlisted) {
-        // 🔴 REMOVE
-        await removeFromWishlist(product.id);
+        await removeFromWishlist(selectedVariant.id);
         setIsWishlisted(false);
         showToast("Removed from wishlist", "info");
       } else {
-        // 🟢 ADD
-        await addToWishlist(product.id);
+        await addToWishlist(selectedVariant.id);
         setIsWishlisted(true);
         showToast("Added to wishlist", "success");
       }
 
-      // 🔥 update header count
       window.dispatchEvent(new Event("wishlistUpdated"));
     } catch (err: unknown) {
-      if (hasResponseStatus(err) && err.response?.status === 409) {
-        // already exists → fix UI
-        setIsWishlisted(true);
-        showToast("Already in wishlist", "info");
-      } else {
-        console.error(err);
-        showToast("Something went wrong", "error");
-      }
+      console.error(err);
+      showToast("Something went wrong", "error");
     }
   };
 
@@ -303,13 +297,17 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   }, [product, selectedColor, selectedSize]);
 
   // Mock images - replace with your actual paths
-  const productImages = product?.images || [];
+  const productImages = selectedVariant?.image
+  ? [selectedVariant.image]
+  : product?.images || [];
   const [activeImg, setActiveImg] = useState<string | null>(null);
   useEffect(() => {
-    if (product?.images?.length) {
+    if (selectedVariant?.image) {
+      setActiveImg(selectedVariant.image);
+    } else if (product?.images?.length) {
       setActiveImg(product.images[0]);
     }
-  }, [product]);
+  }, [selectedVariant, product]);
 
   const isInCart = selectedVariant?.isAddedInCart ?? false;
   const isOutOfStock = selectedVariant?.totalStock === 0;
@@ -470,11 +468,17 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   onClick={() => {
                     setSelectedSize(size);
 
-                    const firstColor = product?.variants.find(
-                      (v) => v.size === size,
-                    )?.color;
+                    const variant = product?.variants.find(
+                      (v) => v.size === size
+                    );
 
-                    setSelectedColor(firstColor || null);
+                    if (variant?.color) {
+                      setSelectedColor(variant.color);
+                    }
+
+                    if (variant?.image) {
+                      setActiveImg(variant.image);
+                    }
                   }}
                   className={
                     selectedSize === size
@@ -497,7 +501,19 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
               {colors.map((color) => (
                 <button
                   key={color}
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => {
+                    setSelectedColor(color);
+
+                    const variant = product?.variants.find(
+                      (v) =>
+                        v.color.toLowerCase() === color.toLowerCase() &&
+                        v.size === selectedSize
+                    );
+
+                    if (variant?.image) {
+                      setActiveImg(variant.image);
+                    }
+                  }}
                   className={`${styles.colorItem} ${
                     selectedColor === color ? styles.activeColor : ""
                   }`}
@@ -509,27 +525,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                   <span className={styles.colorText}>{color}</span>
                 </button>
-              ))}
-            </div>
-          </div>
-          <div className={styles.moreColorsSection}>
-            <div className={styles.moreColorsRow}>
-              {variantList.map((variant) => (
-                <img
-                  key={variant.id}
-                  src={variant.image || ""}
-                  alt={variant.color}
-                  className={`${styles.colorPreview} ${
-                    selectedVariant?.id === variant.id
-                      ? styles.activePreview
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedSize(variant.size);
-                    setSelectedColor(variant.color);
-                    setActiveImg(variant.image || "");
-                  }}
-                />
               ))}
             </div>
           </div>

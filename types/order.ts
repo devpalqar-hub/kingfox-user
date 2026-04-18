@@ -12,6 +12,7 @@ export interface PreviewPayload {
   // Guest only
   customerEmail?: string;
   customerPhone?: string;
+  isCOD?: boolean;
 }
 // 🔹 Preview Response
 export interface OrderPreviewItem {

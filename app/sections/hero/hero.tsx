@@ -35,9 +35,12 @@ const oversizedCategory = categories.find((cat) =>
   cat.name.toLowerCase().includes("oversize")
 );
 const handleOversizedClick = () => {
-  if (!oversizedCategory) return;
-
-  router.push(`/products?categoryId=${oversizedCategory.id}`);
+  if (oversizedCategory) {
+    router.push(`/products?categoryId=${oversizedCategory.id}`);
+  } else {
+    // fallback (important)
+    router.push("/products?search=oversized");
+  }
 };
 
   return (
@@ -61,7 +64,21 @@ const handleOversizedClick = () => {
           >
             SHOP OVERSIZED TEES
           </button>
-          <button className={styles.secondaryBtn}>CUSTOMIZE YOUR TEE</button>
+          <button
+            className={styles.secondaryBtn}
+            onClick={() => {
+              const section = document.getElementById("designing-section");
+              if (section) {
+                const yOffset = -80; // adjust based on header height
+                const y =
+                  section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+                window.scrollTo({ top: y, behavior: "smooth" });
+              }
+            }}
+          >
+            CUSTOMIZE YOUR TEE
+          </button>
         </div>
       </div>
 

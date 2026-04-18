@@ -75,6 +75,7 @@ useEffect(() => {
         const res = await previewOrderAPI({
           isCartPurchase: true,
           couponCode: undefined,
+          isCOD: paymentMethod === "COD",
         });
           
         setPreview(res);
@@ -89,6 +90,7 @@ useEffect(() => {
             variantId: item.variantId,
             quantity: item.quantity,
           })),
+          isCOD: paymentMethod === "COD",
         });
 
         setPreview(res);
@@ -99,7 +101,7 @@ useEffect(() => {
   };
 
   loadPreview();
-}, [items, token]);
+}, [items, token, paymentMethod]);
 
 useEffect(() => {
   const loadProfile = async () => {
@@ -364,6 +366,7 @@ const handlePlaceOrder = async () => {
                   const res = await previewOrderAPI({
                     isCartPurchase: token ? true : false,
                     couponCode: couponCode,
+                    isCOD: paymentMethod === "COD",
                     ...(token
                       ? {}
                       : {
@@ -411,8 +414,8 @@ const handlePlaceOrder = async () => {
           >
             <input type="radio" checked={paymentMethod === "COD" } onChange={() => setPaymentMethod("COD")}/>
             <div className={styles.paymentInfo}>
-              <strong>CASH ON DELIVERY (COD)</strong>
-              <p>PAY WHEN YOUR ORDER ARRIVES</p>
+              <strong>STORE PICKUP (PAY AT STORE)</strong>
+              <p>SELECT A BRANCH AND PAY WHEN YOU PICK UP</p>
             </div>
             <MdPayments />
           </div>
@@ -504,15 +507,17 @@ const handlePlaceOrder = async () => {
             <span>₹{preview?.subtotal || 0}</span>
           </div>
 
-          <div className={styles.summaryLine}>
-            <span>SHIPPING</span>
-            {preview?.shippingCharge === 0 ? (
-              <span className={styles.freeBadge}>FREE SHIPPING</span>
-            ) : (
-              <span>₹{preview?.shippingCharge}</span>
-            )}
-            
-          </div>
+          {paymentMethod !=="COD" &&(
+            <div className={styles.summaryLine}>
+              <span>SHIPPING</span>
+              {preview?.shippingCharge === 0 ? (
+                <span className={styles.freeBadge}>FREE SHIPPING</span>
+              ) : (
+                <span>₹{preview?.shippingCharge}</span>
+              )}
+              
+            </div>
+          )}
           {(preview?.discount ?? 0) > 0 && (
             <div className={styles.summaryLine}>
               <span>DISCOUNT</span>
