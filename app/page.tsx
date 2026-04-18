@@ -15,8 +15,8 @@ export default function HomePage() {
       <Hero />
       <Banners/>
       <Collections/>
-      <BestSeller/>
       <Cards/>
+      <BestSeller/>
       <HotDeals/>
       <LimitedDeals/>
       <Designing/>
