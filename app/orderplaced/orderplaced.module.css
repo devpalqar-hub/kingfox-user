@@ -145,6 +145,27 @@
   vertical-align: middle;
 }
 
+.branchDetails {
+  margin-top: 6px;
+}
+
+.branchName {
+  font-weight: 700;
+}
+
+.branchAddress {
+  font-size: 13px;
+  color: #666;
+}
+
+.branchPhone {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
 /* Track Button */
 .trackButton {
   width: 100%;
