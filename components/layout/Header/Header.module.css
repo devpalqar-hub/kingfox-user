@@ -135,7 +135,7 @@
 .navLinks li:hover a,
 .navLinks li a:focus,
 .navLinks li.active a {
-  font-weight: 800;
+  font-weight: 500;
   /* If you want it "Large" as requested, add a slight scale */
   transform: scale(1.05); 
 }
@@ -160,7 +160,7 @@
 
 /* Title */
 .dropdownTitle {
-  font-weight: 500;
+  font-weight: 400;
 }
 .navLink {
   font-size: 14px;
@@ -190,11 +190,13 @@
   color: #666;
   font-size: 13px;
   transition: 0.2s;
+  font-weight: 500;
 }
 
 /* Hover effect */
 .navLinks .dropdownMenu a:hover {
   color: #000;
+  font-weight: 500;
 }
 .iconWrapper {
   position: relative;

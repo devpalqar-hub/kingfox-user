@@ -25,19 +25,16 @@ export const getAllCampaigns = async () => {
 
 export const getCampaignById = async (id: number) => {
   try {
-    const response = await axiosInstance.get(`/v1/lucky-draw/campaigns/${id}`);
+    const response = await axiosInstance.get(`/v1/lucky-draw/campaigns/${id}`, {
+      headers: {
+        "Skip-Auth-Error": "true", 
+      },
+    });
     return response.data?.data ?? response.data;
   } catch (error: any) {
-    // Skip logging for 401 - let interceptor handle it
     if (error?.response?.status === 401) {
       return null;
     }
-
-    console.error("Error fetching campaign:", {
-      status: error?.response?.status,
-      data: error?.response?.data,
-      message: error?.message,
-    });
     return null;
   }
-};
+}

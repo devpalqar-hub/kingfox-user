@@ -28,20 +28,22 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized - token expired or invalid
-    if (error.response?.status === 401 && !isHandlingAuthError) {
+    const skipAuth = error.config?.headers?.["Skip-Auth-Error"];
+
+    if (
+      error.response?.status === 401 &&
+      !isHandlingAuthError &&
+      !skipAuth // ✅ ADD THIS CONDITION
+    ) {
       isHandlingAuthError = true;
 
-      // Clear auth data from localStorage
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      // Dispatch global event to trigger login modal
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("openLoginModal"));
       }
 
-      // Reset flag after delay to allow subsequent 401 errors to be handled
       setTimeout(() => {
         isHandlingAuthError = false;
       }, 1000);
