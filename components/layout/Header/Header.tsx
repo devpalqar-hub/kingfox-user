@@ -44,8 +44,46 @@ const Header = () => {
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [campaignLoading, setCampaignLoading] = useState(true);
 
   const params = useSearchParams(); // (keep if you plan to use later)
+
+const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
+  const target = parseInt(digit, 10);
+  const CELL_HEIGHT = 28; // must match CSS
+
+  // Reel: starts at target's position scrolled above, spins through full cycles
+  // We build: [target, ...0-9 x3, ...0→target] so the reel starts showing target,
+  // spins many times, and lands back on target
+  const fullCycle = Array.from({ length: 10 }, (_, i) => i);
+  const reelDigits = [
+    ...fullCycle, // cycle 1
+    ...fullCycle, // cycle 2
+    ...fullCycle, // cycle 3
+    ...Array.from({ length: target + 1 }, (_, i) => i), // final: 0 → target
+  ];
+
+  // Total downward scroll distance to land on last item
+  const totalScroll = (reelDigits.length - 1) * CELL_HEIGHT;
+
+  return (
+    <div className={styles.digitWrap}>
+      <div
+        className={styles.digitReel}
+        style={{
+          ["--scroll" as any]: `-${totalScroll}px`,
+          ["--delay" as any]: `${delay}ms`,
+        }}
+      >
+        {reelDigits.map((d, i) => (
+          <span key={i} className={styles.digitCell}>
+            {d}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
 
   /* =========================
      GLOBAL LOGIN MODAL EVENT
@@ -82,22 +120,21 @@ const Header = () => {
     cat.name.toLowerCase().includes("over"),
   );
 
-  useEffect(() => {
-    const fetchCampaign = async () => {
-      try {
-        const data = await getCampaignsAPI();
-
-        // assuming first active campaign
-        if (data && data.length > 0) {
-          setCampaign(data[0]);
-        }
-      } catch (err) {
-        console.error("Campaign error:", err);
+useEffect(() => {
+  const fetchCampaign = async () => {
+    try {
+      const data = await getCampaignsAPI();
+      if (data && data.length > 0) {
+        setCampaign(data[0]);
       }
-    };
-
-    fetchCampaign();
-  }, []);
+    } catch (err) {
+      console.error("Campaign error:", err);
+    } finally {
+      setCampaignLoading(false); // ← add this
+    }
+  };
+  fetchCampaign();
+}, []);
 
   /* =========================
      SEARCH HANDLER
@@ -242,33 +279,43 @@ const Header = () => {
   return (
     <header className={styles.headerContainer}>
       {/* ANNOUNCEMENT */}
-      <div className={styles.announcementBar}>
-        <div className={styles.marquee}>
-          <span className={styles.campaignName}>
-            &quot;{campaign?.name?.toUpperCase()}&quot;
-          </span>
-
-          <span className={styles.onlyText}>ONLY</span>
-
-          <div className={styles.voucherCount}>
-            {(campaign?.vouchersLeft?.toString() || "0")
-              .split("")
-              .map((digit, i) => (
-                <span key={i} className={styles.digit}>
-                  {digit}
-                </span>
-              ))}
+      {!campaignLoading && campaign && (
+        <div className={`${styles.announcementBar} ${styles.announcementVisible}`}>
+          <div className={styles.marquee}>
+            <span className={styles.campaignName}>
+              &quot;{campaign?.name?.toUpperCase()}&quot;
+            </span>
+            <span className={styles.onlyText}>ONLY</span>
+            <div className={styles.voucherCount}>
+              {(campaign?.vouchersLeft?.toString() || "0")
+                .split("")
+                .map((digit, i) => (
+                  <SlotDigit key={i} digit={digit} delay={600 + i * 300} />
+                ))}
+            </div>
+            <span>
+              VOUCHERS LEFT. GRAB YOURS BEFORE{" "}
+              {campaign?.endDate
+                ? new Date(campaign.endDate).toLocaleDateString("en-IN")
+                : "THEY'RE GONE"}
+              !
+            </span>
           </div>
-
-          <span>
-            VOUCHERS LEFT. GRAB YOURS BEFORE{" "}
-            {campaign?.endDate
-              ? new Date(campaign.endDate).toLocaleDateString("en-IN")
-              : "THEY'RE GONE"}
-            !
-          </span>
         </div>
-      </div>
+      )}
+
+      {campaignLoading && (
+        <div className={styles.announcementSkeleton}>
+          <div className={styles.skeletonLine} style={{ width: 140 }} />
+          <div className={styles.skeletonLine} style={{ width: 40 }} />
+          <div className={styles.skeletonDigitGroup}>
+            <div className={styles.skeletonDigit} />
+            <div className={styles.skeletonDigit} />
+            <div className={styles.skeletonDigit} />
+          </div>
+          <div className={styles.skeletonLine} style={{ width: 220 }} />
+        </div>
+      )}
 
       {/* NAVBAR */}
       <nav className={styles.mainHeader}>
