@@ -21,7 +21,6 @@ import { FaHeart } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { getWishList } from "@/services/wishlist.service";
-import { useParams } from "next/navigation";
 
 type ReviewItem = {
   id: number;
@@ -36,11 +35,6 @@ type ReviewItem = {
 type WishlistEntry = {
   productId: number;
 };
-
-const hasResponseStatus = (
-  error: unknown,
-): error is { response?: { status?: number } } =>
-  typeof error === "object" && error !== null && "response" in error;
 
 type ProductDetailClientProps = {
   initialProduct: ProductDetailType;
@@ -57,8 +51,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     initialProduct,
   );
   const metaSections = product?.metaInfo || [];
-  const { user, token, logout } = useAuth();
-  const params = useParams();
+  const { user, token, logout, loading } = useAuth();
   const { showToast } = useToast();
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -134,27 +127,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
     fetchReviews();
   }, [product?.id]);
-
-  // Because multiple variants have same color
-  // Now only one image per color
-  const variantList = useMemo(() => {
-    const filtered =
-      product?.variants?.filter((v) => v.size === selectedSize) || [];
-
-    const unique = Array.from(
-      new Map(filtered.map((v) => [v.color, v])).values(),
-    );
-
-    return unique;
-  }, [product, selectedSize]);
-
-  // second option(show all the color mutliple images)
-
-  // const variantList = useMemo(() => {
-  //   return product?.variants?.filter(
-  //     (v) => v.size === selectedSize
-  //   ) || [];
-  // }, [product, selectedSize]);
 
   // review couresal
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -298,8 +270,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
   // Mock images - replace with your actual paths
   const productImages = selectedVariant?.image
-  ? [selectedVariant.image]
-  : product?.images || [];
+    ? [selectedVariant.image]
+    : product?.images || [];
   const [activeImg, setActiveImg] = useState<string | null>(null);
   useEffect(() => {
     if (selectedVariant?.image) {
@@ -317,13 +289,27 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       showToast("Please select size & color", "error");
       return;
     }
-    // if (!token) {
-    //   setShowLoginModal(true);
-    //   showToast("Please login to add to cart", "info");
-    //   return;
-    // }
+
     try {
-      await addToCartAPI(selectedVariant.id, 1);
+      if (token) {
+        await addToCartAPI(selectedVariant.id, 1);
+      } else {
+        addToGuestCart({
+          variantId: selectedVariant.id,
+          sku: selectedVariant.sku,
+          size: selectedVariant.size,
+          color: selectedVariant.color,
+          productName: product.name,
+          productImage:
+            selectedVariant.image ||
+            product.images[0] ||
+            "/placeholder-product.png",
+          price: Number(selectedVariant.sellingPrice),
+          quantity: 1,
+          availableStock: selectedVariant.totalStock ?? 0,
+        });
+      }
+
       window.dispatchEvent(new Event("cartUpdated"));
       setProduct((prev) => {
         if (!prev) return prev;
@@ -349,11 +335,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       showToast("Out of stock", "error");
       return;
     }
-    if (!token) {
-      setShowLoginModal(true);
-      showToast("Please login to continue", "info");
-      return;
-    }
+
     try {
       await addToCartAPI(selectedVariant.id, 1);
       window.dispatchEvent(new Event("cartUpdated"));
@@ -374,12 +356,14 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
   // Token expiry effect
   useEffect(() => {
+    if (loading) return;
+
     if (!token && user) {
-      // Token expired or missing, force logout and show login modal
-      logout && logout();
+      console.warn("Session expired");
+      logout();
       setShowLoginModal(true);
     }
-  }, [token, user, logout]);
+  }, [token, user, loading]);
 
   if (!product) {
     return <div>Loading...</div>;
@@ -469,7 +453,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                     setSelectedSize(size);
 
                     const variant = product?.variants.find(
-                      (v) => v.size === size
+                      (v) => v.size === size,
                     );
 
                     if (variant?.color) {
@@ -507,7 +491,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                     const variant = product?.variants.find(
                       (v) =>
                         v.color.toLowerCase() === color.toLowerCase() &&
-                        v.size === selectedSize
+                        v.size === selectedSize,
                     );
 
                     if (variant?.image) {

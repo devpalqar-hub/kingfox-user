@@ -1,5 +1,5 @@
 "use client";
-import axiosInstance from "@/lib/axios";
+import { api, withAuth } from "@/lib/api";
 import styles from "./orderdetails.module.css";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,19 +16,31 @@ import {
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getOrderDetailsAPI } from "@/services/order-details.service";
-import { OrderDetailsResponse } from "@/types/order-details";
+import type { AxiosError } from "axios";
+
 import { getProfileAPI } from "@/services/profile.service";
 import { useToast } from "@/context/ToastContext";
 import { PiPhoneFill } from "react-icons/pi";
+import type {
+  OrderDetailsItem,
+  OrderDetailsResponse,
+} from "@/types/order-details";
+import type { ProfileResponse } from "@/types/profile";
+
+type ApiErrorResponse = {
+  message?: string;
+};
 
 const OrderDetailsPage = () => {
   const router = useRouter();
   const { showToast } = useToast();
   const [order, setOrder] = useState<OrderDetailsResponse | null>(null);
   const params = useParams();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ProfileResponse | null>(null);
 
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<OrderDetailsItem | null>(
+    null,
+  );
   const [reviewData, setReviewData] = useState({
     rating: 5,
     title: "",
@@ -38,7 +50,7 @@ const OrderDetailsPage = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  const handleImageUpload = async (e: any) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
 
     if (!files || files.length === 0) return;
@@ -53,11 +65,15 @@ const OrderDetailsPage = () => {
         formData.append("file", files[i]);
         formData.append("folder", "reviews");
 
-        const res = await axiosInstance.post("/v1/upload/image", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const res = await api.post(
+          "/v1/upload/image",
+          formData,
+          withAuth({
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }),
+        );
 
         uploadedUrls.push(res.data.url);
       }
@@ -78,7 +94,7 @@ const OrderDetailsPage = () => {
         return;
       }
 
-      await axiosInstance.post(
+      await api.post(
         `/v1/user/products/${selectedItem.variant.productId}/reviews`,
         {
           rating: reviewData.rating,
@@ -86,6 +102,7 @@ const OrderDetailsPage = () => {
           body: reviewData.body,
           images: uploadedImages,
         },
+        withAuth(),
       );
 
       showToast("Review added!", "success");
@@ -102,15 +119,17 @@ const OrderDetailsPage = () => {
 
       const data = await getOrderDetailsAPI(params.id as string);
       setOrder(data);
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      const apiError = err as AxiosError<ApiErrorResponse>;
+
+      console.error(apiError);
       showToast(
-        err?.response?.data?.message || "Failed to add review",
+        apiError.response?.data?.message || "Failed to add review",
         "error",
       );
     }
   };
-  const openReviewModal = (item: any) => {
+  const openReviewModal = (item: OrderDetailsItem) => {
     setSelectedItem(item);
   };
 

@@ -1,6 +1,6 @@
-import axiosInstance from "@/lib/axios";
+import { api } from "@/lib/api";
 
 export const getBranchesAPI = async () => {
-  const res = await axiosInstance.get("/v1/branches/pickup-branches");
+  const res = await api.get("/v1/branches/pickup-branches");
   return res.data;
 };
