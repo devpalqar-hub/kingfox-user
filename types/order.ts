@@ -50,6 +50,7 @@ export interface CheckoutPayload {
   couponCode?: string;
   paymentMethod: "COD" | "RAZORPAY";
   shippingAddress: string;
+  pickupBranchId?: number;
 }
 
 // 🔹 Checkout Response

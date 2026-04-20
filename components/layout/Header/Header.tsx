@@ -2,7 +2,7 @@
 import type { Product } from "@/types/product";
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   Heart,
@@ -16,12 +16,9 @@ import {
 import LoginModal from "@/app/auth/login/page";
 import { useAuth } from "@/context/AuthContext";
 import { getProductPath } from "@/lib/product-path";
+import { useNavCounts } from "@/lib/useNavCounts";
 import { getAllCategories } from "@/services/category.service";
-import { getCartAPI } from "@/services/cart.service";
 import { getProducts } from "@/services/product.service";
-import { getWishList } from "@/services/wishlist.service";
-
-import type { CartItem } from "@/types/cart";
 
 import styles from "./Header.module.css";
 import { Campaign, getCampaignsAPI } from "@/services/campaign.service";
@@ -33,14 +30,13 @@ type Category = {
 
 const Header = () => {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, token, loading } = useAuth();
+  const { wishlistCount, cartCount } = useNavCounts();
 
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [wishlistCount, setWishlistCount] = useState(0);
-  const [cartCount, setCartCount] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
@@ -56,8 +52,6 @@ const Header = () => {
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [campaignLoading, setCampaignLoading] = useState(true);
-
-  const params = useSearchParams();
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -89,10 +83,12 @@ const Header = () => {
       <div className={styles.digitWrap}>
         <div
           className={styles.digitReel}
-          style={{
-            ["--scroll" as any]: `-${totalScroll}px`,
-            ["--delay" as any]: `${delay}ms`,
-          }}
+          style={
+            {
+              "--scroll": `-${totalScroll}px`,
+              "--delay": `${delay}ms`,
+            } as React.CSSProperties
+          }
         >
           {reelDigits.map((d, i) => (
             <span key={i} className={styles.digitCell}>
@@ -160,7 +156,7 @@ const Header = () => {
         const response = await getProducts({ search: searchTerm, limit: 8 });
         setSearchResults(response?.items || []);
         setSearchError("");
-      } catch (error) {
+      } catch {
         setSearchResults([]);
         setSearchError("Failed to fetch products");
       } finally {
@@ -172,7 +168,7 @@ const Header = () => {
     };
   }, [searchTerm, showSearch]);
 
-  const handleSearchSelect = (product: any) => {
+  const handleSearchSelect = (product: Product) => {
     setShowSearch(false);
     setSearchTerm("");
     setSearchResults([]);
@@ -183,69 +179,20 @@ const Header = () => {
     if (searchResults.length > 0) handleSearchSelect(searchResults[0]);
   };
 
-  /* ========================= WISHLIST COUNT ========================= */
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setWishlistCount(0);
-        return;
-      }
-      try {
-        const res = await getWishList();
-        const items = Array.isArray(res) ? res : res?.items || res?.data || [];
-        setWishlistCount(items.length);
-      } catch (err: any) {
-        if (err?.response?.status === 401) {
-          localStorage.removeItem("token");
-          setWishlistCount(0);
-          setShowLogin(true);
-          return;
-        }
-        console.error("Wishlist error:", err);
-        setWishlistCount(0);
-      }
-    };
-    fetchWishlist();
-    window.addEventListener("wishlistUpdated", fetchWishlist);
-    return () => window.removeEventListener("wishlistUpdated", fetchWishlist);
-  }, [user]);
-
-  /* ========================= CART COUNT ========================= */
-  useEffect(() => {
-    const fetchCart = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setCartCount(0);
-        return;
-      }
-      try {
-        const res = await getCartAPI();
-        const totalQty =
-          res.items?.reduce(
-            (sum: number, item: CartItem) => sum + item.quantity,
-            0,
-          ) || 0;
-        setCartCount(totalQty);
-      } catch (err: any) {
-        if (err?.response?.status === 401) {
-          localStorage.removeItem("token");
-          setCartCount(0);
-          setShowLogin(true);
-          return;
-        }
-        console.error("Cart error:", err);
-        setCartCount(0);
-      }
-    };
-    fetchCart();
-    window.addEventListener("cartUpdated", fetchCart);
-    return () => window.removeEventListener("cartUpdated", fetchCart);
-  }, [user]);
-
   const closeDrawer = () => {
     setMenuOpen(false);
     setDrawerProductsOpen(false);
+  };
+
+  const handleWishlistNavigation = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    if (token || localStorage.getItem("token")) {
+      return;
+    }
+
+    event.preventDefault();
+    window.dispatchEvent(new Event("openLoginModal"));
   };
 
   if (loading) return null;
@@ -301,7 +248,7 @@ const Header = () => {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-           {!menuOpen &&  <Menu size={22} />}
+          {!menuOpen && <Menu size={22} />}
         </div>
 
         {/* LOGO */}
@@ -471,7 +418,7 @@ const Header = () => {
                         <ul
                           style={{ listStyle: "none", margin: 0, padding: 0 }}
                         >
-                          {searchResults.map((product: any) => (
+                          {searchResults.map((product) => (
                             <li
                               key={product.id}
                               style={{
@@ -536,6 +483,7 @@ const Header = () => {
           <Link
             href="/wishlist"
             className={styles.wishlistLink}
+            onClick={handleWishlistNavigation}
           >
             {" "}
             <div className={styles.iconWrapper}>
@@ -547,10 +495,7 @@ const Header = () => {
           </Link>
 
           {/* CART */}
-          <Link
-            href="/cart"
-            className={styles.iconWrapper}
-          >
+          <Link href="/cart" className={styles.iconWrapper}>
             {" "}
             <ShoppingCart size={20} />
             {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
@@ -691,13 +636,6 @@ const Header = () => {
               >
                 LOG IN
               </button>
-              <Link
-                href="/register"
-                className={styles.drawerRegisterBtn}
-                onClick={closeDrawer}
-              >
-                REGISTER
-              </Link>
             </>
           )}
         </div>

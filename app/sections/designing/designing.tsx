@@ -44,7 +44,7 @@ const Designing = () => {
       <button
         className={styles.ctaButton}
         onClick={() => {
-          const phoneNumber = "917594092293"; 
+          const phoneNumber = "918129882245"; 
           const message = encodeURIComponent(
             "Hi, I want to design my own tee 👕",
           );

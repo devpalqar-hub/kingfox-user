@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
+
 import { useToast } from "@/context/ToastContext";
 
 type User = {
@@ -13,48 +14,67 @@ type User = {
 type AuthContextType = {
   user: User | null;
   token: string | null;
-  loading: boolean; // ✅ ADD HERE
+  loading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const getStoredAuth = () => {
+  if (typeof window === "undefined") {
+    return {
+      token: null as string | null,
+      user: null as User | null,
+    };
+  }
+
+  const storedToken = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+
+  if (storedToken && storedUser && storedUser !== "undefined") {
+    try {
+      return {
+        token: storedToken,
+        user: JSON.parse(storedUser) as User,
+      };
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
+  } else if (storedToken && (!storedUser || storedUser === "undefined")) {
+    localStorage.removeItem("token");
+  }
+
+  return {
+    token: null as string | null,
+    user: null as User | null,
+  };
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { showToast } = useToast();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // ✅ ADD THIS
+  const [loading, setLoading] = useState(true);
 
-  // 👉 Load from localStorage on refresh
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const initAuth = () => {
+      const storedAuth = getStoredAuth();
+      setToken(storedAuth.token);
+      setUser(storedAuth.user);
+      setLoading(false);
+    };
 
-    if (storedToken && storedUser && storedUser !== "undefined") {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("user");
-      }
-    }
-
-    setLoading(false);
+    initAuth();
   }, []);
 
-  // 👉 Listen for external storage changes (token removal by interceptor)
   useEffect(() => {
     const handleStorageChange = () => {
-      const token = localStorage.getItem("token");
-      const user = localStorage.getItem("user");
-
-      // If token or user is removed externally, reset auth state
-      if (!token || !user) {
-        setToken(null);
-        setUser(null);
-      }
+      const nextAuth = getStoredAuth();
+      setToken(nextAuth.token);
+      setUser(nextAuth.user);
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -64,16 +84,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  // 👉 Login
-  const login = (token: string, user: User) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+  const login = (nextToken: string, nextUser: User) => {
+    localStorage.setItem("token", nextToken);
+    localStorage.setItem("user", JSON.stringify(nextUser));
 
-    setToken(token);
-    setUser(user);
+    setToken(nextToken);
+    setUser(nextUser);
   };
 
-  // 👉 Logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -85,11 +103,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setTimeout(() => {
       router.push("/");
-    }, 800); // allow toast to show
+    }, 800);
   };
-
-  // ⛔ Prevent rendering until auth is ready
-  if (loading) return null;
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout }}>
@@ -98,7 +113,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// 👉 Hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used inside AuthProvider");

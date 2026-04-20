@@ -1,11 +1,8 @@
-// services/profile.service.ts
-
-import axiosInstance from "@/lib/axios";
+import { api, withAuth } from "@/lib/api";
 import { ProfileResponse } from "@/types/profile";
 
-// 🔹 GET PROFILE
 export const getProfileAPI = async (): Promise<ProfileResponse> => {
-  const res = await axiosInstance.get("/v1/auth/profile");
+  const res = await api.get("/v1/auth/profile", withAuth());
   return res.data;
 };
 
@@ -13,6 +10,6 @@ export const updateProfileAPI = async (data: {
   name: string;
   phone: string;
 }) => {
-  const res = await axiosInstance.patch("/v1/customer-auth/profile", data);
+  const res = await api.patch("/v1/customer-auth/profile", data, withAuth());
   return res.data;
 };

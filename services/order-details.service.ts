@@ -1,9 +1,12 @@
-import axiosInstance from "@/lib/axios";
+import type { AxiosRequestConfig } from "axios";
+
+import { api, withAuth } from "@/lib/api";
 import { OrderDetailsResponse } from "@/types/order-details";
 
 export const getOrderDetailsAPI = async (
-  id: string
+  id: string,
+  config?: AxiosRequestConfig,
 ): Promise<OrderDetailsResponse> => {
-  const res = await axiosInstance.get(`/v1/user/orders/${id}`);
+  const res = await api.get(`/v1/user/orders/${id}`, withAuth(config));
   return res.data;
 };
