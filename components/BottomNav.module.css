@@ -1,0 +1,183 @@
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 68px;
+  background: #fff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #f0f0f0;
+  z-index: 1000;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+  .bottomNav {
+    display: none;
+  }
+}
+
+/* Individual tab item */
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  position: relative;
+  color: #b0b0b0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Label under icon */
+.navLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+  line-height: 1;
+}
+
+/* Icon wrapper — handles scale + indicator blob */
+.iconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 34px;
+  border-radius: 20px;
+  transition:
+    background 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Active pill blob behind icon */
+.iconWrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: #000;
+  opacity: 0;
+  transform: scaleX(0.5) scaleY(0.6);
+  transition:
+    opacity 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Active state */
+.navItem.active {
+  color: #000;
+}
+
+.navItem.active .iconWrap::before {
+  opacity: 0.07;
+  transform: scale(1);
+}
+
+.navItem.active .iconWrap {
+  transform: translateY(-3px);
+}
+
+.navItem.active .navLabel {
+  opacity: 1;
+  transform: translateY(0);
+  color: #000;
+}
+
+/* Top bar indicator line */
+.navItem::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 24px;
+  height: 2.5px;
+  background: #000;
+  border-radius: 0 0 3px 3px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.navItem.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* Hover (non-touch devices) */
+@media (hover: hover) {
+  .navItem:not(.active):hover {
+    color: #555;
+  }
+
+  .navItem:not(.active):hover .iconWrap {
+    transform: translateY(-2px);
+  }
+}
+
+/* Press feedback */
+.navItem:active .iconWrap {
+  transform: translateY(-1px) scale(0.9);
+}
+
+/* Badge */
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #e53935;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border: 1.5px solid #fff;
+  line-height: 1;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes badgePop {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mount animation for the bar itself */
+.bottomNav {
+  animation: navSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes navSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

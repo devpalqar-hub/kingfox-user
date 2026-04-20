@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer/Footer";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { ToastProvider } from "@/context/ToastContext";
 import { ConfirmProvider } from "@/context/ConfirmContext";
+import BottomNav from "@/components/BottomNav";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -36,6 +37,8 @@ export default function RootLayout({
               <Header />
               {children}
               <Footer />
+              <BottomNav 
+              />
             </AuthProvider>
           </ConfirmProvider>
         </ToastProvider>

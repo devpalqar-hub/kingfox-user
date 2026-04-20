@@ -3,7 +3,15 @@ import type { Product } from "@/types/product";
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
+import {
+  ChevronDown,
+  Heart,
+  Menu,
+  Search,
+  ShoppingCart,
+  User,
+  X,
+} from "lucide-react";
 
 import LoginModal from "@/app/auth/login/page";
 import { useAuth } from "@/context/AuthContext";
@@ -36,6 +44,9 @@ const Header = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
+  // Mobile drawer sub-menus
+  const [drawerProductsOpen, setDrawerProductsOpen] = useState(false);
+
   // Search suggestion states
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -46,59 +57,62 @@ const Header = () => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [campaignLoading, setCampaignLoading] = useState(true);
 
-  const params = useSearchParams(); // (keep if you plan to use later)
+  const params = useSearchParams();
 
-const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
-  const target = parseInt(digit, 10);
-  const CELL_HEIGHT = 28;
-
-  const fullCycle = Array.from({ length: 10 }, (_, i) => i);
-  const reelDigits = [
-    ...fullCycle,
-    ...fullCycle,
-    ...fullCycle,
-    ...Array.from({ length: target + 1 }, (_, i) => i), // final: 0 → target
-  ];
-
-  const totalScroll = (reelDigits.length - 1) * CELL_HEIGHT;
-
-  return (
-    <div className={styles.digitWrap}>
-      <div
-        className={styles.digitReel}
-        style={{
-          ["--scroll" as any]: `-${totalScroll}px`,
-          ["--delay" as any]: `${delay}ms`,
-        }}
-      >
-        {reelDigits.map((d, i) => (
-          <span key={i} className={styles.digitCell}>
-            {d}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-  /* =========================
-     GLOBAL LOGIN MODAL EVENT
-  ========================= */
+  // Lock body scroll when drawer is open
   useEffect(() => {
-    const handleOpenLoginModal = () => {
-      setShowLogin(true);
-    };
-
-    window.addEventListener("openLoginModal", handleOpenLoginModal);
-
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
     return () => {
-      window.removeEventListener("openLoginModal", handleOpenLoginModal);
+      document.body.style.overflow = "";
     };
+  }, [menuOpen]);
+
+  const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
+    const target = parseInt(digit, 10);
+    const CELL_HEIGHT = 28;
+
+    const fullCycle = Array.from({ length: 10 }, (_, i) => i);
+    const reelDigits = [
+      ...fullCycle,
+      ...fullCycle,
+      ...fullCycle,
+      ...Array.from({ length: target + 1 }, (_, i) => i),
+    ];
+
+    const totalScroll = (reelDigits.length - 1) * CELL_HEIGHT;
+
+    return (
+      <div className={styles.digitWrap}>
+        <div
+          className={styles.digitReel}
+          style={{
+            ["--scroll" as any]: `-${totalScroll}px`,
+            ["--delay" as any]: `${delay}ms`,
+          }}
+        >
+          {reelDigits.map((d, i) => (
+            <span key={i} className={styles.digitCell}>
+              {d}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ========================= GLOBAL LOGIN MODAL EVENT ========================= */
+  useEffect(() => {
+    const handleOpenLoginModal = () => setShowLogin(true);
+    window.addEventListener("openLoginModal", handleOpenLoginModal);
+    return () =>
+      window.removeEventListener("openLoginModal", handleOpenLoginModal);
   }, []);
 
-  /* =========================
-     LOAD CATEGORIES
-  ========================= */
+  /* ========================= LOAD CATEGORIES ========================= */
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -108,7 +122,6 @@ const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
         console.error("Category error:", err);
       }
     };
-
     loadCategories();
   }, []);
 
@@ -116,26 +129,21 @@ const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
     cat.name.toLowerCase().includes("over"),
   );
 
-useEffect(() => {
-  const fetchCampaign = async () => {
-    try {
-      const data = await getCampaignsAPI();
-      if (data && data.length > 0) {
-        setCampaign(data[0]);
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      try {
+        const data = await getCampaignsAPI();
+        if (data && data.length > 0) setCampaign(data[0]);
+      } catch (err) {
+        console.error("Campaign error:", err);
+      } finally {
+        setCampaignLoading(false);
       }
-    } catch (err) {
-      console.error("Campaign error:", err);
-    } finally {
-      setCampaignLoading(false); // ← add this
-    }
-  };
-  fetchCampaign();
-}, []);
+    };
+    fetchCampaign();
+  }, []);
 
-  /* =========================
-     SEARCH HANDLER
-  ========================= */
-  // Debounced search for suggestions
+  /* ========================= SEARCH HANDLER ========================= */
   useEffect(() => {
     if (!showSearch) return;
     if (!searchTerm.trim()) {
@@ -149,10 +157,7 @@ useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(async () => {
       try {
-        const response = await getProducts({
-          search: searchTerm,
-          limit: 8,
-        });
+        const response = await getProducts({ search: searchTerm, limit: 8 });
         setSearchResults(response?.items || []);
         setSearchError("");
       } catch (error) {
@@ -165,10 +170,8 @@ useEffect(() => {
     return () => {
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, showSearch]);
 
-  // On select suggestion or enter
   const handleSearchSelect = (product: any) => {
     setShowSearch(false);
     setSearchTerm("");
@@ -176,29 +179,21 @@ useEffect(() => {
     router.push(getProductPath(product));
   };
 
-  // On enter, if suggestions exist, go to first
   const handleSearch = () => {
-    if (searchResults.length > 0) {
-      handleSearchSelect(searchResults[0]);
-    }
+    if (searchResults.length > 0) handleSearchSelect(searchResults[0]);
   };
 
-  /* =========================
-     WISHLIST COUNT
-  ========================= */
+  /* ========================= WISHLIST COUNT ========================= */
   useEffect(() => {
     const fetchWishlist = async () => {
       const token = localStorage.getItem("token");
-
       if (!token) {
         setWishlistCount(0);
         return;
       }
-
       try {
         const res = await getWishList();
         const items = Array.isArray(res) ? res : res?.items || res?.data || [];
-
         setWishlistCount(items.length);
       } catch (err: any) {
         if (err?.response?.status === 401) {
@@ -207,44 +202,30 @@ useEffect(() => {
           setShowLogin(true);
           return;
         }
-
         console.error("Wishlist error:", err);
         setWishlistCount(0);
       }
     };
-
     fetchWishlist();
-
-    const handleWishlistUpdate = () => fetchWishlist();
-
-    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
-
-    return () => {
-      window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
-    };
+    window.addEventListener("wishlistUpdated", fetchWishlist);
+    return () => window.removeEventListener("wishlistUpdated", fetchWishlist);
   }, [user]);
 
-  /* =========================
-     CART COUNT
-  ========================= */
+  /* ========================= CART COUNT ========================= */
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
-
       if (!token) {
         setCartCount(0);
         return;
       }
-
       try {
         const res = await getCartAPI();
-
         const totalQty =
           res.items?.reduce(
             (sum: number, item: CartItem) => sum + item.quantity,
             0,
           ) || 0;
-
         setCartCount(totalQty);
       } catch (err: any) {
         if (err?.response?.status === 401) {
@@ -253,22 +234,19 @@ useEffect(() => {
           setShowLogin(true);
           return;
         }
-
         console.error("Cart error:", err);
         setCartCount(0);
       }
     };
-
     fetchCart();
-
-    const handleCartUpdate = () => fetchCart();
-
-    window.addEventListener("cartUpdated", handleCartUpdate);
-
-    return () => {
-      window.removeEventListener("cartUpdated", handleCartUpdate);
-    };
+    window.addEventListener("cartUpdated", fetchCart);
+    return () => window.removeEventListener("cartUpdated", fetchCart);
   }, [user]);
+
+  const closeDrawer = () => {
+    setMenuOpen(false);
+    setDrawerProductsOpen(false);
+  };
 
   if (loading) return null;
 
@@ -276,7 +254,9 @@ useEffect(() => {
     <header className={styles.headerContainer}>
       {/* ANNOUNCEMENT */}
       {!campaignLoading && campaign && (
-        <div className={`${styles.announcementBar} ${styles.announcementVisible}`}>
+        <div
+          className={`${styles.announcementBar} ${styles.announcementVisible}`}
+        >
           <div className={styles.marquee}>
             <span className={styles.campaignName}>
               &quot;{campaign?.name?.toUpperCase()}&quot;
@@ -315,33 +295,28 @@ useEffect(() => {
 
       {/* NAVBAR */}
       <nav className={styles.mainHeader}>
-        {/* MENU */}
+        {/* HAMBURGER */}
         <div
           className={styles.hamburger}
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
         >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
+           {!menuOpen &&  <Menu size={22} />}
         </div>
 
         {/* LOGO */}
         <div className={styles.logo}>
-          
-          <Link href="/" onClick={() => setMenuOpen(false)}>
+          <Link href="/" onClick={closeDrawer}>
             <img src="/logo.png" alt="Logo" className={styles.logoImg} />
           </Link>
           <span className={styles.logoText}>KINGFOX</span>
         </div>
 
-        {/* LINKS */}
-
-        <ul className={`${styles.navLinks} ${menuOpen ? styles.showMenu : ""}`}>
+        {/* DESKTOP NAV LINKS */}
+        <ul className={styles.navLinks}>
           <li>
-            <Link href="/" onClick={() => setMenuOpen(false)}>
-              HOME
-            </Link>
+            <Link href="/">HOME</Link>
           </li>
-
-          {/* PRODUCTS with Dropdown */}
           <li
             className={styles.dropdown}
             onMouseEnter={() => setShowCategoryDropdown(true)}
@@ -365,7 +340,6 @@ useEffect(() => {
                     key={cat.id}
                     href={`/products?categoryId=${cat.id}`}
                     onClick={() => {
-                      setMenuOpen(false);
                       setShowCategoryDropdown(false);
                     }}
                   >
@@ -375,28 +349,18 @@ useEffect(() => {
               </div>
             )}
           </li>
-
           <li>
-            <Link href="/new-arrivals" onClick={() => setMenuOpen(false)}>
-              NEW ARRIVALS
-            </Link>
+            <Link href="/new-arrivals">NEW ARRIVALS</Link>
           </li>
-
           {oversizedCategory && (
             <li>
-              <Link
-                href={`/products?categoryId=${oversizedCategory.id}`}
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link href={`/products?categoryId=${oversizedCategory.id}`}>
                 {oversizedCategory.name.toUpperCase()}
               </Link>
             </li>
           )}
-
           <li>
-            <Link href="/contact" onClick={() => setMenuOpen(false)}>
-              CONTACT
-            </Link>
+            <Link href="/contact">CONTACT</Link>
           </li>
         </ul>
 
@@ -449,7 +413,6 @@ useEffect(() => {
                     <X size={18} />
                   </div>
                 </div>
-                {/* Suggestions Dropdown */}
                 {searchTouched && (
                   <div
                     style={{
@@ -524,7 +487,7 @@ useEffect(() => {
                             >
                               <img
                                 src={
-                                  product.images && product.images.length > 0
+                                  product.images?.length > 0
                                     ? product.images[0]
                                     : "/no-image.png"
                                 }
@@ -570,7 +533,11 @@ useEffect(() => {
           )}
 
           {/* WISHLIST */}
-          <Link href="/wishlist" className={styles.wishlistLink}>
+          <Link
+            href="/wishlist"
+            className={styles.wishlistLink}
+          >
+            {" "}
             <div className={styles.iconWrapper}>
               <Heart size={20} />
               {wishlistCount > 0 && (
@@ -580,16 +547,20 @@ useEffect(() => {
           </Link>
 
           {/* CART */}
-          <Link href="/cart" className={styles.iconWrapper}>
+          <Link
+            href="/cart"
+            className={styles.iconWrapper}
+          >
+            {" "}
             <ShoppingCart size={20} />
             {cartCount > 0 && <span className={styles.badge}>{cartCount}</span>}
           </Link>
 
-          {/* USER */}
+          {/* USER (desktop only) */}
           {user ? (
             <Link
               href="/profile"
-              className={styles.iconWrapper}
+              className={`${styles.iconWrapper} ${styles.hideOnMobile}`}
               title="Profile"
             >
               <User size={20} />
@@ -604,6 +575,133 @@ useEffect(() => {
           )}
         </div>
       </nav>
+
+      {/* =====================
+          MOBILE DRAWER
+          ===================== */}
+      {/* Overlay */}
+      <div
+        className={`${styles.drawerOverlay} ${menuOpen ? styles.overlayVisible : ""}`}
+        onClick={closeDrawer}
+      />
+
+      {/* Panel */}
+      <aside
+        className={`${styles.mobileDrawer} ${menuOpen ? styles.drawerOpen : ""}`}
+      >
+        {/* Drawer Header */}
+        <div className={styles.drawerHeader}>
+          <Link href="/" className={styles.drawerLogo} onClick={closeDrawer}>
+            KINGFOX
+          </Link>
+          <div className={styles.drawerClose} onClick={closeDrawer}>
+            <X size={18} />
+          </div>
+        </div>
+
+        {/* Drawer Nav */}
+        <nav className={styles.drawerNav}>
+          {/* HOME */}
+          <div className={styles.drawerNavItem}>
+            <Link href="/" onClick={closeDrawer}>
+              HOME
+            </Link>
+          </div>
+
+          {/* PRODUCTS with sub-menu */}
+          <div
+            className={styles.drawerNavItem}
+            onClick={() => setDrawerProductsOpen((v) => !v)}
+          >
+            <span
+              style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.4px" }}
+            >
+              PRODUCTS
+            </span>
+            <ChevronDown
+              size={16}
+              className={`${styles.drawerChevron} ${drawerProductsOpen ? styles.chevronOpen : ""}`}
+            />
+          </div>
+          <div
+            className={`${styles.drawerSubMenu} ${drawerProductsOpen ? styles.subMenuOpen : ""}`}
+          >
+            {categories.map((cat) => (
+              <div key={cat.id} className={styles.drawerSubMenuItem}>
+                <Link
+                  href={`/products?categoryId=${cat.id}`}
+                  onClick={closeDrawer}
+                >
+                  {cat.name}
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          {/* NEW ARRIVALS */}
+          <div className={styles.drawerNavItem}>
+            <Link href="/new-arrivals" onClick={closeDrawer}>
+              NEW ARRIVALS
+            </Link>
+          </div>
+
+          {/* OVERSIZED (dynamic) */}
+          {oversizedCategory && (
+            <div className={styles.drawerNavItem}>
+              <Link
+                href={`/products?categoryId=${oversizedCategory.id}`}
+                onClick={closeDrawer}
+              >
+                {oversizedCategory.name.toUpperCase()}
+              </Link>
+            </div>
+          )}
+
+          {/* CONTACT */}
+          <div className={styles.drawerNavItem}>
+            <Link href="/contact" onClick={closeDrawer}>
+              CONTACT US
+            </Link>
+          </div>
+        </nav>
+
+        {/* Account Section */}
+        <div className={styles.drawerAccount}>
+          <div className={styles.drawerAccountLabel}>
+            <User size={13} />
+            MY ACCOUNT
+          </div>
+          {user ? (
+            <Link
+              href="/profile"
+              className={styles.drawerProfileBtn}
+              onClick={closeDrawer}
+            >
+              <User size={16} />
+              View Profile
+            </Link>
+          ) : (
+            <>
+              <button
+                className={styles.drawerLoginBtn}
+                onClick={() => {
+                  closeDrawer();
+                  setShowLogin(true);
+                }}
+              >
+                LOG IN
+              </button>
+              <Link
+                href="/register"
+                className={styles.drawerRegisterBtn}
+                onClick={closeDrawer}
+              >
+                REGISTER
+              </Link>
+            </>
+          )}
+        </div>
+      </aside>
 
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </header>
