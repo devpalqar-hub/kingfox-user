@@ -302,7 +302,7 @@
 }
 @media (max-width: 768px) {
   .container {
-    padding-bottom: 90px;
+    padding-bottom: 180px;
   }
 }
 .cartItem {
@@ -374,7 +374,7 @@
 
   .mobileCheckout {
     position: fixed;
-    bottom: 0;
+    bottom: calc(72px + env(safe-area-inset-bottom));
     left: 0;
     width: 100%;
     background: #fff;
@@ -383,7 +383,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 100;
+    z-index: 1100;
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
   }
 
   .mobileTotal {
@@ -402,7 +403,7 @@
   .summary {
     order: 2;
     margin-top: 30px;
-    margin-bottom: 80px; /* ensures space above checkout bar */
+    margin-bottom: 170px; /* keeps summary clear of checkout bar + bottom nav */
   }
 
   .itemsList {
@@ -451,7 +452,7 @@
 }
 @media (max-width: 720px) {
   .container {
-    padding: 30px 16px;
+    padding: 30px 16px 180px;
   }
 
   .header h1 {
