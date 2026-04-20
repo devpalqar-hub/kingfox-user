@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // ✅ removed useSearchParams
+import { useRouter } from "next/navigation";
 import { MdLocalShipping } from "react-icons/md";
 import { PiPhoneFill } from "react-icons/pi";
 

@@ -1,10 +1,9 @@
-import { Suspense } from "react";
 import RegisterClient from "./RegisterClient";
 
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RegisterClient />
-    </Suspense>
-  );
+export default function RegisterPage({
+  searchParams,
+}: {
+  searchParams: { token?: string };
+}) {
+  return <RegisterClient token={searchParams.token} />;
 }

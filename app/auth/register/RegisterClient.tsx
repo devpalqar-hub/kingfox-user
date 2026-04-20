@@ -1,19 +1,20 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./register.module.css";
 import { completeProfile } from "@/services/auth.service";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
-export default function RegisterClient() {
+export default function RegisterClient({
+  token,
+}: {
+  token?: string;
+}) {
   const { showToast } = useToast();
   const router = useRouter();
   const { login } = useAuth();
-  const params = useSearchParams();
-
-  const token = params.get("token");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
