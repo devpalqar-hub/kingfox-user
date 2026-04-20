@@ -89,13 +89,17 @@ const OrderDetailsPage = () => {
 
   const submitReview = async () => {
     try {
+      if (!selectedItem) {
+        showToast("No item selected", "error");
+        return;
+      }
       if (!reviewData.title || !reviewData.body) {
         showToast("Please fill all fields", "error");
         return;
       }
 
       await api.post(
-        `/v1/user/products/${selectedItem.variant.productId}/reviews`,
+        `/v1/user/products/${selectedItem.variant.product.id}/reviews`,
         {
           rating: reviewData.rating,
           title: reviewData.title,
@@ -302,40 +306,42 @@ const OrderDetailsPage = () => {
                     <span className={styles.subtotal}>₹{item.subtotal}</span>
                   </div>
                   <div className={styles.reviewSection}>
-  {item.review ? (
-    // ⭐ SHOW REVIEW
-    <div className={styles.reviewBox}>
-      <div className={styles.stars}>
-        {"★".repeat(item.review.rating)}
-        {"☆".repeat(5 - item.review.rating)}
-      </div>
+                    {item.review ? (
+                      // ⭐ SHOW REVIEW
+                      <div className={styles.reviewBox}>
+                        <div className={styles.stars}>
+                          {"★".repeat(item.review.rating)}
+                          {"☆".repeat(5 - item.review.rating)}
+                        </div>
 
-      <h4 className={styles.reviewTitle}>
-        {item.review.title}
-      </h4>
-      <p className={styles.reviewText}>{item.review.body}</p>
+                        <h4 className={styles.reviewTitle}>
+                          {item.review.title}
+                        </h4>
+                        <p className={styles.reviewText}>{item.review.body}</p>
 
-      {item.review.images?.length > 0 && (
-        <div className={styles.reviewImages}>
-          {item.review.images.map((img: string, i: number) => (
-            <img key={i} src={img} />
-          ))}
-        </div>
-      )}
-    </div>
-  ) : order.status === "SHIPPED" ? (   // ✅ FIXED HERE
-    <button
-      className={styles.addReviewBtn}
-      onClick={() => openReviewModal(item)}
-    >
-      ⭐ Add Review
-    </button>
-  ) : (
-    <p className={styles.reviewDisabled}>
-      Review available after product delivered
-    </p>
-  )}
-</div>
+                        {item.review.images?.length > 0 && (
+                          <div className={styles.reviewImages}>
+                            {item.review.images.map(
+                              (img: string, i: number) => (
+                                <img key={i} src={img} />
+                              ),
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : order.status === "SHIPPED" ? ( // ✅ FIXED HERE
+                      <button
+                        className={styles.addReviewBtn}
+                        onClick={() => openReviewModal(item)}
+                      >
+                        ⭐ Add Review
+                      </button>
+                    ) : (
+                      <p className={styles.reviewDisabled}>
+                        Review available after product delivered
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -464,7 +470,7 @@ const OrderDetailsPage = () => {
               <span>₹{order?.subtotal}</span>
             </div>
 
-            {order.fulfillmentType !=="PICKUP" &&(
+            {order.fulfillmentType !== "PICKUP" && (
               <div className={styles.row}>
                 <span>SHIPPING</span>
                 <span>
