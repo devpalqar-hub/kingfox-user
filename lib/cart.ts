@@ -7,6 +7,10 @@ export const getGuestCart = (): CartItem[] => {
   return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
 };
 
+export const getGuestCartCount = () => {
+  return getGuestCart().reduce((total, item) => total + item.quantity, 0);
+};
+
 export const addToGuestCart = (item: CartItem) => {
   const cart = getGuestCart();
 

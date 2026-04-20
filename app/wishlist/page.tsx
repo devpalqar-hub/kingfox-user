@@ -36,7 +36,7 @@ export default function WishlistPage() {
     const fetchWishlist = async () => {
       try {
         const data = await getWishList();
-        console.log("here",data)
+        console.log("here", data);
         setWishlist(data);
       } catch (err) {
         console.error(err);
@@ -105,7 +105,7 @@ export default function WishlistPage() {
       await removeFromWishlist(variantId);
 
       setWishlist((prev) =>
-        prev.filter((item) => item.variantId !== variantId)
+        prev.filter((item) => item.variantId !== variantId),
       );
 
       showToast("Removed from wishlist", "success");
@@ -119,17 +119,21 @@ export default function WishlistPage() {
   const handleMoveToCart = async (item: any) => {
     try {
       const variantId = item.variantId;
+
       if (!variantId) {
-        showToast("No variant found for this product", "error");
+        showToast("No variant found", "error");
         return;
       }
       await addToCartAPI(variantId, 1);
-      showToast("Moved to cart", "success");
-      setWishlist((prev) => prev.filter((w) => w.id !== item.id));
+      await removeFromWishlist(variantId);
+      setWishlist((prev) => prev.filter((w) => w.variantId !== variantId));
       window.dispatchEvent(new Event("cartUpdated"));
+      window.dispatchEvent(new Event("wishlistUpdated"));
+
+      showToast("Moved to cart", "success");
     } catch (err) {
-      showToast("Failed to move to cart", "error");
       console.error(err);
+      showToast("Failed to move to cart", "error");
     }
   };
 
@@ -138,7 +142,7 @@ export default function WishlistPage() {
       try {
         const data = await getNewArrivals();
 
-        setNewArrivals(data.items); 
+        setNewArrivals(data.items);
       } catch (err) {
         console.error(err);
       }
@@ -219,8 +223,7 @@ export default function WishlistPage() {
             const product = item.product;
 
             return (
-              <div key={item.id} className={styles.card}
-                >
+              <div key={item.id} className={styles.card}>
                 <div className={styles.imageWrapper}>
                   <img src={product.images?.[0]} alt={product.name} />
                   <div
@@ -236,10 +239,12 @@ export default function WishlistPage() {
                     className={styles.viewIcon}
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(getProductPath({ id: product.id, slug: product.slug }));
+                      router.push(
+                        getProductPath({ id: product.id, slug: product.slug }),
+                      );
                     }}
                   >
-                    <EyeIcon size={18}/>
+                    <EyeIcon size={18} />
                   </div>
                 </div>
 

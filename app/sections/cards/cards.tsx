@@ -7,11 +7,11 @@ import { useRouter } from "next/navigation";
 
 type CampaignStatus = "ACTIVE" | "CLOSED" | "UPCOMING";
 
-const STATUS_CONFIG: Record<CampaignStatus, { label: string; cls: string }> = {
-  ACTIVE: { label: "● ACTIVE", cls: "badgeLive" },
-  CLOSED: { label: "❌ CLOSED", cls: "badgeClosed" },
-  UPCOMING: { label: "🗓 UPCOMING", cls: "badgeUpcoming" },
-};
+// const STATUS_CONFIG: Record<CampaignStatus, { label: string; cls: string }> = {
+//   ACTIVE: { label: "● ACTIVE", cls: "badgeLive" },
+//   CLOSED: { label: "❌ CLOSED", cls: "badgeClosed" },
+//   UPCOMING: { label: "🗓 UPCOMING", cls: "badgeUpcoming" },
+// };
 
 function useCountdown(endDate?: string) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -48,9 +48,8 @@ function CampaignCard({
   onClick: () => void;
 }) {
   const timeLeft = useCountdown(item.endDate);
-  const statusKey = (item.status as CampaignStatus) ?? "UPCOMING";
 
-  const statusCfg = STATUS_CONFIG[statusKey] ?? STATUS_CONFIG["UPCOMING"];
+  // const statusCfg = STATUS_CONFIG[statusKey] ?? STATUS_CONFIG["UPCOMING"];
 
   return (
     <div
@@ -74,9 +73,9 @@ function CampaignCard({
       <div className={styles.shimmerBorder} />
 
       {/* Status badge */}
-      <span className={`${styles.badge} ${styles[statusCfg.cls]}`}>
+      {/* <span className={`${styles.badge} ${styles[statusCfg.cls]}`}>
         {statusCfg.label}
-      </span>
+      </span> */}
 
       {/* Bottom glass panel */}
       <div className={styles.glassPanel}>
@@ -130,7 +129,10 @@ const Cards = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const data = await getAllCampaigns();
+      const data = await getAllCampaigns({
+        status: "ACTIVE",
+      });
+
       setCampaigns(data);
     };
     loadData();

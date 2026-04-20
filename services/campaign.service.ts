@@ -1,4 +1,4 @@
-import axiosInstance from "@/lib/axios";
+import { api } from "@/lib/api";
 
 export type Campaign = {
   id: number;
@@ -12,6 +12,6 @@ export type Campaign = {
 };
 
 export const getCampaignsAPI = async (): Promise<Campaign[]> => {
-  const res = await axiosInstance.get("/v1/lucky-draw/public/campaigns");
+  const res = await api.get("/v1/lucky-draw/public/campaigns");
   return res.data;
 };
