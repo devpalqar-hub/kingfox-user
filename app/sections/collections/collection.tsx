@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import React from "react";
 import Image from "next/image";
 import styles from "./collection.module.css";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getAllCategories } from "@/services/category.service";
 
@@ -14,65 +14,56 @@ const Collections = () => {
   useEffect(() => {
     const loadCategories = async () => {
       const data = await getAllCategories();
-      const selectedCategories = data.slice(0, 4);
-      setCategories(selectedCategories);
+      setCategories(data.slice(0, 4));
     };
-
     loadCategories();
   }, []);
 
-  const cat0 = categories[0];
-  const cat1 = categories[1];
-  const cat2 = categories[2];
-  const cat3 = categories[3];
-
+  const [cat0, cat1, cat2, cat3] = categories;
 
   return (
     <section className={styles.wrapper}>
       <div className={styles.blackContainer}>
-
-        {/* Header */}
+        {/* ── Header Tab ── */}
         <div className={styles.topTabContainer}>
           <div className={styles.headerTab}>
-            <h2>COLLECTIONS</h2>
-            <div className={styles.curveLeft}></div>
-            <div className={styles.curveRight}></div>
+            <h2>Collections</h2>
+            <div className={styles.curveLeft} />
+            <div className={styles.curveRight} />
           </div>
         </div>
 
-        {/* DESKTOP GRID */}
+        {/* ── DESKTOP GRID ── */}
         <div className={styles.desktopGrid}>
-
           {/* FULL SLEEVE */}
           <div
             className={styles.card}
             onClick={() => router.push(`/products?categoryId=${cat0?.id}`)}
-            style={{ cursor: "pointer" }}
           >
             <Image
               src={cat0?.image || "/full-sleeve.png"}
-              alt={cat0?.name || ""}
+              alt={cat0?.name || "Full Sleeve"}
               fill
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width:768px) 100vw, 33vw"
               className={`${styles.img} ${styles.imgFullSleeve}`}
             />
             <div className={styles.label}>
-              {cat0?.name?.toUpperCase() || "FULL SLEEVE T-SHIRTS"}
+              {cat0?.name?.toUpperCase() || "FULL SLEEVE"}
             </div>
           </div>
 
-          {/* NEW ARRIVAL (already correct) */}
+          {/* NEW ARRIVAL */}
           <div
             className={`${styles.card} ${styles.newArrival}`}
             onClick={() => router.push("/new-arrivals")}
-            style={{ cursor: "pointer" }}
           >
             <Image
               src="/new-arrival.png"
-              alt=""
+              alt="New Arrival"
               fill
               className={`${styles.img} ${styles.imgNewArrival}`}
             />
+            <span className={styles.newBadge}>NEW</span>
             <div className={styles.label}>NEW ARRIVAL</div>
           </div>
 
@@ -80,13 +71,12 @@ const Collections = () => {
           <div
             className={styles.card}
             onClick={() => router.push(`/products?categoryId=${cat1?.id}`)}
-            style={{ cursor: "pointer" }}
           >
             <Image
               src={cat1?.image || "/oversize.png"}
-              alt={cat1?.name || ""}
+              alt={cat1?.name || "Oversize"}
               fill
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width:768px) 100vw, 33vw"
               className={`${styles.img} ${styles.imgOversize}`}
             />
             <div className={styles.label}>
@@ -98,17 +88,16 @@ const Collections = () => {
           <div
             className={styles.card}
             onClick={() => router.push(`/products?categoryId=${cat2?.id}`)}
-            style={{ cursor: "pointer" }}
           >
             <Image
               src={cat2?.image || "/half-sleeve.png"}
-              alt={cat2?.name || ""}
+              alt={cat2?.name || "Half Sleeve"}
               fill
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width:768px) 100vw, 33vw"
               className={`${styles.img} ${styles.imgHalfSleeve}`}
             />
             <div className={styles.label}>
-              {cat2?.name?.toUpperCase() || "HALF SLEEVE T-SHIRTS"}
+              {cat2?.name?.toUpperCase() || "HALF SLEEVE"}
             </div>
           </div>
 
@@ -116,29 +105,26 @@ const Collections = () => {
           <div
             className={styles.card}
             onClick={() => router.push(`/products?categoryId=${cat3?.id}`)}
-            style={{ cursor: "pointer" }}
           >
             <Image
               src={cat3?.image || "/shirts.png"}
-              alt={cat3?.name || "SHIRTS"}
+              alt={cat3?.name || "Shirts"}
               fill
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width:768px) 100vw, 33vw"
               className={`${styles.img} ${styles.imgShirts}`}
             />
             <div className={styles.label}>
               {cat3?.name?.toUpperCase() || "SHIRTS"}
             </div>
           </div>
-
         </div>
 
-
+        {/* ── MOBILE GRID ── */}
         <div className={styles.mobileGrid}>
           <div className={styles.cardrow}>
             <div
               className={styles.card}
               onClick={() => router.push(`/products?categoryId=${cat0?.id}`)}
-              style={{ cursor: "pointer" }}
             >
               <Image
                 src={cat0?.image || "/oversize.png"}
@@ -146,13 +132,13 @@ const Collections = () => {
                 fill
                 className={`${styles.img} ${styles.imgOversize}`}
               />
-              <div className={styles.label}>{cat0?.name?.toUpperCase() || "OVERSIZE TEE"}</div>
+              <div className={styles.label}>
+                {cat0?.name?.toUpperCase() || "OVERSIZE TEE"}
+              </div>
             </div>
-
             <div
               className={styles.card}
               onClick={() => router.push(`/products?categoryId=${cat1?.id}`)}
-              style={{ cursor: "pointer" }}
             >
               <Image
                 src={cat1?.image || "/shirts.png"}
@@ -160,12 +146,23 @@ const Collections = () => {
                 fill
                 className={`${styles.img} ${styles.imgShirts}`}
               />
-              <div className={styles.label}>{cat1?.name?.toUpperCase() || "SHIRTS"}</div>
+              <div className={styles.label}>
+                {cat1?.name?.toUpperCase() || "SHIRTS"}
+              </div>
             </div>
           </div>
 
-          <div className={`${styles.card} ${styles.mobileNewArrival}`}>
-            <Image src="/new-arrival.png" alt="" fill className={`${styles.img} ${styles.imgNewArrival}`} />
+          <div
+            className={`${styles.card} ${styles.mobileNewArrival}`}
+            onClick={() => router.push("/new-arrivals")}
+          >
+            <Image
+              src="/new-arrival.png"
+              alt="New Arrival"
+              fill
+              className={`${styles.img} ${styles.imgNewArrival}`}
+            />
+            <span className={styles.newBadge}>NEW</span>
             <div className={styles.label}>NEW ARRIVAL</div>
           </div>
 
@@ -173,7 +170,6 @@ const Collections = () => {
             <div
               className={styles.card}
               onClick={() => router.push(`/products?categoryId=${cat2?.id}`)}
-              style={{ cursor: "pointer" }}
             >
               <Image
                 src={cat2?.image || "/half-sleeve.png"}
@@ -181,13 +177,13 @@ const Collections = () => {
                 fill
                 className={`${styles.img} ${styles.imgHalfSleeve}`}
               />
-              <div className={styles.label}>{cat2?.name?.toUpperCase() || "HALF SLEEVE T-SHIRTS"}</div>
+              <div className={styles.label}>
+                {cat2?.name?.toUpperCase() || "HALF SLEEVE"}
+              </div>
             </div>
-
             <div
               className={styles.card}
               onClick={() => router.push(`/products?categoryId=${cat3?.id}`)}
-              style={{ cursor: "pointer" }}
             >
               <Image
                 src={cat3?.image || "/full-sleeve.png"}
@@ -195,19 +191,26 @@ const Collections = () => {
                 fill
                 className={`${styles.img} ${styles.imgFullSleeve}`}
               />
-              <div className={styles.label}>{cat3?.name?.toUpperCase() || "FULL SLEEVE T-SHIRTS"}</div>
+              <div className={styles.label}>
+                {cat3?.name?.toUpperCase() || "FULL SLEEVE"}
+              </div>
             </div>
           </div>
         </div>
-        {/* Button */}
+
+        {/* ── Footer Tab ── */}
         <div className={styles.bottomTabContainer}>
           <div className={styles.footerTab}>
-            <button onClick={() => router.push('/products')} className={styles.viewBtn}>VIEW ALL PRODUCTS</button>
-            <div className={styles.curveLeftBottom}></div>
-            <div className={styles.curveRightBottom}></div>
+            <button
+              onClick={() => router.push("/products")}
+              className={styles.viewBtn}
+            >
+              VIEW ALL PRODUCTS
+            </button>
+            <div className={styles.curveLeftBottom} />
+            <div className={styles.curveRightBottom} />
           </div>
         </div>
-
       </div>
     </section>
   );
