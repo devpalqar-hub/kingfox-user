@@ -196,7 +196,7 @@ export default function WishlistPage() {
           <div className={styles.titleArea}>
             <h1>Your Wishlist</h1>
             <span className={styles.itemCount}>({wishlist.length} ITEMS)</span>
-            <span className={styles.continueShopping}>Continue Shopping</span>
+            <button onClick={() => router.push("/")} className={styles.continueShopping}>Continue Shopping</button>
           </div>
 
           <div className={styles.headerButtons}>
@@ -225,7 +225,14 @@ export default function WishlistPage() {
             return (
               <div key={item.id} className={styles.card}>
                 <div className={styles.imageWrapper}>
-                  <img src={product.images?.[0]} alt={product.name} />
+                  <img
+                    src={
+                      item.variant?.image ||
+                      item.product?.images?.[0] ||
+                      "/placeholder-product.png"
+                    }
+                    alt={item.product?.name}
+                  />
                   <div
                     className={styles.wishlistIcon}
                     onClick={(e) => {
@@ -253,7 +260,19 @@ export default function WishlistPage() {
 
                   {/* ✅ Variant Info */}
                   <div className={styles.variantInfo}>
-                    {item.variant?.color} / {item.variant?.size}
+                    <span
+                      className={styles.colorDot}
+                      style={{ backgroundColor: item.variant?.color?.toLowerCase() }}
+                    />
+                    <span className={styles.variantText}>
+                      {item.variant?.color}
+                    </span>
+
+                    <span className={styles.separator}>•</span>
+
+                    <span className={styles.sizeText}>
+                      {item.variant?.size}
+                    </span>
                   </div>
 
                   <div className={styles.priceRow}>

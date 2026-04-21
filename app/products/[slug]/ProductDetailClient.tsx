@@ -21,6 +21,7 @@ import { FaHeart } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { getWishList } from "@/services/wishlist.service";
+import RelatedProducts from "@/components/RelatedProducts/RelatedProducts";
 
 type ReviewItem = {
   id: number;
@@ -820,6 +821,12 @@ const handleBuyNow = async () => {
           </div>
         </div>
       </section>
+
+      <RelatedProducts
+        categoryId={product.category.id}
+        categoryName={product.category.name}
+        currentProductId={product.id}
+      />
 
       {/* NEWSLETTER */}
       <div className={styles.newsletterSection}>
