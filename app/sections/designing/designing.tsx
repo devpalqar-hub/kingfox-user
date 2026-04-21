@@ -1,29 +1,29 @@
-import React from 'react';
-import styles from './designing.module.css';
+"use client"
+import styles from "./designing.module.css";
 // Try Shirt instead of Hanger for a cleaner apparel look
-import { Shirt, Palette, ShoppingBag } from 'lucide-react';
+import { Shirt, Palette, ShoppingBag } from "lucide-react";
 
 const Designing = () => {
   const steps = [
     {
       icon: <Shirt size={32} />,
-      title: '1. SELECT FIT',
-      description: 'Choose from Oversized, Relaxed, or Regular fits.',
+      title: "1. SELECT FIT",
+      description: "Choose from Oversized, Relaxed, or Regular fits.",
     },
     {
       icon: <Palette size={32} />,
-      title: '2. CUSTOMIZE',
-      description: 'Upload art or use our editor to place elements.',
+      title: "2. CUSTOMIZE",
+      description: "Upload art or use our editor to place elements.",
     },
     {
       icon: <ShoppingBag size={32} />,
-      title: '3. ORDER',
-      description: 'We print with premium tech and ship to you.',
+      title: "3. ORDER",
+      description: "We print with premium tech and ship to you.",
     },
   ];
 
   return (
-    <section className={styles.container}>
+    <section id="designing-section" className={styles.container}>
       <header className={styles.header}>
         <p className={styles.subtext}>UNLOCK YOUR CREATIVITY</p>
         <h1 className={styles.title}>
@@ -41,7 +41,19 @@ const Designing = () => {
         ))}
       </div>
 
-      <button className={styles.ctaButton}>START DESIGNING NOW</button>
+      <button
+        className={styles.ctaButton}
+        onClick={() => {
+          const phoneNumber = "918129882245"; 
+          const message = encodeURIComponent(
+            "Hi, I want to design my own tee 👕",
+          );
+
+          window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+        }}
+      >
+        START DESIGNING NOW
+      </button>
     </section>
   );
 };

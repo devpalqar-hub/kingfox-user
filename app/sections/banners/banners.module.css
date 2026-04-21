@@ -1,0 +1,338 @@
+.bannerSection {
+  position: relative;
+  width: 100%;
+  background: #0a0a0a;
+  padding: 0 20px 28px;
+}
+
+.sectionDivider {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #d4af37 25%,
+    #d4af37 75%,
+    transparent 100%
+  );
+  margin-bottom: 0;
+}
+
+.labelStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px;
+}
+
+.labelLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.labelDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d4af37;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(1.6); }
+}
+
+.labelText {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #d4af37;
+  text-transform: uppercase;
+}
+
+.slideCounter {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.slideCounter span {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sliderCard {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.sliderTrack {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 6.2;
+  background: #111;
+}
+
+@media (max-width: 900px) {
+  .sliderTrack {
+    aspect-ratio: 16 / 8;
+  }
+}
+
+@media (max-width: 768px) {
+  .bannerSection {
+    padding: 0 12px 20px;
+  }
+
+  .sliderCard {
+    border-radius: 12px;
+  }
+
+  .sliderTrack {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .bannerSection {
+    padding: 0 10px 16px;
+  }
+
+  .sliderCard {
+    border-radius: 10px;
+  }
+
+  .sliderTrack {
+    aspect-ratio: 9 / 13;
+  }
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.slide.exiting {
+  opacity: 0;
+  z-index: 0;
+}
+
+.bannerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.bannerVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.28) 100%),
+    linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 38%),
+    linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, transparent 20%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.slideLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.slideNoLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+.controlsBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px 16px;
+  gap: 12px;
+}
+
+.dotsContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.3s, width 0.35s, border-radius 0.35s;
+  flex-shrink: 0;
+}
+
+.dot.activeDot {
+  background: #d4af37;
+  width: 22px;
+  border-radius: 3px;
+}
+
+.navCluster {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navBtn {
+  background: rgba(10, 10, 10, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.navBtn:hover {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: #d4af37;
+  transform: scale(1.08);
+}
+
+.navBtn:active {
+  transform: scale(0.95);
+}
+
+.navBtn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 480px) {
+  .controlsBar {
+    padding: 0 12px 12px;
+  }
+
+  .navBtn {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.progressBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #b8860b, #d4af37, #ffe680);
+  z-index: 11;
+  transform-origin: left;
+  animation: progressFill var(--slide-duration, 5s) linear forwards;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+}
+
+@keyframes progressFill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.bannerTitleBadge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 14px;
+  left: 14px;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.52);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 6px;
+  padding: 4px 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  max-width: 55%;
+}
+
+.bannerTitleText {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.88);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .bannerTitleBadge {
+    top: 10px;
+    left: 10px;
+    padding: 3px 8px;
+  }
+
+  .bannerTitleText {
+    font-size: 10px;
+  }
+}
+
+.skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #111 25%, #1d1d1d 50%, #111 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}

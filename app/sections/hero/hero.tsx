@@ -1,6 +1,10 @@
+"use client";
 import React from 'react';
 import Image from 'next/image';
 import styles from './hero.module.css';
+import { getAllCategories } from "@/services/category.service";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Truck, RefreshCcw, ShieldCheck, Leaf, Headphones } from 'lucide-react';
 const features = [
   { icon: <Truck size={18} strokeWidth={2} />, text: "FREE SHIPPING" },
@@ -9,7 +13,36 @@ const features = [
   { icon: <Leaf size={18} strokeWidth={2} />, text: "PREMIUM COTTON" },
   { icon: <Headphones size={18} strokeWidth={2} />, text: "ONLINE SUPPORT" },
 ];
+
 const Hero = () => {
+  const router = useRouter();
+  type Category = {
+  id: number;
+  name: string;
+};
+
+const [categories, setCategories] = useState<Category[]>([]);
+useEffect(() => {
+  const loadCategories = async () => {
+    const data = await getAllCategories();
+    setCategories(data || []);
+  };
+
+  loadCategories();
+}, []);
+
+const oversizedCategory = categories.find((cat) =>
+  cat.name.toLowerCase().includes("oversize")
+);
+const handleOversizedClick = () => {
+  if (oversizedCategory) {
+    router.push(`/products?categoryId=${oversizedCategory.id}`);
+  } else {
+    // fallback (important)
+    router.push("/products?search=oversized");
+  }
+};
+
   return (
     <>
     <div className={styles.wrapper}>
@@ -17,16 +50,35 @@ const Hero = () => {
       <div className={styles.content}>
         <span className={styles.badge}>FREE SHIPPING ACROSS INDIA</span>
         <h1 className={styles.title}>
-          BUILT FOR <br /> THE <span className={styles.highlight}>STREETS.</span> <br /> 
-          WORN BY YOU.
+          BUILT FOR <br /> THE <span className={styles.highlight}>STREETS</span> <br /> 
+          WORN BY YOU
         </h1>
         <p className={styles.description}>
           High-quality oversized streetwear designed for the modern fit. 
           Premium cotton, breathable fabrics, and timeless designs.
         </p>
         <div className={styles.buttonGroup}>
-          <button className={styles.primaryBtn}>SHOP OVERSIZED TEES</button>
-          <button className={styles.secondaryBtn}>CUSTOMIZE YOUR TEE</button>
+          <button
+            className={styles.primaryBtn}
+            onClick={handleOversizedClick}
+          >
+            SHOP OVERSIZED TEES
+          </button>
+          <button
+            className={styles.secondaryBtn}
+            onClick={() => {
+              const section = document.getElementById("designing-section");
+              if (section) {
+                const yOffset = -80; // adjust based on header height
+                const y =
+                  section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+                window.scrollTo({ top: y, behavior: "smooth" });
+              }
+            }}
+          >
+            CUSTOMIZE YOUR TEE
+          </button>
         </div>
       </div>
 

@@ -1,0 +1,136 @@
+.container {
+  background: #f5f5f5;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: var(--font-jakarta);
+}
+.header{
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 8px;
+}
+/* HEADER */
+.header h1 {
+  font-size: 24px;
+  font-weight: 900;
+}
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+
+/* TABLE */
+.table {
+  background: #fff;
+  border: 1px solid #ddd;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #0f172a;
+  color: #fff;
+  padding: 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* AMOUNT */
+.amount {
+  font-weight: 700;
+}
+
+/* PAYMENT BADGE */
+.paymentBadge {
+  background: #eee;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+/* STATUS */
+.status {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* 🟡 Order just placed */
+.pending {
+  color: #f59e0b;
+}
+
+/* 🔵 Confirmed */
+.confirmed {
+  color: #3b82f6;
+}
+
+/* 🟣 Packed */
+.packed {
+  color: #8b5cf6;
+}
+
+/* ⚫ Shipped */
+.shipped {
+  color: #111827;
+}
+
+/* 🟢 Delivered */
+.delivered {
+  color: #16a34a;
+}
+
+/* 🔴 Cancelled */
+.cancelled {
+  color: #ef4444;
+}
+
+/* BUTTON */
+.viewBtn {
+  background: #000;
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 11px;
+  border: none;
+  cursor: pointer;
+}
+
+/* PAGINATION */
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.pageBtn {
+  width: 40px;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.activePage {
+  background: #000;
+  color: #F8E61B;
+}
