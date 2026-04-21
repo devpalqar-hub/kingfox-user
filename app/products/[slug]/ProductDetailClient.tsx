@@ -44,7 +44,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("DESCRIPTION");
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductDetailType | null>(
@@ -55,6 +54,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const { showToast } = useToast();
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
 
   // reviews
   const [reviewData, setReviewData] = useState<{
@@ -173,20 +174,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     return () => clearInterval(interval);
   }, [isHovered]);
 
-  useEffect(() => {
-    if (product?.variants?.length) {
-      const firstSize = product.variants[0].size;
 
-      setSelectedSize(firstSize);
-
-      // pick first color of that size
-      const firstColorForSize = product.variants.find(
-        (v) => v.size === firstSize,
-      )?.color;
-
-      setSelectedColor(firstColorForSize || null);
-    }
-  }, [product]);
 
   useEffect(() => {
     if (product?.metaInfo?.length) {
@@ -194,27 +182,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
   }, [product]);
 
-  useEffect(() => {
-    const syncWishlist = async () => {
-      try {
-        const res = await getWishList();
-
-        const items = Array.isArray(res) ? res : res?.items || res?.data || [];
-
-        const exists = items.some(
-          (item: WishlistEntry) => item.productId === product?.id,
-        );
-
-        setIsWishlisted(exists);
-      } catch {
-        showToast("Something went wrong", "error");
-      }
-    };
-
-    if (user && product?.id) {
-      syncWishlist();
-    }
-  }, [product?.id, user, showToast]);
 
   // useEffect(() => {
   //   if (product) {
@@ -235,18 +202,31 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
 
     try {
-      if (isWishlisted) {
-        await removeFromWishlist(selectedVariant.id);
-        setIsWishlisted(false);
-        showToast("Removed from wishlist", "info");
-      } else {
+      const newState = !selectedVariant.isWishlisted;
+
+      if (newState) {
         await addToWishlist(selectedVariant.id);
-        setIsWishlisted(true);
         showToast("Added to wishlist", "success");
+      } else {
+        await removeFromWishlist(selectedVariant.id);
+        showToast("Removed from wishlist", "info");
       }
 
+      setProduct((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          variants: prev.variants.map((v) =>
+            v.id === selectedVariant.id
+              ? { ...v, isWishlisted: newState }
+              : v
+          ),
+        };
+      });
+
       window.dispatchEvent(new Event("wishlistUpdated"));
-    } catch (err: unknown) {
+    } catch (err) {
       console.error(err);
       showToast("Something went wrong", "error");
     }
@@ -256,7 +236,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const colors = [
     ...new Set(
       product?.variants
-        ?.filter((v) => v.size === selectedSize)
+        ?.filter((v) =>
+          selectedSize ? v.size === selectedSize : true
+        )
         .map((v) => v.color) || [],
     ),
   ];
@@ -281,6 +263,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
   }, [selectedVariant, product]);
 
+  const isWishlisted = selectedVariant?.isWishlisted ?? false;
   const isInCart = selectedVariant?.isAddedInCart ?? false;
   const isOutOfStock = selectedVariant?.totalStock === 0;
 
@@ -326,33 +309,58 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
   };
 
-  const handleBuyNow = async () => {
-    if (!product || !selectedVariant) {
-      showToast("Please select size & color", "error");
-      return;
-    }
-    if (selectedVariant.totalStock === 0) {
-      showToast("Out of stock", "error");
-      return;
+const handleBuyNow = async () => {
+  if (!product || !selectedVariant) {
+    showToast("Please select size & color", "error");
+    return;
+  }
+
+  if (selectedVariant.totalStock === 0) {
+    showToast("Out of stock", "error");
+    return;
+  }
+
+  try {
+    if (token) {
+      await addToCartAPI(selectedVariant.id, 1);
+    } else {
+      addToGuestCart({
+        variantId: selectedVariant.id,
+        sku: selectedVariant.sku,
+        size: selectedVariant.size,
+        color: selectedVariant.color,
+        productName: product.name,
+        productImage:
+          selectedVariant.image ||
+          product.images[0] ||
+          "/placeholder-product.png",
+        price: Number(selectedVariant.sellingPrice),
+        quantity: 1,
+        availableStock: selectedVariant.totalStock ?? 0,
+      });
     }
 
-    try {
-      await addToCartAPI(selectedVariant.id, 1);
-      window.dispatchEvent(new Event("cartUpdated"));
-      setProduct((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          variants: prev.variants.map((v) =>
-            v.id === selectedVariant.id ? { ...v, isAddedInCart: true } : v,
-          ),
-        };
-      });
-      router.push("/cart");
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    setProduct((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        variants: prev.variants.map((v) =>
+          v.id === selectedVariant.id
+            ? { ...v, isAddedInCart: true }
+            : v
+        ),
+      };
+    });
+
+    window.dispatchEvent(new Event("cartUpdated"));
+
+    router.push("/cart");
+  } catch (err) {
+    console.error(err);
+    showToast("Something went wrong", "error");
+  }
+};
 
   // Token expiry effect
   useEffect(() => {
@@ -364,6 +372,19 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       setShowLoginModal(true);
     }
   }, [token, user, loading]);
+
+  const priceRange = useMemo(() => {
+    if (!product?.variants?.length) return null;
+
+    const prices = product.variants.map((v) =>
+      Number(v.sellingPrice)
+    );
+
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+    return { min, max };
+  }, [product]);
 
   if (!product) {
     return <div>Loading...</div>;
@@ -391,7 +412,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             <img src={activeImg || productImages[0]} alt={product.name} />
 
             {/* ❤️ Wishlist */}
-            <button className={styles.wishlistBtn} onClick={handleWishlist}>
+            <button className={styles.wishlistBtn} onClick={handleWishlist} disabled={wishlistLoading}>
               {isWishlisted ? (
                 <FaHeart size={20} color="black" /> // ❤️ BLACK
               ) : (
@@ -406,10 +427,28 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           <h1 className={styles.title}>{product?.name}</h1>
 
           <div className={styles.priceRow}>
-            <span className={styles.price}>
-              ₹
-              {selectedVariant?.sellingPrice ||
-                product?.variants[0]?.sellingPrice}
+            <span className={styles.priceWrapper}>
+              {selectedVariant ? (
+                <>
+                  <span className={styles.price}>
+                    ₹{selectedVariant.sellingPrice}
+                  </span>
+
+                  {Number(selectedVariant.costPrice) >
+                    Number(selectedVariant.sellingPrice) && (
+                    <span className={styles.strikePrice}>
+                      ₹{selectedVariant.costPrice}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className={styles.price}>
+                  ₹{priceRange?.min}
+                  {priceRange?.min !== priceRange?.max && (
+                    <> – ₹{priceRange?.max}</>
+                  )}
+                </span>
+              )}
             </span>
             <div className={styles.divider}></div>
             {reviewData && reviewData.total > 0 && (
@@ -452,13 +491,24 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   onClick={() => {
                     setSelectedSize(size);
 
-                    const variant = product?.variants.find(
-                      (v) => v.size === size,
+                    const colorExists = product?.variants.some(
+                      (v) =>
+                        v.size === size &&
+                        v.color?.toLowerCase() === selectedColor?.toLowerCase()
                     );
 
-                    if (variant?.color) {
-                      setSelectedColor(variant.color);
+                    if (!colorExists) {
+                      const firstVariant = product?.variants.find(
+                        (v) => v.size === size
+                      );
+                      setSelectedColor(firstVariant?.color || null);
                     }
+
+                    const variant = product?.variants.find(
+                      (v) =>
+                        v.size === size &&
+                        v.color?.toLowerCase() === selectedColor?.toLowerCase()
+                    );
 
                     if (variant?.image) {
                       setActiveImg(variant.image);
@@ -488,10 +538,11 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   onClick={() => {
                     setSelectedColor(color);
 
-                    const variant = product?.variants.find(
-                      (v) =>
-                        v.color.toLowerCase() === color.toLowerCase() &&
-                        v.size === selectedSize,
+                    const variant = product?.variants.find((v) =>
+                      selectedSize
+                        ? v.color.toLowerCase() === color.toLowerCase() &&
+                          v.size === selectedSize
+                        : v.color.toLowerCase() === color.toLowerCase()
                     );
 
                     if (variant?.image) {

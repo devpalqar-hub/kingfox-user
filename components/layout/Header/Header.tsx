@@ -269,26 +269,21 @@ const Header = () => {
             onMouseEnter={() => setShowCategoryDropdown(true)}
             onMouseLeave={() => setShowCategoryDropdown(false)}
           >
-            <span
+            <Link
+              href="/products"
               className={styles.navLink}
-              tabIndex={0}
-              onClick={() => setShowCategoryDropdown((v) => !v)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ")
-                  setShowCategoryDropdown((v) => !v);
-              }}
+              onClick={() => setShowCategoryDropdown(false)}
             >
               PRODUCTS
-            </span>
+            </Link>
+
             {showCategoryDropdown && categories.length > 0 && (
               <div className={styles.dropdownMenu}>
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/products?categoryId=${cat.id}`}
-                    onClick={() => {
-                      setShowCategoryDropdown(false);
-                    }}
+                    onClick={() => setShowCategoryDropdown(false)}
                   >
                     {cat.name}
                   </Link>
