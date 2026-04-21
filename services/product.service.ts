@@ -163,17 +163,36 @@ export const isProductNotFoundError = (
 ): error is ProductNotFoundError => error instanceof ProductNotFoundError;
 
 export const getNewArrivals = async (params?: {
+  page?: number;
+  limit?: number;
   size?: string | null;
+  color?: string | null;
+  minPrice?: number;
+  maxPrice?: number;
   categoryId?: number | null;
+  sortBy?: "newly_arrived" | "low_to_high" | "high_to_low";
 }) => {
+
   const query = new URLSearchParams();
 
+  if (params?.page !== undefined)
+    query.append("page", params.page.toString());
+
+  if (params?.limit !== undefined)
+    query.append("limit", params.limit.toString());
   if (params?.size) query.append("size", params.size);
-  if (params?.categoryId) {
+  if (params?.color) query.append("color", params.color);
+  if (params?.minPrice !== undefined)
+    query.append("minPrice", params.minPrice.toString());
+  if (params?.maxPrice !== undefined)
+    query.append("maxPrice", params.maxPrice.toString());
+  if (params?.categoryId)
     query.append("categoryId", params.categoryId.toString());
-  }
+  if (params?.sortBy)
+    query.append("sortBy", params.sortBy);
 
   query.append("tags", "NEW ARRIVALS");
+
 
   const res = await fetch(`${BASE_URL}/v1/user/products?${query}`); // ✅ FIX
 
@@ -181,7 +200,7 @@ export const getNewArrivals = async (params?: {
     throw new Error("Failed to fetch new arrivals");
   }
 
-  return res.json();
+  return res.json() as Promise<ProductResponse>;
 };
 
 
