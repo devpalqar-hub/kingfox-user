@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import styles from "./login.module.css";
@@ -8,6 +8,9 @@ import { useToast } from "@/context/ToastContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -17,11 +20,17 @@ type Props = {
 
 type Step = "phone" | "otp" | "register";
 
-export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail }: Props) {
+export default function LoginModal({
+  isOpen,
+  onClose,
+  prefillPhone,
+  prefillEmail,
+}: Props) {
   const router = useRouter();
   const { showToast } = useToast();
   const { login } = useAuth();
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState<string | undefined>("");
+  const [defaultCountry, setDefaultCountry] = useState<any>("IN");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp" | "register">("phone");
   const [tempToken, setTempToken] = useState("");
@@ -29,6 +38,12 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const pathname = usePathname();
+
+  useEffect(() => {
+    const locale = navigator.language;
+    const country = locale.split("-")[1];
+    if (country) setDefaultCountry(country);
+  }, []);
 
   useEffect(() => {
     if (prefillPhone) {
@@ -54,11 +69,15 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
   const handleSendOtp = async () => {
     try {
       setLoading(true);
-      const res = await sendOtp(phone);
+      if (!phone) {
+        showToast("Please enter a valid phone number", "error");
+        return;
+      }
+
+      await sendOtp(phone);
 
       showToast("OTP sent successfully", "success", 3000);
       setStep("otp");
-
     } catch (err) {
       console.error(err);
       showToast("Failed to send OTP", "error", 3000);
@@ -71,6 +90,12 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
   const handleVerifyOtp = async () => {
     try {
       setLoading(true);
+
+      if (!phone) {
+        showToast("Invalid phone number", "error");
+        return;
+      }
+      
       const res = await verifyOtp(phone, otp);
 
       if (res.user) {
@@ -105,7 +130,6 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
 
         onClose();
       }
-
     } catch (err) {
       console.error(err);
       showToast("Invalid OTP ", "error", 3000);
@@ -146,10 +170,13 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>
+        <button className={styles.close} onClick={onClose}>
+          ✕
+        </button>
 
-        <button className={styles.close} onClick={onClose}>✕</button>
-
-        <h1 className={styles.logo}>KING <br /> FOX</h1>
+        <h1 className={styles.logo}>
+          KING <br /> FOX
+        </h1>
 
         <div className={styles.line}></div>
 
@@ -162,15 +189,16 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
               Enter your phone number to continue
             </p>
 
-            <input
-              type="tel"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="Enter your phone number"
-              className={styles.phoneInput}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
+            <div className={styles.phoneWrapper}>
+              <PhoneInput
+                international
+                defaultCountry={defaultCountry}
+                value={phone}
+                onChange={setPhone}
+                placeholder="Enter phone number"
+                className={styles.phoneInput}
+              />
+            </div>
 
             <button
               className={styles.otpButton}
@@ -185,9 +213,7 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
         {/* STEP 2: OTP INPUT */}
         {step === "otp" && (
           <>
-            <p className={styles.subtitle}>
-              Enter OTP sent to {phone}
-            </p>
+            <p className={styles.subtitle}>Enter OTP sent to {phone}</p>
 
             <input
               type="text"
@@ -247,7 +273,6 @@ export default function LoginModal({ isOpen, onClose, prefillPhone, prefillEmail
             TERMS
           </Link>
         </p>
-
       </div>
     </div>
   );
