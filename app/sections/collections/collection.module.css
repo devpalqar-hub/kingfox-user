@@ -3,19 +3,24 @@
    Cormorant Garamond × Jost
    ───────────────────────────────────────── */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Jost:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@300;400;500;600&display=swap");
 
 /* ── CSS TOKENS ──────────────────────────── */
 :root {
   --col-black: #0c0c0c;
-  --col-card: #141414;
+  --col-card: #161616;
   --col-white: #ffffff;
   --col-offwhite: #f5f3ef;
   --col-gold: #b8975a;
   --col-gold-lt: #d4b07a;
   --radius-container: 48px;
-  --radius-card: 24px;
+  --radius-card: 22px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Tab dimensions — single source of truth */
+  --tab-top-h: 78px; /* header tab height */
+  --tab-bot-h: 66px; /* footer tab height */
+  --container-px: 40px; /* horizontal padding */
 }
 
 /* ── WRAPPER ─────────────────────────────── */
@@ -28,7 +33,13 @@
 .blackContainer {
   background-color: var(--col-black);
   border-radius: var(--radius-container);
-  padding: 20px 40px;
+  /* 
+    Top: enough room for the abs-positioned header tab + breathing gap
+    Bottom: enough room for the abs-positioned footer tab + breathing gap
+    Sides: symmetric horizontal padding
+  */
+  padding: calc(var(--tab-top-h) + 28px) var(--container-px)
+    calc(var(--tab-bot-h) + 28px);
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
@@ -43,7 +54,7 @@
   border-radius: inherit;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 200px 200px;
-  opacity: 0.028;
+  opacity: 0.03;
   pointer-events: none;
   z-index: 0;
 }
@@ -52,8 +63,8 @@
 .desktopGrid {
   display: grid;
   grid-template-columns: 1fr 1.08fr 1fr;
-  grid-template-rows: 260px 260px;
-  gap: 18px;
+  grid-template-rows: 252px 252px;
+  gap: 16px;
   position: relative;
   z-index: 1;
 }
@@ -72,8 +83,7 @@
   height: 100%;
   cursor: pointer;
 
-  /* one clean border — luxury detail */
-  outline: 1px solid rgba(255, 255, 255, 0.05);
+  outline: 1px solid rgba(255, 255, 255, 0.06);
   outline-offset: -1px;
 
   transform: translateY(0px);
@@ -84,11 +94,11 @@
 }
 
 .card:hover {
-  transform: translateY(-7px);
+  transform: translateY(-8px);
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.6),
-    0 4px 12px rgba(0, 0, 0, 0.3);
-  outline-color: rgba(255, 255, 255, 0.12);
+    0 24px 56px rgba(0, 0, 0, 0.65),
+    0 6px 14px rgba(0, 0, 0, 0.35);
+  outline-color: rgba(255, 255, 255, 0.14);
   z-index: 5;
 }
 
@@ -96,7 +106,8 @@
 .newArrival {
   grid-row: span 2;
   background: linear-gradient(170deg, #0e1d38 0%, #071024 55%, #040c1a 100%);
-  height: 75%;
+  /* Take 82% of the two-row height + gap, centered in the column */
+  height: calc(252px * 2 + 16px);
   align-self: center;
 }
 
@@ -129,16 +140,16 @@
   transform: scale(1.86) translateY(28%);
 }
 .card:hover .imgNewArrival {
-  transform: scale(1.35) translateY(16%);
+  transform: scale(1.36) translateY(16%);
 }
 .card:hover .imgFullSleeve {
-  transform: scale(1.35) translateY(6%);
+  transform: scale(1.36) translateY(6%);
 }
 .card:hover .imgOversize {
-  transform: scale(1.95) translateY(42%);
+  transform: scale(1.96) translateY(42%);
 }
 .card:hover .imgShirts {
-  transform: scale(1.55) translateY(26%);
+  transform: scale(1.56) translateY(26%);
 }
 
 /* ── LABEL ───────────────────────────────── */
@@ -148,9 +159,9 @@
   left: 50%;
   transform: translateX(-50%);
 
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
   padding: 8px 22px;
   border-radius: 100px;
@@ -158,12 +169,12 @@
   font-family: "Jost", sans-serif;
   font-size: 9.5px;
   font-weight: 500;
-  letter-spacing: 2.2px;
+  letter-spacing: 2.4px;
   color: #111;
   white-space: nowrap;
   z-index: 4;
 
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
   transition: transform 0.4s var(--ease-out);
 }
 
@@ -171,7 +182,7 @@
   transform: translateX(-50%) translateY(-4px);
 }
 
-/* ── "NEW" BADGE — static, tasteful ─────── */
+/* ── "NEW" BADGE ─────────────────────────── */
 .newBadge {
   position: absolute;
   top: 16px;
@@ -186,11 +197,16 @@
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 2.5px;
-  padding: 5px 12px;
+  padding: 5px 13px;
   border-radius: 100px;
 }
 
-/* ── TOP TAB ─────────────────────────────── */
+/* ─────────────────────────────────────────
+   TOP TAB
+   Hangs down from the very top of .blackContainer.
+   Uses absolute positioning — container padding
+   already reserves space so grid never overlaps it.
+   ───────────────────────────────────────── */
 .topTabContainer {
   position: absolute;
   top: 0;
@@ -201,12 +217,15 @@
 
 .headerTab {
   background: var(--col-offwhite);
-  padding: 14px 72px 16px;
+  padding: 16px 80px 18px;
   border-radius: 0 0 36px 36px;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* Minimum height matches --tab-top-h token */
+  min-height: var(--tab-top-h);
+  justify-content: center;
 }
 
 .headerTab h2 {
@@ -226,10 +245,11 @@
   display: block;
   height: 1px;
   width: 60%;
-  margin: 7px auto 0;
+  margin: 8px auto 0;
   background: linear-gradient(90deg, transparent, var(--col-gold), transparent);
 }
 
+/* Corner curves — sit flush outside the tab */
 .curveLeft,
 .curveRight {
   position: absolute;
@@ -237,6 +257,7 @@
   width: 40px;
   height: 40px;
   background: transparent;
+  pointer-events: none;
 }
 .curveLeft {
   left: -40px;
@@ -249,7 +270,10 @@
   box-shadow: -15px -15px 0 15px var(--col-offwhite);
 }
 
-/* ── BOTTOM TAB ──────────────────────────── */
+/* ─────────────────────────────────────────
+   BOTTOM TAB
+   Rises from the very bottom of .blackContainer.
+   ───────────────────────────────────────── */
 .bottomTabContainer {
   position: absolute;
   bottom: 0;
@@ -260,17 +284,22 @@
 
 .footerTab {
   background: var(--col-offwhite);
-  padding: 14px 48px;
+  padding: 16px 56px;
   border-radius: 30px 30px 0 0;
   position: relative;
+  /* Minimum height matches --tab-bot-h token */
+  min-height: var(--tab-bot-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Refined CTA — clean border pill */
+/* CTA — clean pill */
 .viewBtn {
   background: transparent;
   color: var(--col-black);
   border: 1.5px solid var(--col-black);
-  padding: 11px 32px;
+  padding: 11px 34px;
   border-radius: 100px;
   font-family: "Jost", sans-serif;
   font-weight: 500;
@@ -280,6 +309,7 @@
   transition:
     background 0.35s ease,
     color 0.35s ease;
+  white-space: nowrap;
 }
 
 .viewBtn:hover {
@@ -287,6 +317,7 @@
   color: var(--col-white);
 }
 
+/* Bottom corner curves */
 .curveLeftBottom,
 .curveRightBottom {
   position: absolute;
@@ -294,6 +325,7 @@
   width: 40px;
   height: 40px;
   background: transparent;
+  pointer-events: none;
 }
 .curveLeftBottom {
   left: -40px;
@@ -307,14 +339,20 @@
 }
 
 /* ─────────────────────────────────────────
-   RESPONSIVE
+   RESPONSIVE — 800 px and below
    ───────────────────────────────────────── */
-
 @media (max-width: 800px) {
+  :root {
+    --tab-top-h: 68px;
+    --tab-bot-h: 58px;
+    --container-px: 18px;
+  }
+
   .blackContainer {
-    padding: 40px 18px 88px;
-    height: auto;
     border-radius: 36px;
+    /* Same rule — padding covers both abs tabs */
+    padding: calc(var(--tab-top-h) + 22px) var(--container-px)
+      calc(var(--tab-bot-h) + 22px);
   }
 
   .desktopGrid {
@@ -324,8 +362,7 @@
   .mobileGrid {
     display: grid;
     grid-template-rows: auto auto auto;
-    gap: 14px;
-    margin-top: 58px;
+    gap: 12px;
     position: relative;
     z-index: 1;
   }
@@ -337,19 +374,19 @@
   }
 
   .card {
-    height: 180px;
-    border-radius: 18px;
+    height: 175px;
+    border-radius: 16px;
   }
 
   .mobileNewArrival {
-    height: 235px;
-    border-radius: 18px;
+    height: 225px;
+    border-radius: 16px;
     background: linear-gradient(170deg, #0e1d38 0%, #040c1a 100%);
   }
 
   .label {
     font-size: 8.5px;
-    padding: 7px 16px;
+    padding: 7px 15px;
     letter-spacing: 1.8px;
   }
 
@@ -358,17 +395,26 @@
     letter-spacing: 7px;
   }
   .headerTab {
-    padding: 12px 52px 14px;
+    padding: 13px 54px 15px;
   }
 }
 
+/* ─────────────────────────────────────────
+   RESPONSIVE — 420 px and below
+   ───────────────────────────────────────── */
 @media (max-width: 420px) {
+  :root {
+    --tab-top-h: 60px;
+    --tab-bot-h: 52px;
+  }
+
   .card {
-    height: 152px;
+    height: 150px;
   }
   .mobileNewArrival {
-    height: 210px;
+    height: 205px;
   }
+
   .label {
     font-size: 8px;
     padding: 6px 13px;
@@ -379,28 +425,39 @@
   }
   .viewBtn {
     font-size: 9.5px;
-    padding: 10px 22px;
+    padding: 10px 24px;
   }
 }
 
+/* ─────────────────────────────────────────
+   RESPONSIVE — 320 px and below
+   ───────────────────────────────────────── */
 @media (max-width: 320px) {
+  :root {
+    --tab-top-h: 54px;
+    --tab-bot-h: 48px;
+    --container-px: 10px;
+  }
+
   .wrapper {
     padding: 60px 10px;
   }
+
   .blackContainer {
-    padding: 18px 10px 78px;
     border-radius: 28px;
   }
+
   .cardrow {
     gap: 9px;
   }
   .card {
-    height: 140px;
-    border-radius: 15px;
+    height: 138px;
+    border-radius: 14px;
   }
   .mobileNewArrival {
-    height: 195px;
+    height: 190px;
   }
+
   .label {
     font-size: 7.5px;
     padding: 5px 11px;
@@ -410,32 +467,35 @@
     letter-spacing: 4px;
   }
   .headerTab {
-    padding: 9px 34px 11px;
+    padding: 10px 36px 12px;
   }
 
+  /* Smaller corner curves for tight screens */
   .curveLeft,
-  .curveRight {
-    width: 22px;
-    height: 22px;
+  .curveRight,
+  .curveLeftBottom,
+  .curveRightBottom {
+    width: 24px;
+    height: 24px;
   }
   .curveLeft {
-    left: -22px;
+    left: -24px;
     border-top-right-radius: 20px;
-    box-shadow: 11px -11px 0 11px var(--col-offwhite);
+    box-shadow: 12px -12px 0 12px var(--col-offwhite);
   }
   .curveRight {
-    right: -22px;
+    right: -24px;
     border-top-left-radius: 20px;
-    box-shadow: -11px -11px 0 11px var(--col-offwhite);
+    box-shadow: -12px -12px 0 12px var(--col-offwhite);
   }
   .curveLeftBottom {
-    left: -22px;
+    left: -24px;
     border-bottom-right-radius: 20px;
-    box-shadow: 11px 11px 0 11px var(--col-offwhite);
+    box-shadow: 12px 12px 0 12px var(--col-offwhite);
   }
   .curveRightBottom {
-    right: -22px;
+    right: -24px;
     border-bottom-left-radius: 20px;
-    box-shadow: -11px 11px 0 11px var(--col-offwhite);
+    box-shadow: -12px 12px 0 12px var(--col-offwhite);
   }
 }

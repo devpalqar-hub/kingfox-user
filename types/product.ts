@@ -24,6 +24,7 @@ export interface Variant {
   costPrice: string | null;
   sellingPrice: string;
   image: string | null;
+  isWishlisted?: boolean;
   isAddedInCart?: boolean;
   totalStock?: number;
 }

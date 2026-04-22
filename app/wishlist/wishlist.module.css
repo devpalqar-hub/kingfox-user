@@ -181,11 +181,39 @@
   font-size: 18px;
   font-weight: 700;
 }
+/* Variant Row */
 .variantInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
   font-size: 12px;
   color: #666;
-  margin-bottom: 6px;
   text-transform: capitalize;
+}
+
+/* Color Dot */
+.colorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
+
+/* Text */
+.variantText {
+  font-weight: 500;
+}
+
+.sizeText {
+  font-weight: 600;
+  color: #000;
+}
+
+/* Separator */
+.separator {
+  margin: 0 2px;
+  color: #aaa;
 }
 
 .sizeTag {
