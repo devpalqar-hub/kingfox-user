@@ -532,7 +532,7 @@ const Header = () => {
         {/* Drawer Header */}
         <div className={styles.drawerHeader}>
           <Link href="/" className={styles.drawerLogo} onClick={closeDrawer}>
-            KINGFOX
+            <img src="/logo.png" alt="KingFox Logo" />
           </Link>
           <div className={styles.drawerClose} onClick={closeDrawer}>
             <X size={18} />
