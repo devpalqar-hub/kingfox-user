@@ -8,6 +8,18 @@ import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { ToastProvider } from "@/context/ToastContext";
 import { ConfirmProvider } from "@/context/ConfirmContext";
 import BottomNav from "@/components/BottomNav";
+import { Bebas_Neue, Inter } from "next/font/google";
+
+const bebas = Bebas_Neue({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-bebas",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -28,7 +40,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${jakarta.variable} ${space.variable}`}>
+      <body className={`${jakarta.variable} ${space.variable} ${bebas.variable} ${inter.variable}`}>
         {/* ✅ FIX: Wrap with AuthProvider */}
 
         <ToastProvider>

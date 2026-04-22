@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchBanners } from '@/services/banner.service';
-import { BannerWithMediaType } from '@/types/banner.types';
-import styles from './banners.module.css';
+import Image from "next/image";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { fetchBanners } from "@/services/banner.service";
+import { BannerWithMediaType } from "@/types/banner.types";
+import styles from "./banners.module.css";
 
 const SLIDE_DURATION = 5000;
 
@@ -38,30 +38,51 @@ export default function Banners() {
       }
       setTimeout(() => setExiting(null), 900);
     },
-    [current, banners.length]
+    [current, banners.length],
   );
 
   const next = useCallback(
     () => goTo((current + 1) % banners.length),
-    [current, banners.length, goTo]
+    [current, banners.length, goTo],
   );
 
   const prev = useCallback(
     () => goTo((current - 1 + banners.length) % banners.length),
-    [current, banners.length, goTo]
+    [current, banners.length, goTo],
   );
 
   // Auto-advance
   useEffect(() => {
     if (banners.length <= 1) return;
+
+    const currentBanner = banners[current];
+    if (currentBanner.mediaType === "video") {
+      const vid = videoRefs.current.get(current);
+
+      if (vid) {
+        const handleEnded = () => next();
+
+        vid.addEventListener("ended", handleEnded);
+
+        return () => {
+          vid.removeEventListener("ended", handleEnded);
+        };
+      }
+    }
     autoPlayRef.current = setTimeout(next, SLIDE_DURATION);
-    return () => { if (autoPlayRef.current) clearTimeout(autoPlayRef.current); };
-  }, [banners.length, current, next]);
+
+    return () => {
+      if (autoPlayRef.current) clearTimeout(autoPlayRef.current);
+    };
+  }, [banners, current, next]);
 
   // Play active video
   useEffect(() => {
     const vid = videoRefs.current.get(current);
-    if (vid) { vid.currentTime = 0; vid.play().catch(() => {}); }
+    if (vid) {
+      vid.currentTime = 0;
+      vid.play().catch(() => {});
+    }
   }, [current]);
 
   if (loading) {
@@ -101,9 +122,9 @@ export default function Banners() {
         </div>
         {total > 1 && (
           <span className={styles.slideCounter}>
-            <span>{String(current + 1).padStart(2, '0')}</span>
-            {' / '}
-            {String(total).padStart(2, '0')}
+            <span>{String(current + 1).padStart(2, "0")}</span>
+            {" / "}
+            {String(total).padStart(2, "0")}
           </span>
         )}
       </div>
@@ -111,14 +132,13 @@ export default function Banners() {
       {/* Rounded card wrapping the entire slider */}
       <div className={styles.sliderCard}>
         <div className={styles.sliderTrack}>
-
           {/* Slides */}
           {banners.map((banner, i) => {
             const isActive = i === current;
             const isExiting = i === exiting;
 
             const mediaEl =
-              banner.mediaType === 'video' ? (
+              banner.mediaType === "video" ? (
                 <video
                   ref={(el) => {
                     if (el) videoRefs.current.set(i, el);
@@ -128,7 +148,6 @@ export default function Banners() {
                   src={banner.mediaUrl}
                   autoPlay={isActive}
                   muted
-                  loop
                   playsInline
                   preload="metadata"
                   aria-label={banner.title}
@@ -161,9 +180,11 @@ export default function Banners() {
                 key={banner.id}
                 className={[
                   styles.slide,
-                  isActive ? styles.active : '',
-                  isExiting ? styles.exiting : '',
-                ].filter(Boolean).join(' ')}
+                  isActive ? styles.active : "",
+                  isExiting ? styles.exiting : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 aria-hidden={!isActive}
               >
                 {slideContent}
@@ -175,7 +196,9 @@ export default function Banners() {
           {/* Banner title badge (top-left of image) */}
           {activeBanner.title && (
             <div className={styles.bannerTitleBadge}>
-              <span className={styles.bannerTitleText}>{activeBanner.title}</span>
+              <span className={styles.bannerTitleText}>
+                {activeBanner.title}
+              </span>
             </div>
           )}
 
@@ -184,7 +207,11 @@ export default function Banners() {
             <div
               key={progressKey}
               className={styles.progressBar}
-              style={{ '--slide-duration': `${SLIDE_DURATION}ms` } as React.CSSProperties}
+              style={
+                {
+                  "--slide-duration": `${SLIDE_DURATION}ms`,
+                } as React.CSSProperties
+              }
             />
           )}
 
@@ -199,8 +226,12 @@ export default function Banners() {
                 {banners.map((_, i) => (
                   <button
                     key={i}
-                    className={[styles.dot, i === current ? styles.activeDot : '']
-                      .filter(Boolean).join(' ')}
+                    className={[
+                      styles.dot,
+                      i === current ? styles.activeDot : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     onClick={() => goTo(i)}
                     role="tab"
                     aria-selected={i === current}
@@ -210,12 +241,20 @@ export default function Banners() {
               </div>
 
               <div className={styles.navCluster}>
-                <button className={styles.navBtn} onClick={prev} aria-label="Previous banner">
+                <button
+                  className={styles.navBtn}
+                  onClick={prev}
+                  aria-label="Previous banner"
+                >
                   <svg viewBox="0 0 24 24">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
-                <button className={styles.navBtn} onClick={next} aria-label="Next banner">
+                <button
+                  className={styles.navBtn}
+                  onClick={next}
+                  aria-label="Next banner"
+                >
                   <svg viewBox="0 0 24 24">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
