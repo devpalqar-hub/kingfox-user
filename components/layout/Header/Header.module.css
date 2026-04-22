@@ -518,7 +518,7 @@
 .marquee {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1px;
   white-space: nowrap;
   animation: slideDownIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -745,6 +745,11 @@
   color: #666;
 }
 
+.drawerLogo img {
+  height: 36px;
+  width: auto;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -770,7 +775,9 @@
    ===================== */
 @media (max-width: 1024px) {
   .mainHeader {
-    grid-template-columns: auto 1fr auto;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
   }
   .navLinks {
     gap: 30px;
@@ -801,12 +808,6 @@
 
   .logo img {
     height: 40px;
-  }
-  .logoImg {
-    display: none;
-  }
-  .logoText {
-    display: block;
   }
 
   .digitWrap {
@@ -841,8 +842,8 @@
   }
 
   .logo {
-    grid-column: 3;
-    justify-content: center;
+    grid-column: 2;
+    justify-content: flex-start;
   }
 
   .iconActions {
