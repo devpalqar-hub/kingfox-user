@@ -85,10 +85,6 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.card:hover {
-  transform: scale(1.012);
-}
-
 /* ── Gradient Overlay ───────────────────────── */
 .cardGradient {
   position: absolute;
