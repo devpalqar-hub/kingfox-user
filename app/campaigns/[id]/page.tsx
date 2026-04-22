@@ -70,31 +70,31 @@ const getStatusConfig = (status: string) => {
 
 /* ── Routing: resolves where CLAIM NOW should go ── */
 const resolveClaimRoute = (campaign: any): string => {
-  const filterType = campaign.filterType?.toUpperCase();
+  // const filterType = campaign.filterType?.toUpperCase();
 
-  if (filterType === "CATEGORY") {
-    const cat = campaign.categories?.[0];
-    return cat ? `/products?categoryId=${cat.id}` : "/products";
-  }
+  // if (filterType === "CATEGORY") {
+  //   const cat = campaign.categories?.[0];
+  //   return cat ? `/products?categoryId=${cat.id}` : "/products";
+  // }
 
-  if (filterType === "TAG") {
-    const tag = campaign.tags?.[0];
-    if (!tag) return "/products";
-    const tagName = (tag.name ?? "").toUpperCase().trim();
-    if (tagName === "NEW ARRIVALS") return "/new-arrivals";
-    // BEST SELLER, HOT SALE, LIMITED EDITION, etc.
-    return `/products?tag=${encodeURIComponent(tag.name)}`;
-  }
+  // if (filterType === "TAG") {
+  //   const tag = campaign.tags?.[0];
+  //   if (!tag) return "/products";
+  //   const tagName = (tag.name ?? "").toUpperCase().trim();
+  //   if (tagName === "NEW ARRIVALS") return "/new-arrivals";
+  //   // BEST SELLER, HOT SALE, LIMITED EDITION, etc.
+  //   return `/products?tag=${encodeURIComponent(tag.name)}`;
+  // }
 
-  if (filterType === "PRODUCT") {
-    const product = campaign.products?.[0];
-    if (product) {
-      // prefer slug, fall back to id
-      const identifier = product.slug ?? product.id;
-      return `/products/${identifier}`;
-    }
-    return "/products";
-  }
+  // if (filterType === "PRODUCT") {
+  //   const product = campaign.products?.[0];
+  //   if (product) {
+  //     // prefer slug, fall back to id
+  //     const identifier = product.slug ?? product.id;
+  //     return `/products/${identifier}`;
+  //   }
+  //   return "/products";
+  // }
 
   return "/products";
 };
@@ -182,12 +182,12 @@ export default function CampaignPage() {
   return (
     <div className={styles.wrapper}>
       {/* ── Hero ── */}
-      <header
-        className={styles.hero}
-        style={{
-          background: `url(${campaign.image}) center/cover no-repeat`,
-        }}
-      >
+      <header className={styles.hero}>
+        <img
+          src={campaign.image}
+          alt={campaign.name}
+          className={styles.heroImage}
+        />
         <div className={styles.heroOverlay}>
           <div className={styles.heroContent}>
             <div className={styles.heroBadgeRow}>
