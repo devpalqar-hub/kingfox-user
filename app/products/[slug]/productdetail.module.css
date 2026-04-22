@@ -106,9 +106,25 @@
   margin-bottom: 25px;
 }
 
+.priceWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Selling price */
 .price {
   font-size: 28px;
   font-weight: 800;
+  color: #000;
+}
+
+/* Strike price */
+.strikePrice {
+  font-size: 16px;
+  color: #888;
+  text-decoration: line-through;
+  font-weight: 500;
 }
 
 .divider {
@@ -1137,8 +1153,12 @@
   font-size:30px;
 }
 
-.price{
-  font-size:24px;
+.price {
+  font-size: 24px;
+}
+
+.strikePrice {
+  font-size: 14px;
 }
 
 .sizeGrid{
@@ -1495,8 +1515,12 @@
   font-size:22px;
 }
 
-.price{
-  font-size:20px;
+.price {
+  font-size: 20px;
+}
+
+.strikePrice {
+  font-size: 13px;
 }
 
 .description{

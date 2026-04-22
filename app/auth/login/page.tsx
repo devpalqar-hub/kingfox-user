@@ -2,7 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import styles from "./login.module.css";
-import { sendOtp, verifyOtp } from "@/services/auth.service";
+import { completeProfile, sendOtp, verifyOtp } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import Link from "next/link";
@@ -18,6 +18,8 @@ type Props = {
   prefillEmail?: string;
 };
 
+type Step = "phone" | "otp" | "register";
+
 export default function LoginModal({
   isOpen,
   onClose,
@@ -30,8 +32,11 @@ export default function LoginModal({
   const [phone, setPhone] = useState<string | undefined>("");
   const [defaultCountry, setDefaultCountry] = useState<any>("IN");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [step, setStep] = useState<"phone" | "otp" | "register">("phone");
+  const [tempToken, setTempToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const pathname = usePathname();
 
   useEffect(() => {
@@ -107,9 +112,10 @@ export default function LoginModal({
 
         onClose();
       } else if (res.isNew) {
-        showToast("Account not found. Continue signup ", "info", 3000);
+        setTempToken(res.access_token); // store token
+        setStep("register");
 
-        router.push(`/auth/register?email=${phone}&token=${res.access_token}`);
+        showToast("Complete your profile", "info", 3000);
       } else {
         const user = {
           id: 1,
@@ -131,6 +137,35 @@ export default function LoginModal({
       setLoading(false);
     }
   };
+
+
+  const handleCompleteProfile = async () => {
+  try {
+    setLoading(true);
+
+    await completeProfile(tempToken, { name, email });
+
+    const user = {
+      id: 1,
+      name,
+      email,
+      role: "customer",
+    };
+
+    login(tempToken, user);
+
+    showToast("Profile completed successfully", "success");
+
+    onClose();
+  } catch (err) {
+    showToast("Failed to complete profile", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return (
     <div className={styles.overlay}>
@@ -194,6 +229,36 @@ export default function LoginModal({
               disabled={loading}
             >
               {loading ? "Verifying..." : "VERIFY OTP"}
+            </button>
+          </>
+        )}
+
+        {step === "register" && (
+          <>
+            <p className={styles.subtitle}>Complete your profile</p>
+
+            <input
+              type="text"
+              placeholder="Enter your name"
+              className={styles.phoneInput}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className={styles.phoneInput}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <button
+              className={styles.otpButton}
+              onClick={handleCompleteProfile}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "CONTINUE"}
             </button>
           </>
         )}

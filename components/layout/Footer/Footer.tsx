@@ -4,6 +4,7 @@ import Link from "next/link";
 import styles from "./Footer.module.css";
 import { useEffect } from "react";
 import { getAllCategories } from "@/services/category.service";
+import { LuFacebook, LuInstagram } from "react-icons/lu";
 
 const Footer = () => {
 
@@ -61,6 +62,23 @@ useEffect(() => {
                   </a>
                 <p style={{marginTop:'20px'}}>+91 8129 8822 45</p>
                 <p style={{textTransform:'lowercase'}}>kingfoxclothingstore@gmail.com</p>
+                <div className={styles.socialRow}>
+                  <a
+                    href="https://www.instagram.com/kingfoxclothingstore/"
+                    target="_blank"
+                    className={styles.socialIcon}
+                  >
+                    <LuInstagram/>
+                  </a>
+
+                  <a
+                    href="https://www.facebook.com/thekingfoxclothing"
+                    target="_blank"
+                    className={styles.socialIcon}
+                  >
+                    <LuFacebook/>
+                  </a>
+                </div>
               </div>
             </div>
           </div>

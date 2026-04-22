@@ -1,0 +1,126 @@
+/* =========================
+   SHIMMER ANIMATION
+========================= */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+/* =========================
+   BASE SKELETON STYLE
+========================= */
+.skeletonImage,
+.skeletonText,
+.skeletonPrice,
+.skeletonDot {
+  background: linear-gradient(
+    90deg,
+    #eeeeee 25%,
+    #dddddd 37%,
+    #eeeeee 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.3s ease infinite;
+}
+
+/* =========================
+   CARD STRUCTURE (MATCH REAL)
+========================= */
+.cardContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* IMAGE */
+.imageWrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  aspect-ratio: 3 / 4;
+}
+
+.skeletonImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+}
+
+/* =========================
+   DETAILS
+========================= */
+.details {
+  padding: 10px 0;
+}
+
+/* NAME + PRICE ROW */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* NAME */
+.skeletonText {
+  width: 65%;
+  height: 14px;
+  border-radius: 6px;
+}
+
+/* PRICE */
+.skeletonPrice {
+  width: 50px;
+  height: 14px;
+  border-radius: 6px;
+}
+
+/* =========================
+   COLOR DOTS (MATCH UI)
+========================= */
+.colorOptions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.skeletonDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* =========================
+   RESPONSIVE (IMPORTANT)
+========================= */
+@media (max-width: 768px) {
+  .skeletonText {
+    height: 12px;
+  }
+
+  .skeletonPrice {
+    width: 40px;
+    height: 12px;
+  }
+
+  .skeletonDot {
+    width: 9px;
+    height: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .skeletonText {
+    height: 11px;
+  }
+
+  .skeletonPrice {
+    width: 35px;
+    height: 11px;
+  }
+}

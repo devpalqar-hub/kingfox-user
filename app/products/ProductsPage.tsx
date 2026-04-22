@@ -14,6 +14,8 @@ import {
   removeFromWishlist,
 } from "@/services/wishlist.service";
 import { useToast } from "@/context/ToastContext";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton/ProductCardSkeleton";
+import { getAllCategories } from "@/services/category.service";
 const ProductsPage = () => {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
@@ -42,8 +44,20 @@ const ProductsPage = () => {
   const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // ✅ CORRECT PLACE (top level)
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCategories();
+        setAvailableCategories(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   useEffect(() => {
     const fetchWishlist = async () => {
       const token = localStorage.getItem("token");
@@ -136,23 +150,22 @@ const ProductsPage = () => {
 
     const loadProducts = async () => {
       try {
-        const appliedMinPrice = minPrice > 0 ? minPrice : undefined;
-        const appliedMaxPrice = maxPrice < 5000 ? maxPrice : undefined;
+        setLoading(true);
 
         const data = await getProducts({
           page,
           limit: 8,
           size: size || undefined,
           color: color || undefined,
-          minPrice: appliedMinPrice,
-          maxPrice: appliedMaxPrice,
+          minPrice: minPrice > 0 ? minPrice : undefined,
+          maxPrice: maxPrice < 5000 ? maxPrice : undefined,
           categoryId: categoryId || undefined,
           tags: tag ? [tag] : undefined,
           sortBy: sortBy || undefined,
         });
 
         if (page === 1) {
-          setProducts(data.items); // replace
+          setProducts(data.items);
         } else {
           setProducts((prev) => {
             const newItems = data.items.filter(
@@ -161,26 +174,22 @@ const ProductsPage = () => {
             return [...prev, ...newItems];
           });
         }
+
         setTotalProducts(data.pagination.total);
 
-        // ---------- Extract filters from API ----------
-
         const sizesSet = new Set<string>();
-        const categoryMap = new Map<number, string>();
 
         data.items.forEach((product) => {
           product.sizes?.forEach((s) => sizesSet.add(s));
 
-          if (product.category) {
-            categoryMap.set(product.category.id, product.category.name);
-          }
         });
+
         setAvailableSizes(Array.from(sizesSet));
-        setAvailableCategories(
-          Array.from(categoryMap, ([id, name]) => ({ id, name })),
-        );
+
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
     loadProducts();
@@ -307,7 +316,7 @@ const ProductsPage = () => {
                     }`}
                     onClick={() => {
                       setSize((prev) => (prev === s ? null : s));
-                      setColor(null); // ✅ IMPORTANT (reset color when size changes)
+                      setColor(null);
                       setPage(1);
                     }}
                   >
@@ -321,19 +330,23 @@ const ProductsPage = () => {
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>COLOR</p>
 
-              <div className={styles.colorRow}>
+              <div className={styles.colorGrid}>
                 {availableColors.map((c) => (
-                  <span
+                  <div
                     key={c}
-                    className={`${styles.colorCircle} ${
-                      color === c ? styles.activeColor : ""
+                    className={`${styles.colorItem} ${
+                      color === c ? styles.colorActive : ""
                     }`}
-                    style={{ backgroundColor: c.toLowerCase() }}
                     onClick={() => {
                       setColor((prev) => (prev === c ? null : c));
                       setPage(1);
                     }}
-                  />
+                  >
+                    <span
+                      className={styles.colorInner}
+                      style={{ backgroundColor: c.toLowerCase() }}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -400,20 +413,35 @@ const ProductsPage = () => {
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>CATEGORY</p>
 
-              {availableCategories.map((cat) => (
+              <div className={styles.categoryGrid}>
+                {/* ALL */}
                 <div
-                  key={cat.id}
-                  className={`${styles.fitOption} ${
-                    categoryId === cat.id ? styles.fitOptionActive : ""
+                  className={`${styles.categoryPill} ${
+                    categoryId === null ? styles.categoryActive : ""
                   }`}
                   onClick={() => {
-                    setCategoryId((prev) => (prev === cat.id ? null : cat.id));
+                    setCategoryId(null);
                     setPage(1);
                   }}
                 >
-                  {cat.name}
+                  All
                 </div>
-              ))}
+
+                {availableCategories.map((cat) => (
+                  <div
+                    key={cat.id}
+                    className={`${styles.categoryPill} ${
+                      categoryId === cat.id ? styles.categoryActive : ""
+                    }`}
+                    onClick={() => {
+                      setCategoryId((prev) => (prev === cat.id ? null : cat.id));
+                      setPage(1);
+                    }}
+                  >
+                    {cat.name}
+                  </div>
+                ))}
+              </div>
             </div>
             <button className={styles.clearBtn} onClick={handleClearFilters}>
               CLEAR FILTERS
@@ -424,9 +452,17 @@ const ProductsPage = () => {
         {/* PRODUCT AREA */}
         <main className={styles.mainContent}>
           <div className={styles.productGrid}>
-            {products.length === 0 ? (
-              <div className={styles.noProductsMsg}>No products to display</div>
-            ) : (
+            {loading ? (
+                Array.from({ length: 8 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))
+              ) : products.length === 0 ? (
+                <div className={styles.noProductsWrapper}>
+                  <div className={styles.noProductsIcon}>🛍️</div>
+                  <h3>No products found</h3>
+                  <p>Try adjusting filters or explore new arrivals</p>
+                </div>
+              ) : (
               products.map((product) => (
                 <ProductCard
                   key={product.id}

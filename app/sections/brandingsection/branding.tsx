@@ -10,7 +10,7 @@ const Branding = () => {
           FOLLOW <span className={styles.handle}>@KINGFOXCLOTHINGSTORE</span> ON INSTAGRAM FOR FRESH DROPS, OVERSIZED FITS, AND STREETWEAR INSPO.
         </p>
         <p className={styles.linkText}>
-          FIND MORE LOOKS ON <a href="https://instagram.com/kingfoxclothingstore" target="_blank" rel="noopener noreferrer" className={styles.link}>OUR INSTAGRAM.</a>
+          FIND MORE LOOKS ON <a href="https://www.instagram.com/kingfoxclothingstore/" target="_blank" rel="noopener noreferrer" className={styles.link}>OUR INSTAGRAM.</a>
         </p>
       </div>
     </section>
