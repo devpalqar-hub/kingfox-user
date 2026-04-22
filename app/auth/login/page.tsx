@@ -95,7 +95,7 @@ export default function LoginModal({
         showToast("Invalid phone number", "error");
         return;
       }
-      
+
       const res = await verifyOtp(phone, otp);
 
       if (res.user) {
@@ -138,34 +138,30 @@ export default function LoginModal({
     }
   };
 
-
   const handleCompleteProfile = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    await completeProfile(tempToken, { name, email });
+      await completeProfile(tempToken, { name, email });
 
-    const user = {
-      id: 1,
-      name,
-      email,
-      role: "customer",
-    };
+      const user = {
+        id: 1,
+        name,
+        email,
+        role: "customer",
+      };
 
-    login(tempToken, user);
+      login(tempToken, user);
 
-    showToast("Profile completed successfully", "success");
+      showToast("Profile completed successfully", "success");
 
-    onClose();
-  } catch (err) {
-    showToast("Failed to complete profile", "error");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
+      onClose();
+    } catch (err) {
+      showToast("Failed to complete profile", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.overlay}>
@@ -174,10 +170,9 @@ export default function LoginModal({
           ✕
         </button>
 
-        <h1 className={styles.logo}>
-          KING <br /> FOX
-        </h1>
-
+        <div className={styles.logoWrapper}>
+          <img src="/logo.png" alt="KingFox Logo" className={styles.logoImg} />
+        </div>
         <div className={styles.line}></div>
 
         <h2 className={styles.title}>VERIFICATION</h2>
