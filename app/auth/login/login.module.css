@@ -11,7 +11,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,13 +25,13 @@
 .card {
   width: 420px;
   text-align: center;
-  background: rgba(255,255,255,0.95);
+  background: rgba(255, 255, 255, 0.95);
   padding: 48px 42px;
   border-radius: 16px;
   position: relative;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
   animation: modalOpen 0.4s ease;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Animations */
@@ -48,8 +48,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0 }
-  to { opacity: 1 }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Close button */
@@ -129,7 +133,7 @@
 /* Country code */
 /* Input */
 .phoneInput {
-  width: 100%;   /* ✅ ADD THIS */
+  width: 100%; /* ✅ ADD THIS */
   border: 2px solid #111;
   margin-bottom: 16px;
   padding: 12px;
@@ -141,9 +145,39 @@
   color: black;
 }
 
+.phoneWrapper {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.phoneInput {
+  width: 100%;
+}
+
+.phoneInput input {
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: white;
+}
+
+.PhoneInputCountry {
+  margin-right: 10px;
+}
+
 .phoneInput:focus {
   border-color: #ff6a00;
-  box-shadow: 0 0 0 3px rgba(255,106,0,0.15);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.15);
 }
 
 .phoneInput::placeholder {
@@ -170,7 +204,7 @@
 .otpButton:hover {
   background: linear-gradient(90deg, #ffcc00, #ffb800);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* Terms */
