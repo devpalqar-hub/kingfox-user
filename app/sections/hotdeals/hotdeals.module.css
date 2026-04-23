@@ -30,7 +30,7 @@
 /* VIEW ALL BUTTON */
 .viewAllWrapper {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 30px;
 }
 .viewAll {
@@ -48,11 +48,46 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 10px;
 }
 
+.grid::-webkit-scrollbar {
+  display: none;
+}
+.cardWrapper {
+  width: 280px; /* 🔥 same size as before */
+  flex-shrink: 0;
+}
+.navButtons {
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 10px;
+}
+
+.navButtons button {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+@media (max-width: 1024px) {
+  .cardWrapper {
+    width: 220px;
+  }
+}
+
+@media (max-width: 460px) {
+  .cardWrapper {
+    width: 180px;
+  }
+}
 /* ===================== */
 /* TABLET */
 /* ===================== */

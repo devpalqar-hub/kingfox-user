@@ -57,7 +57,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-
   // reviews
   const [reviewData, setReviewData] = useState<{
     rating: number;
@@ -175,14 +174,11 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     return () => clearInterval(interval);
   }, [isHovered]);
 
-
-
   useEffect(() => {
     if (product?.metaInfo?.length) {
       setActiveTab(product.metaInfo[0].title);
     }
   }, [product]);
-
 
   // useEffect(() => {
   //   if (product) {
@@ -219,9 +215,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         return {
           ...prev,
           variants: prev.variants.map((v) =>
-            v.id === selectedVariant.id
-              ? { ...v, isWishlisted: newState }
-              : v
+            v.id === selectedVariant.id ? { ...v, isWishlisted: newState } : v,
           ),
         };
       });
@@ -237,9 +231,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const colors = [
     ...new Set(
       product?.variants
-        ?.filter((v) =>
-          selectedSize ? v.size === selectedSize : true
-        )
+        ?.filter((v) => (selectedSize ? v.size === selectedSize : true))
         .map((v) => v.color) || [],
     ),
   ];
@@ -252,12 +244,18 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   }, [product, selectedColor, selectedSize]);
 
   // Mock images - replace with your actual paths
-  const productImages = selectedVariant?.image
-    ? [selectedVariant.image]
-    : product?.images || [];
+  const productImages = useMemo(() => {
+    return selectedVariant?.images?.length
+      ? selectedVariant.images
+      : selectedVariant?.image
+        ? [selectedVariant.image]
+        : product?.images || [];
+  }, [selectedVariant, product]);
   const [activeImg, setActiveImg] = useState<string | null>(null);
   useEffect(() => {
-    if (selectedVariant?.image) {
+    if (selectedVariant?.images?.length) {
+      setActiveImg(selectedVariant.images[0]);
+    } else if (selectedVariant?.image) {
       setActiveImg(selectedVariant.image);
     } else if (product?.images?.length) {
       setActiveImg(product.images[0]);
@@ -310,58 +308,56 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
   };
 
-const handleBuyNow = async () => {
-  if (!product || !selectedVariant) {
-    showToast("Please select size & color", "error");
-    return;
-  }
-
-  if (selectedVariant.totalStock === 0) {
-    showToast("Out of stock", "error");
-    return;
-  }
-
-  try {
-    if (token) {
-      await addToCartAPI(selectedVariant.id, 1);
-    } else {
-      addToGuestCart({
-        variantId: selectedVariant.id,
-        sku: selectedVariant.sku,
-        size: selectedVariant.size,
-        color: selectedVariant.color,
-        productName: product.name,
-        productImage:
-          selectedVariant.image ||
-          product.images[0] ||
-          "/placeholder-product.png",
-        price: Number(selectedVariant.sellingPrice),
-        quantity: 1,
-        availableStock: selectedVariant.totalStock ?? 0,
-      });
+  const handleBuyNow = async () => {
+    if (!product || !selectedVariant) {
+      showToast("Please select size & color", "error");
+      return;
     }
 
-    setProduct((prev) => {
-      if (!prev) return prev;
+    if (selectedVariant.totalStock === 0) {
+      showToast("Out of stock", "error");
+      return;
+    }
 
-      return {
-        ...prev,
-        variants: prev.variants.map((v) =>
-          v.id === selectedVariant.id
-            ? { ...v, isAddedInCart: true }
-            : v
-        ),
-      };
-    });
+    try {
+      if (token) {
+        await addToCartAPI(selectedVariant.id, 1);
+      } else {
+        addToGuestCart({
+          variantId: selectedVariant.id,
+          sku: selectedVariant.sku,
+          size: selectedVariant.size,
+          color: selectedVariant.color,
+          productName: product.name,
+          productImage:
+            selectedVariant.image ||
+            product.images[0] ||
+            "/placeholder-product.png",
+          price: Number(selectedVariant.sellingPrice),
+          quantity: 1,
+          availableStock: selectedVariant.totalStock ?? 0,
+        });
+      }
 
-    window.dispatchEvent(new Event("cartUpdated"));
+      setProduct((prev) => {
+        if (!prev) return prev;
 
-    router.push("/cart");
-  } catch (err) {
-    console.error(err);
-    showToast("Something went wrong", "error");
-  }
-};
+        return {
+          ...prev,
+          variants: prev.variants.map((v) =>
+            v.id === selectedVariant.id ? { ...v, isAddedInCart: true } : v,
+          ),
+        };
+      });
+
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      router.push("/cart");
+    } catch (err) {
+      console.error(err);
+      showToast("Something went wrong", "error");
+    }
+  };
 
   // Token expiry effect
   useEffect(() => {
@@ -377,9 +373,7 @@ const handleBuyNow = async () => {
   const priceRange = useMemo(() => {
     if (!product?.variants?.length) return null;
 
-    const prices = product.variants.map((v) =>
-      Number(v.sellingPrice)
-    );
+    const prices = product.variants.map((v) => Number(v.sellingPrice));
 
     const min = Math.min(...prices);
     const max = Math.max(...prices);
@@ -413,7 +407,11 @@ const handleBuyNow = async () => {
             <img src={activeImg || productImages[0]} alt={product.name} />
 
             {/* ❤️ Wishlist */}
-            <button className={styles.wishlistBtn} onClick={handleWishlist} disabled={wishlistLoading}>
+            <button
+              className={styles.wishlistBtn}
+              onClick={handleWishlist}
+              disabled={wishlistLoading}
+            >
               {isWishlisted ? (
                 <FaHeart size={20} color="black" /> // ❤️ BLACK
               ) : (
@@ -495,12 +493,12 @@ const handleBuyNow = async () => {
                     const colorExists = product?.variants.some(
                       (v) =>
                         v.size === size &&
-                        v.color?.toLowerCase() === selectedColor?.toLowerCase()
+                        v.color?.toLowerCase() === selectedColor?.toLowerCase(),
                     );
 
                     if (!colorExists) {
                       const firstVariant = product?.variants.find(
-                        (v) => v.size === size
+                        (v) => v.size === size,
                       );
                       setSelectedColor(firstVariant?.color || null);
                     }
@@ -508,10 +506,12 @@ const handleBuyNow = async () => {
                     const variant = product?.variants.find(
                       (v) =>
                         v.size === size &&
-                        v.color?.toLowerCase() === selectedColor?.toLowerCase()
+                        v.color?.toLowerCase() === selectedColor?.toLowerCase(),
                     );
 
-                    if (variant?.image) {
+                    if (variant?.images?.length) {
+                      setActiveImg(variant.images[0]);
+                    } else if (variant?.image) {
                       setActiveImg(variant.image);
                     }
                   }}
@@ -543,11 +543,13 @@ const handleBuyNow = async () => {
                       selectedSize
                         ? v.color.toLowerCase() === color.toLowerCase() &&
                           v.size === selectedSize
-                        : v.color.toLowerCase() === color.toLowerCase()
+                        : v.color.toLowerCase() === color.toLowerCase(),
                     );
 
-                    if (variant?.image) {
-                      setActiveImg(variant.image);
+                    if (variant?.images?.length) {
+                      setActiveImg(variant.images[0]);
+                    } else if (variant?.image) {
+                      setActiveImg(variant.image); // fallback
                     }
                   }}
                   className={`${styles.colorItem} ${

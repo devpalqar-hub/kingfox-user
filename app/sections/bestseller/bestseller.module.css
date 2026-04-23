@@ -19,10 +19,10 @@
   font-family: var(--font-space);
 }
 /* VIEW ALL BUTTON */
-.viewAllWrapper{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:30px;
+.viewAllWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
 }
 .viewAll {
   position: absolute;
@@ -39,9 +39,50 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 10px;
+}
+
+.grid::-webkit-scrollbar {
+  display: none;
+}
+
+.cardWrapper {
+  width: 280px; /* 🔥 fixed size like old cards */
+  flex-shrink: 0;
+}
+
+.navButtons {
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 10px;
+}
+
+.navButtons button {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+@media (max-width: 1024px) {
+  .cardWrapper {
+    min-width: calc(50% - 10px); /* 2 cards */
+  }
+}
+
+@media (max-width: 460px) {
+  @media (max-width: 460px) {
+    .cardWrapper {
+      width: 180px;
+    }
+  }
 }
 
 /* ===================== */
@@ -49,26 +90,20 @@
 /* ===================== */
 
 @media (max-width: 1024px) {
-
   .title {
     font-size: 36px;
   }
 
-  .grid{
-grid-template-columns:repeat(2,1fr);
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
-
-}
-
-
-
 
 /* ===================== */
 /* SMALL TABLET */
 /* ===================== */
 
 @media (max-width: 720px) {
-
   .header {
     flex-direction: column;
     gap: 20px;
@@ -87,7 +122,6 @@ grid-template-columns:repeat(2,1fr);
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
-
 }
 
 /* ===================== */
@@ -95,28 +129,26 @@ grid-template-columns:repeat(2,1fr);
 /* ===================== */
 
 @media (max-width: 460px) {
-
   .section {
     padding: 40px 16px;
   }
 
   .title {
     font-size: 22px;
-    padding:12px 22px;
+    padding: 12px 22px;
   }
 
   .grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
-  .viewAllWrapper{
-margin-top:25px;
-}
+  .viewAllWrapper {
+    margin-top: 25px;
+  }
 
-.viewAll{
-font-size:12px;
-padding:10px 20px;
-border-radius:10px;
-}
-
+  .viewAll {
+    font-size: 12px;
+    padding: 10px 20px;
+    border-radius: 10px;
+  }
 }
