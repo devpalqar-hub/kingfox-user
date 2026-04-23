@@ -148,6 +148,7 @@ export default function Banners() {
                   src={banner.mediaUrl}
                   autoPlay={isActive}
                   muted
+                  loop
                   playsInline
                   preload="metadata"
                   aria-label={banner.title}
