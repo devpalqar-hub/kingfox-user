@@ -10,6 +10,13 @@ import { ConfirmProvider } from "@/context/ConfirmContext";
 import BottomNav from "@/components/BottomNav";
 import { Bebas_Neue, Inter } from "next/font/google";
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 const bebas = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
@@ -40,7 +47,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${jakarta.variable} ${space.variable} ${bebas.variable} ${inter.variable}`}>
+      <body
+        className={`${jakarta.variable} ${space.variable} ${bebas.variable} ${inter.variable}`}
+      >
         {/* ✅ FIX: Wrap with AuthProvider */}
 
         <ToastProvider>
@@ -49,8 +58,7 @@ export default function RootLayout({
               <Header />
               {children}
               <Footer />
-              <BottomNav 
-              />
+              <BottomNav />
             </AuthProvider>
           </ConfirmProvider>
         </ToastProvider>
