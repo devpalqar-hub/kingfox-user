@@ -70,32 +70,6 @@ const getStatusConfig = (status: string) => {
 
 /* ── Routing: resolves where CLAIM NOW should go ── */
 const resolveClaimRoute = (campaign: any): string => {
-  // const filterType = campaign.filterType?.toUpperCase();
-
-  // if (filterType === "CATEGORY") {
-  //   const cat = campaign.categories?.[0];
-  //   return cat ? `/products?categoryId=${cat.id}` : "/products";
-  // }
-
-  // if (filterType === "TAG") {
-  //   const tag = campaign.tags?.[0];
-  //   if (!tag) return "/products";
-  //   const tagName = (tag.name ?? "").toUpperCase().trim();
-  //   if (tagName === "NEW ARRIVALS") return "/new-arrivals";
-  //   // BEST SELLER, HOT SALE, LIMITED EDITION, etc.
-  //   return `/products?tag=${encodeURIComponent(tag.name)}`;
-  // }
-
-  // if (filterType === "PRODUCT") {
-  //   const product = campaign.products?.[0];
-  //   if (product) {
-  //     // prefer slug, fall back to id
-  //     const identifier = product.slug ?? product.id;
-  //     return `/products/${identifier}`;
-  //   }
-  //   return "/products";
-  // }
-
   return "/products";
 };
 
@@ -155,6 +129,7 @@ export default function CampaignPage() {
       <div className={styles.wrapper}>
         <div className={styles.heroSkeleton} />
         <main className={styles.container}>
+          <div className={styles.pageHeaderSkeleton} />
           <div className={styles.skeletonGrid}>
             <div className={styles.skeletonBlock} style={{ height: 240 }} />
             <div className={styles.skeletonBlock} style={{ height: 240 }} />
@@ -181,48 +156,49 @@ export default function CampaignPage() {
 
   return (
     <div className={styles.wrapper}>
-      {/* ── Hero ── */}
+      {/* ── Hero — image only, no text overlay ── */}
       <header className={styles.hero}>
         <img
           src={campaign.image}
           alt={campaign.name}
           className={styles.heroImage}
         />
-        <div className={styles.heroOverlay}>
-          <div className={styles.heroContent}>
-            <div className={styles.heroBadgeRow}>
-              <span className={styles.tag}>LUCKY DRAW CAMPAIGN 2026</span>
-              <span className={`${styles.statusPill} ${statusCfg.cls}`}>
-                {statusCfg.icon}
-                {statusCfg.label}
-              </span>
-            </div>
-
-            <h1 className={styles.mainTitle}>{campaign.name?.toUpperCase()}</h1>
-
-            <div className={styles.metaRow}>
-              <div className={styles.metaItem}>
-                <Ticket size={16} className={styles.icon} />
-                LIMIT: {campaign.totalVouchersLimit} VOUCHERS
-              </div>
-              <div className={styles.metaItem}>
-                <Calendar size={16} className={styles.icon} />
-                {formatDateShort(campaign.startDate)} —{" "}
-                {formatDateShort(campaign.endDate)}
-              </div>
-              {campaign.priority && (
-                <div className={styles.metaItem}>
-                  <AlertCircle size={16} className={styles.icon} />
-                  PRIORITY {campaign.priority}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </header>
 
       {/* ── Main Content ── */}
       <main className={styles.container}>
+        {/* ── Page Header (moved out of hero) ── */}
+        <div className={styles.pageHeader}>
+          <div className={styles.pageHeaderTop}>
+            <span className={styles.tag}>LUCKY DRAW CAMPAIGN 2026</span>
+            <span className={`${styles.statusPill} ${statusCfg.cls}`}>
+              {statusCfg.icon}
+              {statusCfg.label}
+            </span>
+          </div>
+
+          <h1 className={styles.mainTitle}>{campaign.name?.toUpperCase()}</h1>
+
+          <div className={styles.metaRow}>
+            <div className={styles.metaItem}>
+              <Ticket size={15} className={styles.icon} />
+              LIMIT: {campaign.totalVouchersLimit} VOUCHERS
+            </div>
+            <div className={styles.metaItem}>
+              <Calendar size={15} className={styles.icon} />
+              {formatDateShort(campaign.startDate)} —{" "}
+              {formatDateShort(campaign.endDate)}
+            </div>
+            {campaign.priority && (
+              <div className={styles.metaItem}>
+                <AlertCircle size={15} className={styles.icon} />
+                PRIORITY {campaign.priority}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Content Grid ── */}
         <div className={styles.contentGrid}>
           {/* ── Left Column ── */}
           <section className={styles.missionCard}>

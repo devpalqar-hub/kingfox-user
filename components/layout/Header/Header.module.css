@@ -73,7 +73,6 @@
   display: flex;
   justify-content: flex-start;
 }
-
 .logo img {
   height: 50px;
   width: auto;
@@ -279,7 +278,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 22px 16px;
+  padding: 16px 16px 12px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -319,6 +318,27 @@
   padding: 8px 0;
 }
 
+.drawerLogoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.drawerLogoWrapper img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.drawerLogoText {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-family: var(--font-space);
+  display: block;
+  white-space: nowrap;
+}
 .drawerNavItem {
   display: flex;
   align-items: center;
@@ -832,7 +852,6 @@
     gap: 15px;
   }
 
-  /* Hide LOGIN button in icon bar on mobile — it's in the drawer */
   .loginBtn {
     display: none;
   }

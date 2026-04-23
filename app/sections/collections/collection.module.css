@@ -1,185 +1,234 @@
 /* ─────────────────────────────────────────
-   COLLECTIONS — Luxury Refined
-   Cormorant Garamond × Jost
+   COLLECTIONS — Editorial Dark Grid
+   Bebas Neue × Jost
    ───────────────────────────────────────── */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Jost:wght@300;400;500;600;700&display=swap");
 
-/* ── CSS TOKENS ──────────────────────────── */
+/* ── TOKENS ──────────────────────────────── */
 :root {
-  --col-black: #0c0c0c;
-  --col-card: #161616;
-  --col-white: #ffffff;
-  --col-offwhite: #f5f3ef;
-  --col-gold: #b8975a;
-  --col-gold-lt: #d4b07a;
-  --radius-container: 48px;
-  --radius-card: 22px;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Tab dimensions — single source of truth */
-  --tab-top-h: 78px; /* header tab height */
-  --tab-bot-h: 66px; /* footer tab height */
-  --container-px: 40px; /* horizontal padding */
+  --c-bg: #e9e8e3;
+  --c-black: #111111;
+  --c-white: #ffffff;
+  --c-card-bg: #1c1c1c;
+  --c-label-bg: rgba(255, 255, 255, 0.92);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --radius: 18px;
+  --gap: 14px;
+  --row-h: 264px;
+  --grid-h: calc(var(--row-h) * 2 + var(--gap));
 }
 
 /* ── WRAPPER ─────────────────────────────── */
 .wrapper {
-  padding: 80px 20px;
-  background-color: var(--col-offwhite);
+  padding: 72px 40px 80px;
+  background-color: var(--c-bg);
+  /* Subtle noise grain — matches the concrete feel in the image */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
-/* ── BLACK CONTAINER ─────────────────────── */
-.blackContainer {
-  background-color: var(--col-black);
-  border-radius: var(--radius-container);
-  /* 
-    Top: enough room for the abs-positioned header tab + breathing gap
-    Bottom: enough room for the abs-positioned footer tab + breathing gap
-    Sides: symmetric horizontal padding
-  */
-  padding: calc(var(--tab-top-h) + 28px) var(--container-px)
-    calc(var(--tab-bot-h) + 28px);
-  position: relative;
+/* ── HEADER ──────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
   max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+  margin: 0 auto 36px;
 }
 
-/* Very faint grain — depth without noise */
-.blackContainer::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 0;
+.rule {
+  flex: 1;
+  display: block;
+  height: 1.5px;
+  background: var(--c-black);
+  opacity: 0.85;
+}
+
+.headerText {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(52px, 8vw, 88px);
+  font-weight: 400;
+  letter-spacing: 10px;
+  color: var(--c-black);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  font-family: "Jost", sans-serif;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 3.5px;
+  color: #555;
+  text-transform: uppercase;
 }
 
 /* ── DESKTOP GRID ────────────────────────── */
 .desktopGrid {
+  max-width: 1200px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1.08fr 1fr;
-  grid-template-rows: 252px 252px;
-  gap: 16px;
-  position: relative;
-  z-index: 1;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--gap);
+  height: var(--grid-h);
 }
 
 .mobileGrid {
   display: none;
 }
 
+/* Left / Right column stacks */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  height: 100%;
+}
+
+.col .card {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── CENTER (New Arrival) ────────────────── */
+.newArrivalCard {
+  height: 100%;
+}
+
 /* ── CARD ────────────────────────────────── */
 .card {
   position: relative;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius);
   overflow: hidden;
-  background: var(--col-card);
-  width: 100%;
-  height: 100%;
+  background: var(--c-card-bg);
   cursor: pointer;
+  isolation: isolate;
 
-  outline: 1px solid rgba(255, 255, 255, 0.06);
-  outline-offset: -1px;
-
-  transform: translateY(0px);
-  transition:
-    transform 0.5s var(--ease-out),
-    box-shadow 0.5s var(--ease-out),
-    outline-color 0.4s ease;
+  /* Entrance animation */
+  opacity: 0;
+  transform: translateY(20px);
+  animation: cardIn 0.6s var(--ease) forwards;
 }
 
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow:
-    0 24px 56px rgba(0, 0, 0, 0.65),
-    0 6px 14px rgba(0, 0, 0, 0.35);
-  outline-color: rgba(255, 255, 255, 0.14);
-  z-index: 5;
+/* Staggered card reveals */
+.col:nth-child(1) .card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.col:nth-child(1) .card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.newArrivalCard {
+  animation-delay: 0.1s;
+}
+.col:nth-child(3) .card:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.col:nth-child(3) .card:nth-child(2) {
+  animation-delay: 0.3s;
 }
 
-/* ── NEW ARRIVAL CARD ────────────────────── */
-.newArrival {
-  grid-row: span 2;
-  background: linear-gradient(170deg, #0e1d38 0%, #071024 55%, #040c1a 100%);
-  /* Take 82% of the two-row height + gap, centered in the column */
-  height: calc(252px * 2 + 16px);
-  align-self: center;
+@keyframes cardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ── IMAGES ──────────────────────────────── */
+/* ── IMAGE ───────────────────────────────── */
 .img {
-  object-fit: contain;
-  object-position: bottom;
-  transform-origin: bottom center;
-  transition: transform 0.55s var(--ease-out);
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.7s var(--ease);
+  will-change: transform;
 }
 
-.imgHalfSleeve {
-  transform: scale(1.8) translateY(30%);
-}
-.imgNewArrival {
-  transform: scale(1.3) translateY(18%);
-}
-.imgFullSleeve {
-  transform: scale(1.3) translateY(8%);
-  background-color: #fff;
-}
-.imgOversize {
-  transform: scale(1.9) translateY(44%);
-}
-.imgShirts {
-  transform: scale(1.5) translateY(28%);
+.card:hover .img {
+  transform: scale(1.06);
 }
 
-.card:hover .imgHalfSleeve {
-  transform: scale(1.86) translateY(28%);
-}
-.card:hover .imgNewArrival {
-  transform: scale(1.36) translateY(16%);
-}
-.card:hover .imgFullSleeve {
-  transform: scale(1.36) translateY(6%);
-}
-.card:hover .imgOversize {
-  transform: scale(1.96) translateY(42%);
-}
-.card:hover .imgShirts {
-  transform: scale(1.56) translateY(26%);
-}
-
-/* ── LABEL ───────────────────────────────── */
-.label {
+/* ── GRADIENT OVERLAY ────────────────────── */
+.overlay {
   position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 20px 22px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.78) 0%,
+    rgba(0, 0, 0, 0.28) 38%,
+    transparent 68%
+  );
+  z-index: 2;
+  gap: 10px;
+}
 
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+/* ── CARD TITLE ──────────────────────────── */
+.cardTitle {
+  font-family: "Jost", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-white);
+  letter-spacing: 0.4px;
+  line-height: 1.15;
+  text-transform: uppercase;
+  display: block;
+  /* Slide up on hover */
+  transition: transform 0.45s var(--ease);
+}
 
-  padding: 8px 22px;
-  border-radius: 100px;
+.card:hover .cardTitle {
+  transform: translateY(-2px);
+}
 
+/* ── EXPLORE BUTTON ──────────────────────── */
+.exploreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  color: var(--c-white);
   font-family: "Jost", sans-serif;
   font-size: 9.5px;
   font-weight: 500;
-  letter-spacing: 2.4px;
-  color: #111;
-  white-space: nowrap;
-  z-index: 4;
-
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
-  transition: transform 0.4s var(--ease-out);
+  letter-spacing: 2.2px;
+  padding: 7px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  width: fit-content;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.45s var(--ease);
 }
 
-.card:hover .label {
-  transform: translateX(-50%) translateY(-4px);
+.exploreBtn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.card:hover .exploreBtn {
+  transform: translateY(-2px);
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.3s var(--ease);
+}
+
+.card:hover .arrow,
+.viewAllBtn:hover .arrow {
+  transform: translateX(4px);
 }
 
 /* ── "NEW" BADGE ─────────────────────────── */
@@ -188,171 +237,99 @@
   top: 16px;
   right: 16px;
   z-index: 5;
-
-  background: transparent;
-  border: 1px solid var(--col-gold);
-  color: var(--col-gold-lt);
-
+  background: var(--c-black);
+  color: var(--c-white);
   font-family: "Jost", sans-serif;
-  font-size: 9px;
-  font-weight: 500;
+  font-size: 9.5px;
+  font-weight: 600;
   letter-spacing: 2.5px;
-  padding: 5px 13px;
+  padding: 7px 18px;
   border-radius: 100px;
+  /* Subtle pulse */
+  animation: badgePulse 3s ease-in-out infinite;
 }
 
-/* ─────────────────────────────────────────
-   TOP TAB
-   Hangs down from the very top of .blackContainer.
-   Uses absolute positioning — container padding
-   already reserves space so grid never overlaps it.
-   ───────────────────────────────────────── */
-.topTabContainer {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
+@keyframes badgePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0);
+  }
 }
 
-.headerTab {
-  background: var(--col-offwhite);
-  padding: 16px 80px 18px;
-  border-radius: 0 0 36px 36px;
-  position: relative;
+/* ── FOOTER ──────────────────────────────── */
+.footer {
+  max-width: 1200px;
+  margin: 36px auto 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Minimum height matches --tab-top-h token */
-  min-height: var(--tab-top-h);
   justify-content: center;
 }
 
-.headerTab h2 {
-  margin: 0;
-  font-family: "Cormorant Garamond", serif;
-  font-size: 38px;
-  font-weight: 300;
-  letter-spacing: 10px;
-  color: var(--col-black);
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-/* Hairline gold rule under heading */
-.headerTab h2::after {
-  content: "";
-  display: block;
-  height: 1px;
-  width: 60%;
-  margin: 8px auto 0;
-  background: linear-gradient(90deg, transparent, var(--col-gold), transparent);
-}
-
-/* Corner curves — sit flush outside the tab */
-.curveLeft,
-.curveRight {
-  position: absolute;
-  top: 0;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  pointer-events: none;
-}
-.curveLeft {
-  left: -40px;
-  border-top-right-radius: 30px;
-  box-shadow: 15px -15px 0 15px var(--col-offwhite);
-}
-.curveRight {
-  right: -40px;
-  border-top-left-radius: 30px;
-  box-shadow: -15px -15px 0 15px var(--col-offwhite);
-}
-
-/* ─────────────────────────────────────────
-   BOTTOM TAB
-   Rises from the very bottom of .blackContainer.
-   ───────────────────────────────────────── */
-.bottomTabContainer {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-.footerTab {
-  background: var(--col-offwhite);
-  padding: 16px 56px;
-  border-radius: 30px 30px 0 0;
-  position: relative;
-  /* Minimum height matches --tab-bot-h token */
-  min-height: var(--tab-bot-h);
-  display: flex;
+.viewAllBtn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-}
-
-/* CTA — clean pill */
-.viewBtn {
-  background: transparent;
-  color: var(--col-black);
-  border: 1.5px solid var(--col-black);
-  padding: 11px 34px;
+  gap: 14px;
+  background: var(--c-black);
+  color: var(--c-white);
+  border: none;
+  padding: 16px 52px;
   border-radius: 100px;
   font-family: "Jost", sans-serif;
+  font-size: 10.5px;
   font-weight: 500;
-  font-size: 10px;
-  letter-spacing: 2.5px;
+  letter-spacing: 2.8px;
   cursor: pointer;
   transition:
-    background 0.35s ease,
-    color 0.35s ease;
-  white-space: nowrap;
+    background 0.3s ease,
+    transform 0.4s var(--ease),
+    box-shadow 0.4s ease;
 }
 
-.viewBtn:hover {
-  background: var(--col-black);
-  color: var(--col-white);
-}
-
-/* Bottom corner curves */
-.curveLeftBottom,
-.curveRightBottom {
-  position: absolute;
-  bottom: 0;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  pointer-events: none;
-}
-.curveLeftBottom {
-  left: -40px;
-  border-bottom-right-radius: 30px;
-  box-shadow: 15px 15px 0 15px var(--col-offwhite);
-}
-.curveRightBottom {
-  right: -40px;
-  border-bottom-left-radius: 30px;
-  box-shadow: -15px 15px 0 15px var(--col-offwhite);
+.viewAllBtn:hover {
+  background: #2a2a2a;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
 }
 
 /* ─────────────────────────────────────────
-   RESPONSIVE — 800 px and below
+   RESPONSIVE — 900 px
    ───────────────────────────────────────── */
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   :root {
-    --tab-top-h: 68px;
-    --tab-bot-h: 58px;
-    --container-px: 18px;
+    --row-h: 220px;
+  }
+  .title {
+    font-size: 52px;
+    letter-spacing: 7px;
+  }
+  .cardTitle {
+    font-size: 15px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE — 768 px → mobile layout
+   ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 56px 16px 64px;
   }
 
-  .blackContainer {
-    border-radius: 36px;
-    /* Same rule — padding covers both abs tabs */
-    padding: calc(var(--tab-top-h) + 22px) var(--container-px)
-      calc(var(--tab-bot-h) + 22px);
+  .header {
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-size: 42px;
+    letter-spacing: 5px;
+  }
+
+  .subtitle {
+    font-size: 9px;
+    letter-spacing: 2.5px;
   }
 
   .desktopGrid {
@@ -360,142 +337,125 @@
   }
 
   .mobileGrid {
-    display: grid;
-    grid-template-rows: auto auto auto;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-    position: relative;
-    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
   }
 
-  .cardrow {
+  .mobileRow {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
 
-  .card {
-    height: 175px;
-    border-radius: 16px;
+  .mobileRow .card {
+    height: 185px;
+    border-radius: 14px;
   }
 
   .mobileNewArrival {
-    height: 225px;
-    border-radius: 16px;
-    background: linear-gradient(170deg, #0e1d38 0%, #040c1a 100%);
+    height: 240px;
+    border-radius: 14px;
   }
 
-  .label {
+  /* Mobile card stagger */
+  .mobileRow:nth-child(1) .card:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .mobileRow:nth-child(1) .card:nth-child(2) {
+    animation-delay: 0.12s;
+  }
+  .mobileNewArrival {
+    animation-delay: 0.18s;
+  }
+  .mobileRow:nth-child(3) .card:nth-child(1) {
+    animation-delay: 0.24s;
+  }
+  .mobileRow:nth-child(3) .card:nth-child(2) {
+    animation-delay: 0.3s;
+  }
+
+  .cardTitle {
+    font-size: 13px;
+  }
+
+  .exploreBtn {
     font-size: 8.5px;
-    padding: 7px 15px;
+    padding: 6px 12px;
     letter-spacing: 1.8px;
   }
 
-  .headerTab h2 {
-    font-size: 28px;
-    letter-spacing: 7px;
+  .overlay {
+    padding: 14px 14px 16px;
+    gap: 8px;
   }
-  .headerTab {
-    padding: 13px 54px 15px;
+
+  .viewAllBtn {
+    font-size: 9.5px;
+    padding: 14px 36px;
+    letter-spacing: 2.2px;
   }
 }
 
 /* ─────────────────────────────────────────
-   RESPONSIVE — 420 px and below
+   RESPONSIVE — 420 px
    ───────────────────────────────────────── */
 @media (max-width: 420px) {
-  :root {
-    --tab-top-h: 60px;
-    --tab-bot-h: 52px;
+  .title {
+    font-size: 34px;
+    letter-spacing: 4px;
   }
-
-  .card {
-    height: 150px;
+  .mobileRow .card {
+    height: 158px;
   }
   .mobileNewArrival {
-    height: 205px;
+    height: 210px;
   }
-
-  .label {
-    font-size: 8px;
-    padding: 6px 13px;
+  .cardTitle {
+    font-size: 11.5px;
   }
-  .headerTab h2 {
-    font-size: 22px;
-    letter-spacing: 5px;
+  .rule {
+    display: none;
   }
-  .viewBtn {
-    font-size: 9.5px;
-    padding: 10px 24px;
+  .header {
+    justify-content: center;
+  }
+  .headerText {
+    text-align: center;
+    width: 100%;
   }
 }
 
 /* ─────────────────────────────────────────
-   RESPONSIVE — 320 px and below
+   RESPONSIVE — 320 px
    ───────────────────────────────────────── */
 @media (max-width: 320px) {
-  :root {
-    --tab-top-h: 54px;
-    --tab-bot-h: 48px;
-    --container-px: 10px;
-  }
-
   .wrapper {
-    padding: 60px 10px;
+    padding: 44px 10px 52px;
   }
-
-  .blackContainer {
-    border-radius: 28px;
+  .title {
+    font-size: 28px;
+    letter-spacing: 3px;
   }
-
-  .cardrow {
-    gap: 9px;
-  }
-  .card {
+  .mobileRow .card {
     height: 138px;
-    border-radius: 14px;
+    border-radius: 12px;
   }
   .mobileNewArrival {
-    height: 190px;
+    height: 185px;
+    border-radius: 12px;
   }
-
-  .label {
+  .cardTitle {
+    font-size: 10px;
+  }
+  .exploreBtn {
     font-size: 7.5px;
-    padding: 5px 11px;
+    padding: 5px 10px;
   }
-  .headerTab h2 {
-    font-size: 18px;
-    letter-spacing: 4px;
-  }
-  .headerTab {
-    padding: 10px 36px 12px;
-  }
-
-  /* Smaller corner curves for tight screens */
-  .curveLeft,
-  .curveRight,
-  .curveLeftBottom,
-  .curveRightBottom {
-    width: 24px;
-    height: 24px;
-  }
-  .curveLeft {
-    left: -24px;
-    border-top-right-radius: 20px;
-    box-shadow: 12px -12px 0 12px var(--col-offwhite);
-  }
-  .curveRight {
-    right: -24px;
-    border-top-left-radius: 20px;
-    box-shadow: -12px -12px 0 12px var(--col-offwhite);
-  }
-  .curveLeftBottom {
-    left: -24px;
-    border-bottom-right-radius: 20px;
-    box-shadow: 12px 12px 0 12px var(--col-offwhite);
-  }
-  .curveRightBottom {
-    right: -24px;
-    border-bottom-left-radius: 20px;
-    box-shadow: -12px 12px 0 12px var(--col-offwhite);
+  .viewAllBtn {
+    font-size: 9px;
+    padding: 12px 26px;
   }
 }

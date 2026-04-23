@@ -189,7 +189,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const handleWishlist = async () => {
     if (!user) {
       showToast("Please login first", "error");
-      setShowLoginModal(true);
+
+      window.dispatchEvent(new Event("openLoginModal"));
+
       return;
     }
 
