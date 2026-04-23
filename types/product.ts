@@ -23,7 +23,8 @@ export interface Variant {
   barcode: string | null;
   costPrice: string | null;
   sellingPrice: string;
-  image: string | null;
+  image?: string | null;
+  images: string[];
   isWishlisted?: boolean;
   isAddedInCart?: boolean;
   totalStock?: number;
