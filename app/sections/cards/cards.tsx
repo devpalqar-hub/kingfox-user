@@ -167,6 +167,10 @@ const Cards = () => {
     setCurrentIndex(index);
   };
 
+  if (!campaigns || campaigns.length === 0) {
+    return null;
+  }
+
   return (
     <section className={styles.container}>
       {/* Section heading */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ProductCard from "@/components/productcard/productcard";
 import styles from "./hotdeals.module.css";
 import { getProducts } from "@/services/product.service";
@@ -13,26 +13,19 @@ import type { Product } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-type WishlistEntry = {
-  productId: number;
-};
-
-const hasResponseStatus = (
-  error: unknown,
-): error is { response?: { status?: number } } =>
-  typeof error === "object" && error !== null && "response" in error;
-
 const HotDeals = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [wishlistIds, setWishlistIds] = useState<number[]>([]);
   const router = useRouter();
   const { user } = useAuth();
 
-  // ✅ GET PRODUCTS
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // 🔥 FETCH PRODUCTS
   useEffect(() => {
     const fetchHotDeals = async () => {
       const res = await getProducts({
-        limit: 4,
+        limit: 20, // 🔥 increase
         tags: ["HOT SALE"],
       });
       setProducts(res.items || []);
@@ -41,17 +34,15 @@ const HotDeals = () => {
     fetchHotDeals();
   }, []);
 
-  // ✅ GET WISHLIST
+  // ✅ FETCH WISHLIST
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!user) return;
 
       try {
         const res = await getWishList();
-        window.dispatchEvent(new Event("wishlistUpdated"));
-
-        const items: WishlistEntry[] = res?.data || res?.items || res || [];
-        const ids = items.map((item) => item.productId);
+        const items = res?.data || res?.items || res || [];
+        const ids = items.map((item: any) => item.productId);
 
         setWishlistIds(ids);
       } catch (err) {
@@ -61,7 +52,18 @@ const HotDeals = () => {
 
     fetchWishlist();
   }, [user]);
-  // ✅ TOGGLE FUNCTION
+
+  // 🔥 SCROLL
+  const scrollLeft = () => {
+    scrollRef.current?.scrollBy({ left: -400, behavior: "smooth" });
+  };
+
+  const scrollRight = () => {
+    scrollRef.current?.scrollBy({ left: 400, behavior: "smooth" });
+  };
+
+  if (!products || products.length === 0) return null;
+
   const handleWishlistToggle = async (productId: number) => {
     if (!user) {
       window.dispatchEvent(new Event("openLoginModal"));
@@ -70,23 +72,19 @@ const HotDeals = () => {
 
     try {
       if (wishlistIds.includes(productId)) {
-        // ✅ REMOVE
+        // REMOVE
         await removeFromWishlist(productId);
-        window.dispatchEvent(new Event("wishlistUpdated"));
 
         setWishlistIds((prev) => prev.filter((id) => id !== productId));
       } else {
         try {
-          // ✅ ADD
+          // ADD
           await addToWishlist(productId);
 
           setWishlistIds((prev) => [...prev, productId]);
-        } catch (err: unknown) {
-          // 🔥 HANDLE 409
-          if (hasResponseStatus(err) && err.response?.status === 409) {
-            console.log("Already in wishlist");
-
-            // sync UI anyway
+        } catch (err: any) {
+          // handle already exists
+          if (err.response?.status === 409) {
             setWishlistIds((prev) => [...prev, productId]);
           } else {
             throw err;
@@ -99,39 +97,46 @@ const HotDeals = () => {
       console.error("Wishlist error", err);
     }
   };
-  if (!products || products.length === 0) {
-    return null;
-  }
+
   return (
     <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>HOT DEALS</h2>
+
+        {/* 🔥 ARROWS */}
+        <div className={styles.navButtons}>
+          <button onClick={scrollLeft}>←</button>
+          <button onClick={scrollRight}>→</button>
+        </div>
       </div>
 
-      <div className={styles.grid}>
+      {/* 🔥 CAROUSEL */}
+      <div className={styles.grid} ref={scrollRef}>
         {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            id={product.id}
-            slug={product.slug}
-            name={product.name}
-            price={String(product.priceRange?.min || 0)}
-            rating={4}
-            image={product.images?.[0]}
-            // ✅ THIS IS THE MAGIC
-            isWishlisted={wishlistIds.includes(product.id)}
-            // ✅ THIS HANDLES CLICK
-            onWishlistToggle={() => handleWishlistToggle(product.id)}
-          />
+          <div className={styles.cardWrapper} key={product.id}>
+            <ProductCard
+              id={product.id}
+              slug={product.slug}
+              name={product.name}
+              price={String(product.priceRange?.min || 0)}
+              rating={4}
+              image={product.images?.[0]}
+              isWishlisted={wishlistIds.includes(product.id)}
+              onWishlistToggle={() => handleWishlistToggle(product.id)}
+            />
+          </div>
         ))}
       </div>
 
-      <button
-        className={styles.viewAll}
-        onClick={() => router.push("/products?tag=HOT%20SALE")}
-      >
-        VIEW ALL PRODUCTS
-      </button>
+      {/* VIEW ALL */}
+      <div className={styles.viewAllWrapper}>
+        <button
+          className={styles.viewAll}
+          onClick={() => router.push("/products?tag=HOT%20SALE")}
+        >
+          VIEW ALL PRODUCTS
+        </button>
+      </div>
     </section>
   );
 };
