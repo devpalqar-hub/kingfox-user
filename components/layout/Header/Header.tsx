@@ -531,9 +531,15 @@ const Header = () => {
       >
         {/* Drawer Header */}
         <div className={styles.drawerHeader}>
-          <Link href="/" className={styles.drawerLogo} onClick={closeDrawer}>
+          <Link
+            href="/"
+            className={styles.drawerLogoWrapper}
+            onClick={closeDrawer}
+          >
             <img src="/logo.png" alt="KingFox Logo" />
+            <span className={styles.drawerLogoText}>KINGFOX</span>
           </Link>
+
           <div className={styles.drawerClose} onClick={closeDrawer}>
             <X size={18} />
           </div>
