@@ -14,9 +14,34 @@ import { CartItem, CartResponse } from "@/types/cart";
 import { OrderHistoryItem, OrderHistoryResponse } from "@/types/order-history";
 import { updateProfileAPI } from "@/services/profile.service";
 import { useToast } from "@/context/ToastContext";
+import {
+  parsePhoneNumberFromString,
+  isValidPhoneNumber,
+} from "libphonenumber-js";
+
+const DEFAULT_COUNTRY_CODE = "+91";
+
+const parsePhoneParts = (phone: string) => {
+  const parsed = parsePhoneNumberFromString(phone);
+
+  if (parsed) {
+    return {
+      countryCode: "+" + parsed.countryCallingCode,
+      localNumber: parsed.nationalNumber,
+    };
+  }
+
+  return {
+    countryCode: DEFAULT_COUNTRY_CODE,
+    localNumber: phone.replace(/^\+?\d+/, ""),
+  };
+};
+
+const buildPhoneNumber = (countryCode: string, localNumber: string) => {
+  return `${countryCode}${localNumber.replace(/\D/g, "")}`;
+};
 
 const ProfilePage = () => {
-
   const { logout } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
@@ -26,9 +51,7 @@ const ProfilePage = () => {
   const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
 
   const formatStatus = (status: string) =>
-    status
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    status.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-IN", {
@@ -37,186 +60,216 @@ const ProfilePage = () => {
       year: "numeric",
     });
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [form, setForm] = useState({
-      name: "",
-      phone: "",
-    });
+  const [isEditing, setIsEditing] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+  });
+  const [phoneCountryCode, setPhoneCountryCode] =
+    useState(DEFAULT_COUNTRY_CODE);
 
-  useEffect(() => {
-  const loadData = async () => {
-  try {
-    const profileData = await getProfileAPI();
+  const syncProfileForm = (profileData: ProfileResponse) => {
+    const { countryCode, localNumber } = parsePhoneParts(profileData.phone);
+
     setProfile(profileData);
-
+    setPhoneCountryCode(countryCode);
     setForm({
       name: profileData.name,
-      phone: profileData.phone,
+      phone: localNumber,
     });
+  };
 
-    const cartData: CartResponse = await getCartAPI();
-    setCartItems(cartData.items);
-    setCartTotal(cartData.finalAmount);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const profileData = await getProfileAPI();
+        syncProfileForm(profileData);
 
-    const ordersData: OrderHistoryResponse = await getOrdersAPI();
-    setOrders(ordersData.data.slice(0, 3));
+        const cartData: CartResponse = await getCartAPI();
+        setCartItems(cartData.items);
+        setCartTotal(cartData.finalAmount);
 
-  } catch (err) {
-    console.error(err);
-  }
-};
+        const ordersData: OrderHistoryResponse = await getOrdersAPI();
+        setOrders(ordersData.data.slice(0, 3));
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  loadData();
-}, []);
-const handleSave = async () => {
-  try {
-    await updateProfileAPI(form);
+    loadData();
+  }, []);
+  const handleSave = async () => {
+    try {
+      const fullPhone = buildPhoneNumber(phoneCountryCode, form.phone);
 
-    // ✅ REFETCH PROFILE
-    const freshProfile = await getProfileAPI();
-    setProfile(freshProfile);
+      // if (!isValidPhoneNumber(fullPhone)) {
+      //   showToast("Invalid phone number", "error");
+      //   return;
+      // }
+
+      await updateProfileAPI({
+        ...form,
+        phone: fullPhone,
+      });
+
+      const freshProfile = await getProfileAPI();
+      syncProfileForm(freshProfile);
+
+      setIsEditing(false);
+      showToast("Profile updated successfully", "success");
+    } catch {
+      showToast("Failed to update profile", "error");
+    }
+  };
+
+  const handleEditStart = () => {
+    if (profile) {
+      syncProfileForm(profile);
+    }
+
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    if (profile) {
+      syncProfileForm(profile);
+    }
 
     setIsEditing(false);
-    showToast("Profile updated successfully", "success");
-
-  } catch (err) {
-    showToast("Failed to update profile", "error");
-  }
-};
-
-  const wishlist = [
-    { name: "KF-VEST GEN. 2", price: "$210.00", image: "/wishlist1.png" },
-    { name: "VELOCITY RED-04", price: "$345.00", image: "/wishlist2.png" },
-    { name: "GHOST LOGO TEE", price: "$65.00", image: "/wishlist3.png" },
-  ];
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.containerheader}>
         <div className={styles.title}>USER PROFILE</div>
         <div className={styles.logout}>
-          <button onClick={logout}><LuLogOut/> LOGOUT</button>
+          <button onClick={logout}>
+            <LuLogOut /> LOGOUT
+          </button>
         </div>
       </div>
 
       {/* TOP SECTION */}
       <div className={styles.topSection}>
-        
         {/* DETAILS */}
         <div className={styles.detailsCard}>
           <div className={styles.cardHeader}>
             <h2>DETAILS</h2>
-            <button
-              className={styles.editBtn}
-              onClick={() => setIsEditing(true)}
-            >
+            <button className={styles.editBtn} onClick={handleEditStart}>
               EDIT INFO
             </button>
           </div>
 
           <div className={styles.grid}>
-  {isEditing ? (
-    <>
-      <div>
-        <p className={styles.label}>FULL NAME</p>
-        <input
-          value={form.name}
-          onChange={(e) =>
-            setForm({ ...form, name: e.target.value })
-          }
-        />
-      </div>
+            {isEditing ? (
+              <>
+                <div>
+                  <p className={styles.label}>FULL NAME</p>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  />
+                </div>
 
-      <div>
-        <p className={styles.label}>EMAIL</p>
-        <strong>{profile?.email}</strong>
-      </div>
+                <div>
+                  <p className={styles.label}>EMAIL</p>
+                  <strong>{profile?.email}</strong>
+                </div>
 
-      <div>
-        <p className={styles.label}>PHONE</p>
-        <input
-          value={form.phone}
-          onChange={(e) =>
-            setForm({ ...form, phone: e.target.value })
-          }
-        />
-      </div>
-    </>
-  ) : (
-    <>
-      <div>
-        <p className={styles.label}>FULL NAME</p>
-        <strong>{profile?.name}</strong>
-      </div>
+                <div>
+                  <p className={styles.label}>PHONE</p>
+                  <div className={styles.phoneField}>
+                    <input
+                      value={phoneCountryCode}
+                      readOnly
+                      className={styles.countryCodeInput}
+                    />
+                    <input
+                      value={form.phone}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          phone: e.target.value.replace(/\D/g, ""), // digits only
+                        })
+                      }
+                      className={styles.phoneNumberInput}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className={styles.label}>FULL NAME</p>
+                  <strong>{profile?.name}</strong>
+                </div>
 
-      <div>
-        <p className={styles.label}>EMAIL ADDRESS</p>
-        <strong>{profile?.email}</strong>
-      </div>
+                <div>
+                  <p className={styles.label}>EMAIL ADDRESS</p>
+                  <strong>{profile?.email}</strong>
+                </div>
 
-      <div>
-        <p className={styles.label}>PHONE</p>
-        <strong>{profile?.phone}</strong>
-      </div>
-    </>
-  )}
-</div>
-{isEditing && (
-  <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
-    <button onClick={handleSave}>SAVE</button>
-    <button onClick={() => setIsEditing(false)}>CANCEL</button>
-  </div>
-)}
+                <div>
+                  <p className={styles.label}>PHONE</p>
+                  <strong>{profile?.phone}</strong>
+                </div>
+              </>
+            )}
+          </div>
+          {isEditing && (
+            <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+              <button onClick={handleSave}>SAVE</button>
+              <button onClick={handleCancelEdit}>CANCEL</button>
+            </div>
+          )}
         </div>
 
         {/* CART */}
         <div className={styles.cartCard}>
-        <h3>CURRENT CART</h3>
+          <h3>CURRENT CART</h3>
 
-        {cartItems.length === 0 ? (
-          <div className={styles.emptyCart}>
-            <p>Your cart is empty</p>
-            <button onClick={() => router.push("/products")}>
-              SHOP NOW
-            </button>
-          </div>
-        ) : (
-          <>
-            {cartItems.slice(0, 2).map((item, i) => (
-              <div key={i} className={styles.cartItem}>
-                <img src={item.productImage} />
-                <div>
-                  <p>{item.productName}</p>
-                  <span>
-                    QTY:{item.quantity} / SIZE: {item.size}
-                  </span>
+          {cartItems.length === 0 ? (
+            <div className={styles.emptyCart}>
+              <p>Your cart is empty</p>
+              <button onClick={() => router.push("/products")}>SHOP NOW</button>
+            </div>
+          ) : (
+            <>
+              {cartItems.slice(0, 2).map((item, i) => (
+                <div key={i} className={styles.cartItem}>
+                  <img src={item.productImage} />
+                  <div>
+                    <p>{item.productName}</p>
+                    <span>
+                      QTY:{item.quantity} / SIZE: {item.size}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {cartItems.length > 2 && (
-              <div
-                className={styles.moreItems}
+              {cartItems.length > 2 && (
+                <div
+                  className={styles.moreItems}
+                  onClick={() => router.push("/cart")}
+                >
+                  +{cartItems.length - 2} more items →
+                </div>
+              )}
+
+              <div className={styles.cartFooter}>
+                <span>SUBTOTAL</span>
+                <h2>₹{cartTotal}</h2> {/* ✅ dynamic */}
+              </div>
+
+              <button
+                className={styles.checkoutBtn}
                 onClick={() => router.push("/cart")}
               >
-                +{cartItems.length - 2} more items →
-              </div>
-            )}
-
-            <div className={styles.cartFooter}>
-              <span>SUBTOTAL</span>
-              <h2>₹{cartTotal}</h2> {/* ✅ dynamic */}
-            </div>
-
-            <button
-              className={styles.checkoutBtn}
-              onClick={() => router.push("/cart")} // ✅ FIXED
-            >
-              VIEW CART
-            </button>
-          </>
-        )}
-      </div>
+                VIEW CART
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* VOUCHERS */}
@@ -243,9 +296,7 @@ const handleSave = async () => {
       <div className={styles.orders}>
         <div className={styles.ordersHeader}>
           <h3>ORDER HISTORY</h3>
-          <button onClick={() => router.push("/orders")}>
-            VIEW ALL
-          </button>
+          <button onClick={() => router.push("/orders")}>VIEW ALL</button>
         </div>
 
         <div className={styles.table}>

@@ -18,6 +18,9 @@ export default function Banners() {
   const autoPlayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
+  const total = banners.length;
+  const isSingleBanner = total === 1;
+
   useEffect(() => {
     fetchBanners().then((data) => {
       setBanners(data);
@@ -53,37 +56,32 @@ export default function Banners() {
 
   // Auto-advance
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (total <= 1) return;
 
     const currentBanner = banners[current];
     if (currentBanner.mediaType === "video") {
-      const vid = videoRefs.current.get(current);
-
-      if (vid) {
-        const handleEnded = () => next();
-
-        vid.addEventListener("ended", handleEnded);
-
-        return () => {
-          vid.removeEventListener("ended", handleEnded);
-        };
-      }
+      return;
     }
+
     autoPlayRef.current = setTimeout(next, SLIDE_DURATION);
 
     return () => {
       if (autoPlayRef.current) clearTimeout(autoPlayRef.current);
     };
-  }, [banners, current, next]);
+  }, [banners, current, next, total]);
 
   // Play active video
   useEffect(() => {
-    const vid = videoRefs.current.get(current);
-    if (vid) {
-      vid.currentTime = 0;
-      vid.play().catch(() => {});
-    }
-  }, [current]);
+    videoRefs.current.forEach((video, index) => {
+      if (index === current) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        return;
+      }
+
+      video.pause();
+    });
+  }, [current, banners]);
 
   if (loading) {
     return (
@@ -106,7 +104,6 @@ export default function Banners() {
 
   if (!banners.length) return null;
 
-  const total = banners.length;
   const activeBanner = banners[current];
 
   return (
@@ -136,6 +133,8 @@ export default function Banners() {
           {banners.map((banner, i) => {
             const isActive = i === current;
             const isExiting = i === exiting;
+            const shouldLoopVideo =
+              isSingleBanner && banner.mediaType === "video";
 
             const mediaEl =
               banner.mediaType === "video" ? (
@@ -148,10 +147,15 @@ export default function Banners() {
                   src={banner.mediaUrl}
                   autoPlay={isActive}
                   muted
-                  loop
                   playsInline
                   preload="metadata"
+                  loop={shouldLoopVideo}
                   aria-label={banner.title}
+                  onEnded={() => {
+                    if (!isSingleBanner && isActive) {
+                      next();
+                    }
+                  }}
                 />
               ) : (
                 <Image

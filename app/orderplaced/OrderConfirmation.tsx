@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MdLocalShipping } from "react-icons/md";
 import { PiPhoneFill } from "react-icons/pi";
 
 import { useAuth } from "@/context/AuthContext";
+import { clearGuestCart } from "@/lib/cart";
 import { getOrderDetailsAPI } from "@/services/order-details.service";
 import { OrderDetailsResponse } from "@/types/order-details";
 
@@ -124,17 +125,30 @@ export default function OrderConfirmation({
     OrderDetailsResponse | FallbackOrder | null
   >(null);
 
+  const clearGuestCheckoutState = useCallback(() => {
+    if (token) return;
+
+    clearGuestCart();
+    localStorage.removeItem("lastCheckoutItems");
+  }, [token]);
+
   useEffect(() => {
     const fetchOrder = async () => {
       const storedOrder = buildStoredOrder(orderId || null);
 
       if (!orderId) {
         setOrder(storedOrder);
+        if (storedOrder) {
+          clearGuestCheckoutState();
+        }
         return;
       }
 
       if (!token) {
         setOrder(storedOrder);
+        if (storedOrder) {
+          clearGuestCheckoutState();
+        }
         return;
       }
 
@@ -146,14 +160,18 @@ export default function OrderConfirmation({
         });
         setOrder(res);
         localStorage.setItem("lastOrderData", JSON.stringify(res));
+        clearGuestCheckoutState();
       } catch (error) {
         console.error(error);
         setOrder(storedOrder);
+        if (storedOrder) {
+          clearGuestCheckoutState();
+        }
       }
     };
 
     fetchOrder();
-  }, [orderId, token]);
+  }, [clearGuestCheckoutState, orderId, token]);
 
   if (!order) {
     return <p>Loading your order...</p>;

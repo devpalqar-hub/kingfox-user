@@ -1,4 +1,3 @@
-
 /* ── Container ─────────────────────────────── */
 .container {
   width: 100%;
@@ -98,6 +97,14 @@
     ),
     linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 55%);
   z-index: 1;
+}
+
+.bgMedia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ── Shimmer Border (active card only) ──────── */
