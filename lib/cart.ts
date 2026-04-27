@@ -38,3 +38,8 @@ export const removeGuestCartItem = (variantId: number) => {
 
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
 };
+
+export const clearGuestCart = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(CART_KEY);
+};

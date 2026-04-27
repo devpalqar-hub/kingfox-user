@@ -158,11 +158,17 @@ export default function CampaignPage() {
     <div className={styles.wrapper}>
       {/* ── Hero — image only, no text overlay ── */}
       <header className={styles.hero}>
-        <img
-          src={campaign.image}
-          alt={campaign.name}
-          className={styles.heroImage}
-        />
+        {campaign.image?.endsWith(".mp4") ? (
+          <video autoPlay muted loop playsInline className={styles.heroImage}>
+            <source src={campaign.image} type="video/mp4" />
+          </video>
+        ) : (
+          <img
+            src={campaign.image}
+            alt={campaign.name}
+            className={styles.heroImage}
+          />
+        )}
       </header>
 
       {/* ── Main Content ── */}

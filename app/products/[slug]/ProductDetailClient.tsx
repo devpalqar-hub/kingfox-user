@@ -539,19 +539,24 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 <button
                   key={color}
                   onClick={() => {
-                    setSelectedColor(color);
-
-                    const variant = product?.variants.find((v) =>
-                      selectedSize
-                        ? v.color.toLowerCase() === color.toLowerCase() &&
-                          v.size === selectedSize
-                        : v.color.toLowerCase() === color.toLowerCase(),
+                    const variantForSelectedSize = product?.variants.find(
+                      (v) =>
+                        v.color.toLowerCase() === color.toLowerCase() &&
+                        v.size === selectedSize,
                     );
+                    const fallbackVariant = product?.variants.find(
+                      (v) => v.color.toLowerCase() === color.toLowerCase(),
+                    );
+                    const nextVariant =
+                      variantForSelectedSize || fallbackVariant;
 
-                    if (variant?.images?.length) {
-                      setActiveImg(variant.images[0]);
-                    } else if (variant?.image) {
-                      setActiveImg(variant.image); // fallback
+                    setSelectedColor(color);
+                    setSelectedSize(nextVariant?.size || null);
+
+                    if (nextVariant?.images?.length) {
+                      setActiveImg(nextVariant.images[0]);
+                    } else if (nextVariant?.image) {
+                      setActiveImg(nextVariant.image);
                     }
                   }}
                   className={`${styles.colorItem} ${
@@ -718,113 +723,111 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       </div>
       {/* Community Feedback Section */}
 
-      <section className={styles.feedbackSection}>
-        <div className={styles.feedbackContainer}>
-          <div className={styles.ratingOverview}>
-            <h2 className={styles.feedbackTitle}>COMMUNITY FEEDBACK</h2>
+      {reviewData && reviewData.total > 0 && (
+        <>
+          {/* Community Feedback Section */}
+          <section className={styles.feedbackSection}>
+            <div className={styles.feedbackContainer}>
+              <div className={styles.ratingOverview}>
+                <h2 className={styles.feedbackTitle}>COMMUNITY FEEDBACK</h2>
 
-            <div className={styles.ratingFlex}>
-              <div className={styles.bigRating}>
-                {reviewData && reviewData.total > 0 && (
-                  <span className={styles.ratingNumber}>
-                    {reviewData.rating.toFixed(1)}
-                  </span>
-                )}
-                <span className={styles.ratingSub}>OUT OF 5</span>
-              </div>
+                <div className={styles.ratingFlex}>
+                  <div className={styles.bigRating}>
+                    <span className={styles.ratingNumber}>
+                      {reviewData.rating.toFixed(1)}
+                    </span>
+                    <span className={styles.ratingSub}>OUT OF 5</span>
+                  </div>
 
-              <div className={styles.statBars}>
-                {reviewData &&
-                  [5, 4, 3].map((star) => {
-                    const count = reviewData.distribution?.[star] || 0;
+                  <div className={styles.statBars}>
+                    {[5, 4, 3].map((star) => {
+                      const count = reviewData.distribution?.[star] || 0;
 
-                    const percent =
-                      reviewData.total > 0
-                        ? (count / reviewData.total) * 100
-                        : 0;
+                      const percent =
+                        reviewData.total > 0
+                          ? (count / reviewData.total) * 100
+                          : 0;
 
-                    return (
-                      <div className={styles.barRow} key={star}>
-                        <span className={styles.starLabel}>{star}</span>
+                      return (
+                        <div className={styles.barRow} key={star}>
+                          <span className={styles.starLabel}>{star}</span>
 
-                        <div className={styles.barEmpty}>
-                          <div
-                            className={styles.barFill}
-                            style={{ width: `${percent}%` }}
-                          ></div>
+                          <div className={styles.barEmpty}>
+                            <div
+                              className={styles.barFill}
+                              style={{ width: `${percent}%` }}
+                            ></div>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-      {/* Customer Review Gallery */}
-      <section className={styles.reviewGallerySection}>
-        <div
-          className={styles.carouselWrapper}
-          ref={scrollRef}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          <div className={styles.carouselTrack}>
-            {reviewData?.reviews?.length ? (
-              reviewData.reviews.map((review: ReviewItem) => {
-                const name = review.customer?.name || "User";
-                const images = review.images ?? [];
+          </section>
 
-                const initials = name
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .toUpperCase();
+          {/* Customer Review Gallery */}
+          <section className={styles.reviewGallerySection}>
+            <div
+              className={styles.carouselWrapper}
+              ref={scrollRef}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <div className={styles.carouselTrack}>
+                {reviewData.reviews.map((review: ReviewItem) => {
+                  const name = review.customer?.name || "User";
+                  const images = review.images ?? [];
 
-                return (
-                  <div key={review.id} className={styles.reviewCard}>
-                    {/* HEADER */}
-                    <div className={styles.reviewHeader}>
-                      <div className={styles.avatar}>{initials}</div>
+                  const initials = name
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .toUpperCase();
 
-                      <div>
-                        <div className={styles.userName}>{name}</div>
-                        <div className={styles.verified}>VERIFIED BUYER</div>
+                  return (
+                    <div key={review.id} className={styles.reviewCard}>
+                      {/* HEADER */}
+                      <div className={styles.reviewHeader}>
+                        <div className={styles.avatar}>{initials}</div>
+
+                        <div>
+                          <div className={styles.userName}>{name}</div>
+                          <div className={styles.verified}>VERIFIED BUYER</div>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* STARS */}
-                    <div className={styles.stars}>
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i}>
-                          {i < Number(review.rating) ? "★" : "☆"}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* TEXT */}
-                    <p className={styles.reviewText}>{`"${review.body}"`}</p>
-
-                    {/* IMAGE */}
-
-                    {images.length > 0 && (
-                      <div className={styles.reviewWrapper}>
-                        <img
-                          src={images[0]}
-                          alt={`Review from ${name}`}
-                          className={styles.reviewImg}
-                        />
+                      {/* STARS */}
+                      <div className={styles.stars}>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <span key={i}>
+                            {i < Number(review.rating) ? "★" : "☆"}
+                          </span>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                );
-              })
-            ) : (
-              <p>No reviews</p>
-            )}
-          </div>
-        </div>
-      </section>
+
+                      {/* TEXT */}
+                      <p className={styles.reviewText}>{`"${review.body}"`}</p>
+
+                      {/* IMAGE */}
+                      {images.length > 0 && (
+                        <div className={styles.reviewWrapper}>
+                          <img
+                            src={images[0]}
+                            alt={`Review from ${name}`}
+                            className={styles.reviewImg}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       <RelatedProducts
         categoryId={product.category.id}

@@ -57,14 +57,25 @@ function CampaignCard({
       onClick={onClick}
     >
       {/* Background image */}
-      <Image
-        src={item.image || "/card1.png"}
-        alt={item.name}
-        fill
-        sizes="100vw"
-        style={{ objectFit: "cover" }}
-        priority
-      />
+      {item.image?.endsWith(".mp4") ? (
+        <video
+          src={item.image}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className={styles.bgMedia}
+        />
+      ) : (
+        <Image
+          src={item.image || "/card1.png"}
+          alt={item.name}
+          fill
+          sizes="100vw"
+          style={{ objectFit: "cover" }}
+          priority
+        />
+      )}
 
       {/* Gradient overlay */}
       <div className={styles.cardGradient} />

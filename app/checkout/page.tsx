@@ -17,7 +17,7 @@ import { getBranchesAPI } from "@/services/branch.service";
 import { getCartAPI, updateCartItemAPI } from "@/services/cart.service";
 import { checkoutAPI, previewOrderAPI } from "@/services/order.service";
 import { getProfileAPI } from "@/services/profile.service";
-import { getGuestCart, updateGuestCart } from "@/lib/cart";
+import { clearGuestCart, getGuestCart, updateGuestCart } from "@/lib/cart";
 import { CartItem } from "@/types/cart";
 import { OrderPreviewResponse } from "@/types/order";
 import { ProfileResponse } from "@/types/profile";
@@ -370,7 +370,7 @@ export default function CheckoutPage() {
       }
 
       if (!token) {
-        localStorage.removeItem("guest_cart");
+        clearGuestCart();
         setItems([]);
       }
 
@@ -453,11 +453,12 @@ export default function CheckoutPage() {
             <div className={styles.inputGroup}>
               <label>PHONE NUMBER</label>
               <div className={styles.phoneInput}>
-                <span className={styles.countryCode}>+91</span>
+                {/* <span className={styles.countryCode}>+91</span> */}
                 <input
                   type="text"
                   placeholder="98765 43210"
                   value={form.phone}
+                  disabled={!!profile}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
               </div>
