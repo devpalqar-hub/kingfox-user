@@ -236,6 +236,23 @@
   border-color: #000;
 }
 
+.phoneField {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.countryCodeInput {
+  max-width: 88px;
+  background: #f3f4f6;
+  color: #475569;
+  cursor: default;
+}
+
+.phoneNumberInput {
+  flex: 1;
+}
+
 .detailsCard button {
   padding: 8px 14px;
   border-radius: 6px;
