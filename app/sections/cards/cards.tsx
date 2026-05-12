@@ -145,7 +145,7 @@ const Cards = () => {
       const data = await getAllCampaigns({
         status: "ACTIVE",
       });
-
+      console.log("campaigns fetched");
       setCampaigns(data);
     };
     loadData();
