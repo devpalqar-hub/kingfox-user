@@ -10,11 +10,11 @@ type CampaignQueryParams = Record<
 export const getAllCampaigns = async (params?: CampaignQueryParams) => {
   try {
     const response = await api.get(
-      "/v1/lucky-draw/campaigns",
+      "/v1/lucky-draw/public/campaigns",
       withAuth({ params }),
     );
 
-    return response.data.data;
+    return response.data;
   } catch (error: unknown) {
     const apiError = error as AxiosError;
 
