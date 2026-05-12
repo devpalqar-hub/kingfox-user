@@ -68,7 +68,9 @@ function CampaignCard({
         />
       ) : (
         <Image
-          src={item.image || "/card1.png"}
+          src={
+            item.image && item.image.trim() !== "" ? item.image : "/card1.png"
+          }
           alt={item.name}
           fill
           sizes="100vw"
