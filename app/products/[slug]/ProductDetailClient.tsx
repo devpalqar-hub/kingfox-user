@@ -7,6 +7,9 @@ import {
   LuCircleCheck,
   LuBox,
   LuAward,
+  LuChevronLeft,
+  LuChevronRight,
+  LuX,
 } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
 import { ProductDetail as ProductDetailType } from "@/types/product";
@@ -54,6 +57,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const { user, token, logout, loading } = useAuth();
   const { showToast } = useToast();
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [currentSizeChartIndex, setCurrentSizeChartIndex] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
@@ -478,12 +482,17 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             <div className={styles.labelRow}>
               <span className={styles.label}>SELECT SIZE</span>
 
-              <span
-                className={styles.sizeGuide}
-                onClick={() => setShowSizeChart(true)}
-              >
-                SIZE CHART
-              </span>
+              {product.sizeChart && (
+                <span
+                  className={styles.sizeGuide}
+                  onClick={() => {
+                    setCurrentSizeChartIndex(0);
+                    setShowSizeChart(true);
+                  }}
+                >
+                  SIZE CHART
+                </span>
+              )}
             </div>
             <div className={styles.sizeGrid}>
               {sizes.map((size) => (
@@ -858,56 +867,72 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </button>
         </div>
       </div>
-      {showSizeChart && (
-        <div className={styles.sizeChartOverlay}>
-          <div className={styles.sizeChartModal}>
-            {/* CLOSE BUTTON */}
+      {showSizeChart && product.sizeChart && (
+        <div 
+          className={styles.sizeChartOverlay} 
+          onClick={() => setShowSizeChart(false)}
+        >
+          <div 
+            className={styles.sizeChartModal} 
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               className={styles.closeBtn}
               onClick={() => setShowSizeChart(false)}
             >
-              ✕
+              <LuX size={24} />
             </button>
 
-            <h2>Size Chart</h2>
+            <h2 className={styles.modalTitle}>{product.sizeChart.name}</h2>
 
-            <table className={styles.sizeTable}>
-              <thead>
-                <tr>
-                  <th>Size</th>
-                  <th>Chest (in)</th>
-                  <th>Length (in)</th>
-                </tr>
-              </thead>
+            <div className={styles.carouselContainer}>
+              {product.sizeChart.images.length > 1 && (
+                <button 
+                  className={`${styles.navBtn} ${styles.prevBtn}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentSizeChartIndex((prev) => 
+                      prev === 0 ? product.sizeChart!.images.length - 1 : prev - 1
+                    );
+                  }}
+                >
+                  <LuChevronLeft size={24} />
+                </button>
+              )}
+              
+              <img 
+                key={currentSizeChartIndex}
+                src={product.sizeChart.images[currentSizeChartIndex]} 
+                alt={product.sizeChart.name}
+                className={styles.carouselImage}
+              />
 
-              <tbody>
-                <tr>
-                  <td>XS</td>
-                  <td>36</td>
-                  <td>26</td>
-                </tr>
-                <tr>
-                  <td>S</td>
-                  <td>38</td>
-                  <td>27</td>
-                </tr>
-                <tr>
-                  <td>M</td>
-                  <td>40</td>
-                  <td>28</td>
-                </tr>
-                <tr>
-                  <td>L</td>
-                  <td>42</td>
-                  <td>29</td>
-                </tr>
-                <tr>
-                  <td>XL</td>
-                  <td>44</td>
-                  <td>30</td>
-                </tr>
-              </tbody>
-            </table>
+              {product.sizeChart.images.length > 1 && (
+                <button 
+                  className={`${styles.navBtn} ${styles.nextBtn}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentSizeChartIndex((prev) => 
+                      prev === product.sizeChart!.images.length - 1 ? 0 : prev + 1
+                    );
+                  }}
+                >
+                  <LuChevronRight size={24} />
+                </button>
+              )}
+            </div>
+
+            {product.sizeChart.images.length > 1 && (
+              <div className={styles.dotsContainer}>
+                {product.sizeChart.images.map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`${styles.dot} ${currentSizeChartIndex === i ? styles.activeDot : ""}`}
+                    onClick={() => setCurrentSizeChartIndex(i)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
