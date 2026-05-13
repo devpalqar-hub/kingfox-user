@@ -29,6 +29,14 @@ export interface Variant {
   isAddedInCart?: boolean;
   totalStock?: number;
 }
+export interface SizeChart {
+  id: number;
+  name: string;
+  chartUrl: string;
+  images: string[];
+  urls: string[];
+}
+
 export interface ProductDetail {
   id: number;
   slug?: string | null;
@@ -40,6 +48,7 @@ export interface ProductDetail {
   tags: Tag[];
   variants: Variant[];
   metaInfo: MetaInfo[];
+  sizeChart?: SizeChart | null;
   isWishlisted?: boolean;
   isAddedInCart?: boolean;
 }
