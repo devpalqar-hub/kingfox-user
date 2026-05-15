@@ -233,7 +233,47 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
   };
 
-  const sizes = [...new Set(product?.variants?.map((v) => v.size) || [])];
+  const ROMAN_SIZE_ORDER = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "3XL",
+    "4XL",
+    "5XL",
+    "6XL",
+    "7XL",
+    "8XL",
+  ];
+
+  const sizes = useMemo(() => {
+    const uniqueSizes = [
+      ...new Set(product?.variants?.map((v) => v.size?.toUpperCase()) || []),
+    ];
+
+    const romanSizes: string[] = [];
+    const numericSizes: string[] = [];
+
+    uniqueSizes.forEach((size) => {
+      if (/^\d+$/.test(size)) {
+        numericSizes.push(size);
+      } else {
+        romanSizes.push(size);
+      }
+    });
+
+    romanSizes.sort(
+      (a, b) =>
+        ROMAN_SIZE_ORDER.indexOf(a) - ROMAN_SIZE_ORDER.indexOf(b),
+    );
+
+    numericSizes.sort((a, b) => Number(a) - Number(b));
+
+    return [...romanSizes, ...numericSizes];
+  }, [product]);
+  
   const colors = [
     ...new Set(
       product?.variants
@@ -400,9 +440,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             {productImages.map((img, i) => (
               <div
                 key={i}
-                className={`${styles.thumbBox} ${
-                  activeImg === img ? styles.activeThumb : ""
-                }`}
+                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
+                  }`}
                 onClick={() => setActiveImg(img)}
               >
                 <img src={img} alt={`view ${i}`} />
@@ -441,10 +480,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                   {Number(selectedVariant.costPrice) >
                     Number(selectedVariant.sellingPrice) && (
-                    <span className={styles.strikePrice}>
-                      ₹{selectedVariant.costPrice}
-                    </span>
-                  )}
+                      <span className={styles.strikePrice}>
+                        ₹{selectedVariant.costPrice}
+                      </span>
+                    )}
                 </>
               ) : (
                 <span className={styles.price}>
@@ -568,9 +607,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                       setActiveImg(nextVariant.image);
                     }
                   }}
-                  className={`${styles.colorItem} ${
-                    selectedColor === color ? styles.activeColor : ""
-                  }`}
+                  className={`${styles.colorItem} ${selectedColor === color ? styles.activeColor : ""
+                    }`}
                 >
                   <span
                     className={styles.colorDot}
@@ -660,9 +698,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           {metaSections.map((section, i) => (
             <button
               key={i}
-              className={`${styles.tabBtn} ${
-                activeTab === section.title ? styles.activeTabBtn : ""
-              }`}
+              className={`${styles.tabBtn} ${activeTab === section.title ? styles.activeTabBtn : ""
+                }`}
               onClick={() => setActiveTab(section.title)}
             >
               {section.title.toUpperCase()}
@@ -868,12 +905,12 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         </div>
       </div>
       {showSizeChart && product.sizeChart && (
-        <div 
-          className={styles.sizeChartOverlay} 
+        <div
+          className={styles.sizeChartOverlay}
           onClick={() => setShowSizeChart(false)}
         >
-          <div 
-            className={styles.sizeChartModal} 
+          <div
+            className={styles.sizeChartModal}
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -887,11 +924,11 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
             <div className={styles.carouselContainer}>
               {product.sizeChart.images.length > 1 && (
-                <button 
+                <button
                   className={`${styles.navBtn} ${styles.prevBtn}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCurrentSizeChartIndex((prev) => 
+                    setCurrentSizeChartIndex((prev) =>
                       prev === 0 ? product.sizeChart!.images.length - 1 : prev - 1
                     );
                   }}
@@ -899,20 +936,20 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   <LuChevronLeft size={24} />
                 </button>
               )}
-              
-              <img 
+
+              <img
                 key={currentSizeChartIndex}
-                src={product.sizeChart.images[currentSizeChartIndex]} 
+                src={product.sizeChart.images[currentSizeChartIndex]}
                 alt={product.sizeChart.name}
                 className={styles.carouselImage}
               />
 
               {product.sizeChart.images.length > 1 && (
-                <button 
+                <button
                   className={`${styles.navBtn} ${styles.nextBtn}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCurrentSizeChartIndex((prev) => 
+                    setCurrentSizeChartIndex((prev) =>
                       prev === product.sizeChart!.images.length - 1 ? 0 : prev + 1
                     );
                   }}
@@ -925,8 +962,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             {product.sizeChart.images.length > 1 && (
               <div className={styles.dotsContainer}>
                 {product.sizeChart.images.map((_, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className={`${styles.dot} ${currentSizeChartIndex === i ? styles.activeDot : ""}`}
                     onClick={() => setCurrentSizeChartIndex(i)}
                   />
