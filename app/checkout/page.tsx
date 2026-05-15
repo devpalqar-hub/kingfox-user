@@ -203,7 +203,9 @@ export default function CheckoutPage() {
 
     const loadBranches = async () => {
       try {
-        const res = await getBranchesAPI();
+        // Pass the variationId of the first item in the cart if available
+        const variationId = items.length > 0 ? items[0].variantId : undefined;
+        const res = await getBranchesAPI(variationId);
         setBranches(res.branches);
       } catch (error) {
         console.error(error);
@@ -211,7 +213,7 @@ export default function CheckoutPage() {
     };
 
     loadBranches();
-  }, [paymentMethod]);
+  }, [paymentMethod, items]);
 
   const handleQuantityChange = async (
     variantId: number,
