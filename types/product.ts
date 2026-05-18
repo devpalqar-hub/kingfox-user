@@ -19,6 +19,7 @@ export interface Variant {
   productId: number;
   size: string;
   color: string;
+  colorCode?: string | null;
   sku: string;
   barcode: string | null;
   costPrice: string | null;

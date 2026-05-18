@@ -42,7 +42,7 @@ const Collections = () => {
             onClick={() => router.push(`/products?categoryId=${cat0?.id}`)}
           >
             <Image
-              src={cat0?.image || "/full-sleeve.png"}
+              src={cat0?.image || "/jeans.png"}
               alt={cat0?.name || "Full Sleeve"}
               fill
               sizes="(max-width:768px) 100vw, 33vw"
@@ -50,7 +50,7 @@ const Collections = () => {
             />
             <div className={styles.overlay}>
               <span className={styles.cardTitle}>
-                {cat0?.name?.toUpperCase() || "FULL SLEEVE"}
+                {cat0?.name?.toUpperCase() || "JEANS"}
               </span>
               <button className={styles.exploreBtn}>
                 EXPLORE <span className={styles.arrow}>→</span>
@@ -111,7 +111,7 @@ const Collections = () => {
             onClick={() => router.push(`/products?categoryId=${cat1?.id}`)}
           >
             <Image
-              src={cat1?.image || "/oversize.png"}
+              src={cat1?.image || "/linenPant.png"}
               alt={cat1?.name || "Oversize"}
               fill
               sizes="(max-width:768px) 100vw, 33vw"
@@ -119,7 +119,7 @@ const Collections = () => {
             />
             <div className={styles.overlay}>
               <span className={styles.cardTitle}>
-                {cat1?.name?.toUpperCase() || "OVERSIZED T-SHIRT"}
+                {cat1?.name?.toUpperCase() || "LINEN PANT"}
               </span>
               <button className={styles.exploreBtn}>
                 EXPLORE <span className={styles.arrow}>→</span>
