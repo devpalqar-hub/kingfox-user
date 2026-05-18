@@ -6,7 +6,6 @@ import { getProducts } from "@/services/product.service";
 import { Product } from "@/types/product";
 import { getReviewsByProductId } from "@/services/review.service";
 import { useSearchParams } from "next/navigation";
-import { getColorsBySize } from "@/services/product.service";
 import LoginModal from "@/app/auth/login/page";
 import {
   getWishList,
@@ -16,6 +15,12 @@ import {
 import { useToast } from "@/context/ToastContext";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton/ProductCardSkeleton";
 import { getAllCategories } from "@/services/category.service";
+
+type ColorOption = {
+  name: string;
+  colorCode?: string | null;
+};
+
 const ProductsPage = () => {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
@@ -38,13 +43,68 @@ const ProductsPage = () => {
   const [reviewMap, setReviewMap] = useState<any>({});
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState<number | null>(null); // id of loading item
-  const [availableColors, setAvailableColors] = useState<string[]>([]);
+  const [availableColors, setAvailableColors] = useState<ColorOption[]>([]);
   const [initialized, setInitialized] = useState(false);
   const [tag, setTag] = useState<string | null>(null);
-  const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+  const FIXED_SIZES = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "3XL",
+    "4XL",
+    "5XL",
+    "6XL",
+    "7XL",
+    "8XL",
+  ];
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const colorMap: Record<string, string> = {
+    red: "#ef4444",
+    blue: "#3b82f6",
+    green: "#22c55e",
+    yellow: "#eab308",
+    black: "#000000",
+    white: "#ffffff",
+    gray: "#6b7280",
+    purple: "#a855f7",
+    orange: "#f97316",
+    pink: "#ec4899",
+    brown: "#92400e",
+    navy: "#1e3a8a",
+    cyan: "#06b6d4",
+    lime: "#84cc16",
+    magenta: "#d946ef",
+    "mist grey": "#bfc5c9",
+    "military olive": "#556b2f",
+    "mud olive": "#5b5b2b",
+    "fluorescent green": "#39ff14",
+  };
+
+  const getColorValue = (
+    colorName?: string | null,
+    colorCode?: string | null,
+  ) => {
+    const normalizedColorCode = colorCode?.trim();
+    if (
+      normalizedColorCode &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)
+    ) {
+      return normalizedColorCode;
+    }
+
+    const normalizedColorName = colorName?.trim().toLowerCase();
+    if (!normalizedColorName) {
+      return "#d1d5db";
+    }
+
+    return colorMap[normalizedColorName] || normalizedColorName;
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -131,6 +191,46 @@ const ProductsPage = () => {
     window.dispatchEvent(new Event("wishlistUpdated"));
     setWishlistLoading(null);
   };
+
+  const getProductColorOptions = (product: Product): ColorOption[] => {
+    const variantColorOptions =
+      product.variants?.flatMap((variant) => {
+        const name = variant.color?.trim();
+        if (!name) {
+          return [];
+        }
+
+        return [
+          {
+            name,
+            colorCode: variant.colorCode,
+          },
+        ];
+      }) || [];
+
+    if (variantColorOptions.length > 0) {
+      return Array.from(
+        new Map(
+          variantColorOptions.map((colorOption) => [
+            colorOption.name.toLowerCase(),
+            colorOption,
+          ]),
+        ).values(),
+      );
+    }
+
+    return (product.colors || []).map((name) => ({ name }));
+  };
+
+  const getAvailableColorOptions = (productList: Product[]) =>
+    Array.from(
+      new Map(
+        productList
+          .flatMap((product) => getProductColorOptions(product))
+          .map((colorOption) => [colorOption.name.toLowerCase(), colorOption]),
+      ).values(),
+    );
+
   useEffect(() => {
     const categoryFromURL = searchParams.get("categoryId");
     const tagFromURL = searchParams.get("tag");
@@ -164,6 +264,16 @@ const ProductsPage = () => {
           sortBy: sortBy || undefined,
         });
 
+        const nextProducts =
+          page === 1
+            ? data.items
+            : [
+                ...products,
+                ...data.items.filter(
+                  (item: any) => !products.some((p) => p.id === item.id),
+                ),
+              ];
+
         if (page === 1) {
           setProducts(data.items);
         } else {
@@ -176,6 +286,7 @@ const ProductsPage = () => {
         }
 
         setTotalProducts(data.pagination.total);
+        setAvailableColors(getAvailableColorOptions(nextProducts));
 
         const sizesSet = new Set<string>();
 
@@ -206,24 +317,6 @@ const ProductsPage = () => {
   ]);
 
   // ✅ OUTSIDE loadProducts (top level)
-  useEffect(() => {
-    const fetchColors = async () => {
-      if (!size) {
-        setAvailableColors([]);
-        return;
-      }
-
-      try {
-        const res = await getColorsBySize(size);
-        setAvailableColors(res.colors || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchColors();
-  }, [size]);
-
   const handleClearFilters = () => {
     setSize(null);
     setColor(null);
@@ -331,20 +424,27 @@ const ProductsPage = () => {
               <p className={styles.filterLabel}>COLOR</p>
 
               <div className={styles.colorGrid}>
-                {availableColors.map((c) => (
+                {availableColors.map((colorOption) => (
                   <div
-                    key={c}
+                    key={colorOption.name}
                     className={`${styles.colorItem} ${
-                      color === c ? styles.colorActive : ""
+                      color === colorOption.name ? styles.colorActive : ""
                     }`}
                     onClick={() => {
-                      setColor((prev) => (prev === c ? null : c));
+                      setColor((prev) =>
+                        prev === colorOption.name ? null : colorOption.name,
+                      );
                       setPage(1);
                     }}
                   >
                     <span
                       className={styles.colorInner}
-                      style={{ backgroundColor: c.toLowerCase() }}
+                      style={{
+                        backgroundColor: getColorValue(
+                          colorOption.name,
+                          colorOption.colorCode,
+                        ),
+                      }}
                     />
                   </div>
                 ))}
@@ -472,7 +572,7 @@ const ProductsPage = () => {
                   price={String(product.priceRange?.min || 0)}
                   rating={reviewMap[product.id]?.rating ?? 0}
                   reviews={reviewMap[product.id]?.total ?? 0}
-                  colors={product.colors}
+                  colors={getProductColorOptions(product)}
                   image={
                     product.images && product.images.length > 0
                       ? product.images[0]

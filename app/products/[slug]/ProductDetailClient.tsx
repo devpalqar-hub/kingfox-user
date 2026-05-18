@@ -61,6 +61,47 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
+  const colorMap: Record<string, string> = {
+    red: "#ef4444",
+    blue: "#3b82f6",
+    green: "#22c55e",
+    yellow: "#eab308",
+    black: "#000000",
+    white: "#ffffff",
+    gray: "#6b7280",
+    purple: "#a855f7",
+    orange: "#f97316",
+    pink: "#ec4899",
+    brown: "#92400e",
+    navy: "#1e3a8a",
+    cyan: "#06b6d4",
+    lime: "#84cc16",
+    magenta: "#d946ef",
+
+    // CUSTOM COLORS
+    "mist grey": "#bfc5c9",
+    "military olive": "#556b2f",
+    "mud olive": "#5b5b2b",
+    "fluorescent green": "#39ff14",
+  };
+
+  const getVariantColorValue = (
+    colorName?: string | null,
+    colorCode?: string | null,
+  ) => {
+    const normalizedColorCode = colorCode?.trim();
+    if (normalizedColorCode && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)) {
+      return normalizedColorCode;
+    }
+
+    const normalizedColorName = colorName?.trim().toLowerCase();
+    if (!normalizedColorName) {
+      return "#d1d5db";
+    }
+
+    return colorMap[normalizedColorName] || normalizedColorName;
+  };
+
   // reviews
   const [reviewData, setReviewData] = useState<{
     rating: number;
@@ -265,22 +306,38 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     });
 
     romanSizes.sort(
-      (a, b) =>
-        ROMAN_SIZE_ORDER.indexOf(a) - ROMAN_SIZE_ORDER.indexOf(b),
+      (a, b) => ROMAN_SIZE_ORDER.indexOf(a) - ROMAN_SIZE_ORDER.indexOf(b),
     );
 
     numericSizes.sort((a, b) => Number(a) - Number(b));
 
     return [...romanSizes, ...numericSizes];
   }, [product]);
-  
-  const colors = [
-    ...new Set(
+
+  const colors = useMemo(() => {
+    const colorEntries =
       product?.variants
         ?.filter((v) => (selectedSize ? v.size === selectedSize : true))
-        .map((v) => v.color) || [],
-    ),
-  ];
+        .flatMap((v) => {
+          const colorName = v.color?.trim();
+
+          if (!colorName) {
+            return [];
+          }
+
+          return [
+            [
+              colorName.toLowerCase(),
+              {
+                name: colorName,
+                colorCode: v.colorCode,
+              },
+            ] as const,
+          ];
+        }) || [];
+
+    return Array.from(new Map(colorEntries).values());
+  }, [product, selectedSize]);
   const selectedVariant = useMemo(() => {
     return product?.variants.find(
       (v) =>
@@ -440,8 +497,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             {productImages.map((img, i) => (
               <div
                 key={i}
-                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
-                  }`}
+                className={`${styles.thumbBox} ${
+                  activeImg === img ? styles.activeThumb : ""
+                }`}
                 onClick={() => setActiveImg(img)}
               >
                 <img src={img} alt={`view ${i}`} />
@@ -458,9 +516,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
               disabled={wishlistLoading}
             >
               {isWishlisted ? (
-                <FaHeart size={20} color="black" /> // ❤️ BLACK
+                <FaHeart size={20} color="black" />
               ) : (
-                <FiHeart size={20} color="#999" /> // 🤍 WHITE
+                <FiHeart size={20} color="#999" /> 
               )}
             </button>
           </div>
@@ -480,10 +538,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                   {Number(selectedVariant.costPrice) >
                     Number(selectedVariant.sellingPrice) && (
-                      <span className={styles.strikePrice}>
-                        ₹{selectedVariant.costPrice}
-                      </span>
-                    )}
+                    <span className={styles.strikePrice}>
+                      ₹{selectedVariant.costPrice}
+                    </span>
+                  )}
                 </>
               ) : (
                 <span className={styles.price}>
@@ -583,22 +641,22 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             </p>
 
             <div className={styles.colorPicker}>
-              {colors.map((color) => (
+              {colors.map((colorOption) => (
                 <button
-                  key={color}
+                  key={colorOption.name}
                   onClick={() => {
                     const variantForSelectedSize = product?.variants.find(
                       (v) =>
-                        v.color.toLowerCase() === color.toLowerCase() &&
+                        v.color.toLowerCase() === colorOption.name.toLowerCase() &&
                         v.size === selectedSize,
                     );
                     const fallbackVariant = product?.variants.find(
-                      (v) => v.color.toLowerCase() === color.toLowerCase(),
+                      (v) => v.color.toLowerCase() === colorOption.name.toLowerCase(),
                     );
                     const nextVariant =
                       variantForSelectedSize || fallbackVariant;
 
-                    setSelectedColor(color);
+                    setSelectedColor(colorOption.name);
                     setSelectedSize(nextVariant?.size || null);
 
                     if (nextVariant?.images?.length) {
@@ -607,15 +665,21 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                       setActiveImg(nextVariant.image);
                     }
                   }}
-                  className={`${styles.colorItem} ${selectedColor === color ? styles.activeColor : ""
-                    }`}
+                  className={`${styles.colorItem} ${
+                    selectedColor === colorOption.name ? styles.activeColor : ""
+                  }`}
                 >
                   <span
                     className={styles.colorDot}
-                    style={{ backgroundColor: color.toLowerCase() }}
+                    style={{
+                      backgroundColor: getVariantColorValue(
+                        colorOption.name,
+                        colorOption.colorCode,
+                      ),
+                    }}
                   ></span>
 
-                  <span className={styles.colorText}>{color}</span>
+                  <span className={styles.colorText}>{colorOption.name}</span>
                 </button>
               ))}
             </div>
@@ -698,8 +762,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           {metaSections.map((section, i) => (
             <button
               key={i}
-              className={`${styles.tabBtn} ${activeTab === section.title ? styles.activeTabBtn : ""
-                }`}
+              className={`${styles.tabBtn} ${
+                activeTab === section.title ? styles.activeTabBtn : ""
+              }`}
               onClick={() => setActiveTab(section.title)}
             >
               {section.title.toUpperCase()}
@@ -929,7 +994,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setCurrentSizeChartIndex((prev) =>
-                      prev === 0 ? product.sizeChart!.images.length - 1 : prev - 1
+                      prev === 0
+                        ? product.sizeChart!.images.length - 1
+                        : prev - 1,
                     );
                   }}
                 >
@@ -950,7 +1017,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setCurrentSizeChartIndex((prev) =>
-                      prev === product.sizeChart!.images.length - 1 ? 0 : prev + 1
+                      prev === product.sizeChart!.images.length - 1
+                        ? 0
+                        : prev + 1,
                     );
                   }}
                 >
