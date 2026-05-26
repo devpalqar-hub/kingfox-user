@@ -494,7 +494,7 @@ const NewArrivals = () => {
             <div className={styles.featureCard}>
               <LuRuler className={styles.featureIcon} />
               <h4>PRO FIT</h4>
-              <p>Custom blocks up to 10XL.</p>
+              <p>Custom blocks up to 12XL.</p>
             </div>
           </div>
         </div>
