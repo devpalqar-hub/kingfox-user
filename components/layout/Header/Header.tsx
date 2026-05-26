@@ -32,6 +32,7 @@ const Header = () => {
   const router = useRouter();
   const { user, token, loading } = useAuth();
   const { wishlistCount, cartCount } = useNavCounts();
+  const headerRef = useRef<HTMLElement | null>(null);
 
   const [showLogin, setShowLogin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -139,6 +140,23 @@ const Header = () => {
     fetchCampaign();
   }, []);
 
+  useEffect(() => {
+    const syncHeaderOffset = () => {
+      const headerHeight = headerRef.current?.offsetHeight ?? 60;
+      document.documentElement.style.setProperty(
+        "--site-header-offset",
+        `${headerHeight}px`,
+      );
+    };
+
+    syncHeaderOffset();
+    window.addEventListener("resize", syncHeaderOffset);
+
+    return () => {
+      window.removeEventListener("resize", syncHeaderOffset);
+    };
+  }, [campaign, campaignLoading, menuOpen, showSearch, showCategoryDropdown]);
+
   /* ========================= SEARCH HANDLER ========================= */
   useEffect(() => {
     if (!showSearch) return;
@@ -198,7 +216,7 @@ const Header = () => {
   if (loading) return null;
 
   return (
-    <header className={styles.headerContainer}>
+    <header ref={headerRef} className={styles.headerContainer}>
       {/* ANNOUNCEMENT */}
       {!campaignLoading && campaign && (
         <div

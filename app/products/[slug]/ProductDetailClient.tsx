@@ -287,6 +287,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     "6XL",
     "7XL",
     "8XL",
+    "9XL",
+    "10XL",
+    "11XL",
+    "12XL",
   ];
 
   const sizes = useMemo(() => {

@@ -292,10 +292,10 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (normalizedPhone.length !== 10) {
-      showToast("Enter valid 10-digit phone number", "error");
-      return;
-    }
+    // if (normalizedPhone.length !== 10) {
+    //   showToast("Enter valid 10-digit phone number", "error");
+    //   return;
+    // }
 
     if (paymentMethod === "COD" && !selectedBranch) {
       showToast("Please select a pickup branch", "error");
