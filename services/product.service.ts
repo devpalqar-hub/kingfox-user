@@ -75,7 +75,9 @@ export const getProducts = async (params: {
   categoryId?: number;
   tags?: string[];
   sortBy?: "newly_arrived" | "low_to_high" | "high_to_low";
-}) => {
+},
+init?: ProductFetchInit,
+) => {
   const query = new URLSearchParams();
 
   if (params.page !== undefined) query.append("page", params.page.toString());
@@ -92,7 +94,7 @@ export const getProducts = async (params: {
   }
   return fetchJson<ProductResponse>(
     `${BASE_URL}/v1/user/products?${query}`,
-    undefined,
+    init,
     "Failed to fetch products",
   );
 };

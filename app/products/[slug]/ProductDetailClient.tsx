@@ -61,6 +61,47 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
+  const colorMap: Record<string, string> = {
+    red: "#ef4444",
+    blue: "#3b82f6",
+    green: "#22c55e",
+    yellow: "#eab308",
+    black: "#000000",
+    white: "#ffffff",
+    gray: "#6b7280",
+    purple: "#a855f7",
+    orange: "#f97316",
+    pink: "#ec4899",
+    brown: "#92400e",
+    navy: "#1e3a8a",
+    cyan: "#06b6d4",
+    lime: "#84cc16",
+    magenta: "#d946ef",
+
+    // CUSTOM COLORS
+    "mist grey": "#bfc5c9",
+    "military olive": "#556b2f",
+    "mud olive": "#5b5b2b",
+    "fluorescent green": "#39ff14",
+  };
+
+  const getVariantColorValue = (
+    colorName?: string | null,
+    colorCode?: string | null,
+  ) => {
+    const normalizedColorCode = colorCode?.trim();
+    if (normalizedColorCode && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)) {
+      return normalizedColorCode;
+    }
+
+    const normalizedColorName = colorName?.trim().toLowerCase();
+    if (!normalizedColorName) {
+      return "#d1d5db";
+    }
+
+    return colorMap[normalizedColorName] || normalizedColorName;
+  };
+
   // reviews
   const [reviewData, setReviewData] = useState<{
     rating: number;
@@ -233,14 +274,74 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     }
   };
 
-  const sizes = [...new Set(product?.variants?.map((v) => v.size) || [])];
-  const colors = [
-    ...new Set(
+  const ROMAN_SIZE_ORDER = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "3XL",
+    "4XL",
+    "5XL",
+    "6XL",
+    "7XL",
+    "8XL",
+    "9XL",
+    "10XL",
+    "11XL",
+    "12XL",
+  ];
+
+  const sizes = useMemo(() => {
+    const uniqueSizes = [
+      ...new Set(product?.variants?.map((v) => v.size?.toUpperCase()) || []),
+    ];
+
+    const romanSizes: string[] = [];
+    const numericSizes: string[] = [];
+
+    uniqueSizes.forEach((size) => {
+      if (/^\d+$/.test(size)) {
+        numericSizes.push(size);
+      } else {
+        romanSizes.push(size);
+      }
+    });
+
+    romanSizes.sort(
+      (a, b) => ROMAN_SIZE_ORDER.indexOf(a) - ROMAN_SIZE_ORDER.indexOf(b),
+    );
+
+    numericSizes.sort((a, b) => Number(a) - Number(b));
+
+    return [...romanSizes, ...numericSizes];
+  }, [product]);
+
+  const colors = useMemo(() => {
+    const colorEntries =
       product?.variants
         ?.filter((v) => (selectedSize ? v.size === selectedSize : true))
-        .map((v) => v.color) || [],
-    ),
-  ];
+        .flatMap((v) => {
+          const colorName = v.color?.trim();
+
+          if (!colorName) {
+            return [];
+          }
+
+          return [
+            [
+              colorName.toLowerCase(),
+              {
+                name: colorName,
+                colorCode: v.colorCode,
+              },
+            ] as const,
+          ];
+        }) || [];
+
+    return Array.from(new Map(colorEntries).values());
+  }, [product, selectedSize]);
   const selectedVariant = useMemo(() => {
     return product?.variants.find(
       (v) =>
@@ -419,9 +520,9 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
               disabled={wishlistLoading}
             >
               {isWishlisted ? (
-                <FaHeart size={20} color="black" /> // ❤️ BLACK
+                <FaHeart size={20} color="black" />
               ) : (
-                <FiHeart size={20} color="#999" /> // 🤍 WHITE
+                <FiHeart size={20} color="#999" /> 
               )}
             </button>
           </div>
@@ -544,22 +645,22 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             </p>
 
             <div className={styles.colorPicker}>
-              {colors.map((color) => (
+              {colors.map((colorOption) => (
                 <button
-                  key={color}
+                  key={colorOption.name}
                   onClick={() => {
                     const variantForSelectedSize = product?.variants.find(
                       (v) =>
-                        v.color.toLowerCase() === color.toLowerCase() &&
+                        v.color.toLowerCase() === colorOption.name.toLowerCase() &&
                         v.size === selectedSize,
                     );
                     const fallbackVariant = product?.variants.find(
-                      (v) => v.color.toLowerCase() === color.toLowerCase(),
+                      (v) => v.color.toLowerCase() === colorOption.name.toLowerCase(),
                     );
                     const nextVariant =
                       variantForSelectedSize || fallbackVariant;
 
-                    setSelectedColor(color);
+                    setSelectedColor(colorOption.name);
                     setSelectedSize(nextVariant?.size || null);
 
                     if (nextVariant?.images?.length) {
@@ -569,15 +670,20 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                     }
                   }}
                   className={`${styles.colorItem} ${
-                    selectedColor === color ? styles.activeColor : ""
+                    selectedColor === colorOption.name ? styles.activeColor : ""
                   }`}
                 >
                   <span
                     className={styles.colorDot}
-                    style={{ backgroundColor: color.toLowerCase() }}
+                    style={{
+                      backgroundColor: getVariantColorValue(
+                        colorOption.name,
+                        colorOption.colorCode,
+                      ),
+                    }}
                   ></span>
 
-                  <span className={styles.colorText}>{color}</span>
+                  <span className={styles.colorText}>{colorOption.name}</span>
                 </button>
               ))}
             </div>
@@ -868,12 +974,12 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         </div>
       </div>
       {showSizeChart && product.sizeChart && (
-        <div 
-          className={styles.sizeChartOverlay} 
+        <div
+          className={styles.sizeChartOverlay}
           onClick={() => setShowSizeChart(false)}
         >
-          <div 
-            className={styles.sizeChartModal} 
+          <div
+            className={styles.sizeChartModal}
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -887,33 +993,37 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
             <div className={styles.carouselContainer}>
               {product.sizeChart.images.length > 1 && (
-                <button 
+                <button
                   className={`${styles.navBtn} ${styles.prevBtn}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCurrentSizeChartIndex((prev) => 
-                      prev === 0 ? product.sizeChart!.images.length - 1 : prev - 1
+                    setCurrentSizeChartIndex((prev) =>
+                      prev === 0
+                        ? product.sizeChart!.images.length - 1
+                        : prev - 1,
                     );
                   }}
                 >
                   <LuChevronLeft size={24} />
                 </button>
               )}
-              
-              <img 
+
+              <img
                 key={currentSizeChartIndex}
-                src={product.sizeChart.images[currentSizeChartIndex]} 
+                src={product.sizeChart.images[currentSizeChartIndex]}
                 alt={product.sizeChart.name}
                 className={styles.carouselImage}
               />
 
               {product.sizeChart.images.length > 1 && (
-                <button 
+                <button
                   className={`${styles.navBtn} ${styles.nextBtn}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCurrentSizeChartIndex((prev) => 
-                      prev === product.sizeChart!.images.length - 1 ? 0 : prev + 1
+                    setCurrentSizeChartIndex((prev) =>
+                      prev === product.sizeChart!.images.length - 1
+                        ? 0
+                        : prev + 1,
                     );
                   }}
                 >
@@ -925,8 +1035,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             {product.sizeChart.images.length > 1 && (
               <div className={styles.dotsContainer}>
                 {product.sizeChart.images.map((_, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className={`${styles.dot} ${currentSizeChartIndex === i ? styles.activeDot : ""}`}
                     onClick={() => setCurrentSizeChartIndex(i)}
                   />
