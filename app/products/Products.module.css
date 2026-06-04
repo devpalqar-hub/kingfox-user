@@ -237,6 +237,21 @@
   grid-template-columns: repeat(4, 1fr); /* 4 CARDS PER ROW */
   gap: 20px;
 }
+
+@keyframes productFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.productCardFadeIn {
+  animation: productFadeIn 0.35s ease both;
+}
 .sliderWrapper {
   position: relative;
   width: 100%;
@@ -324,21 +339,6 @@
   background: #a37c5a; /* The brownish color from your image */
 }
 
-.loadMoreBtn {
-  padding: 14px 40px;
-  border: 1.5px solid #000;
-  background: transparent;
-  font-weight: 800;
-  font-size: 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.loadMoreBtn:hover {
-  background: #000;
-  color: #fff;
-}
 /* Newsletter Section Styles */
 .newsletterSection {
   background-color: #0c0c0c; /* Very dark black */
@@ -535,7 +535,7 @@
   height: 100vh;
   background:#fff;
   z-index:120;
-  padding:120px 20px 40px; /* pushes content below header */
+  padding:120px 20px calc(120px + env(safe-area-inset-bottom)); /* keeps the last action above the mobile bottom nav */
   overflow-y:auto;
   transition:0.3s;
 }

@@ -18,7 +18,7 @@ interface ProductCardProps {
   name: string;
   price: string;
   reviews?: number;
-  colors?: string[];
+  colors?: Array<string | { name: string; colorCode?: string | null }>;
   rating: number;
   isNew?: boolean;
   isWishlisted?: boolean;
@@ -43,6 +43,65 @@ const ProductCard = ({
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
+
+  const colorMap: Record<string, string> = {
+    red: "#ef4444",
+    blue: "#3b82f6",
+    green: "#22c55e",
+    yellow: "#eab308",
+    black: "#000000",
+    white: "#ffffff",
+    gray: "#6b7280",
+    purple: "#a855f7",
+    orange: "#f97316",
+    pink: "#ec4899",
+    brown: "#92400e",
+    navy: "#1e3a8a",
+    cyan: "#06b6d4",
+    lime: "#84cc16",
+    magenta: "#d946ef",
+    "mist grey": "#bfc5c9",
+    "military olive": "#556b2f",
+    "mud olive": "#5b5b2b",
+    "fluorescent green": "#39ff14",
+  };
+
+  const getColorValue = (
+    colorName?: string | null,
+    colorCode?: string | null,
+  ) => {
+    const normalizedColorCode = colorCode?.trim();
+    if (
+      normalizedColorCode &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)
+    ) {
+      return normalizedColorCode;
+    }
+
+    const normalizedColorName = colorName?.trim().toLowerCase();
+    if (!normalizedColorName) {
+      return "#d1d5db";
+    }
+
+    return colorMap[normalizedColorName] || normalizedColorName;
+  };
+
+  const colorOptions =
+    colors?.map((color) =>
+      typeof color === "string"
+        ? {
+            name: color,
+            value: getColorValue(color),
+          }
+        : {
+            name: color.name,
+            value: getColorValue(color.name, color.colorCode),
+          },
+    ) || [
+      { name: "gold", value: "#f1b941" },
+      { name: "gray", value: "#777" },
+      { name: "black", value: "#000" },
+    ];
 
   const handleWishlist = async () => {
     if (!user) {
@@ -108,11 +167,11 @@ const ProductCard = ({
         </div>
 
         <div className={styles.colorOptions}>
-          {(colors || ["#f1b941", "#777", "#000"]).map((color, i) => (
+          {colorOptions.map((color, i) => (
             <span
-              key={i}
+              key={`${color.name}-${i}`}
               className={styles.colorDot}
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: color.value }}
             />
           ))}
         </div>
