@@ -1,14 +1,46 @@
-import { useDesignStore } from '@/stores/design-studio/useDesignStore';
-import { Rnd } from 'react-rnd';
-import { Layer, TextLayer, ImageLayer, LineLayer } from '@/types/design-studio';
-import { RotateCw } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import styles from './DesignEditor2D.module.css';
+import { useDesignStore } from "@/stores/design-studio/useDesignStore";
+import { Rnd } from "react-rnd";
+import { Layer, TextLayer, ImageLayer, LineLayer } from "@/types/design-studio";
+import { RotateCw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import styles from "./DesignEditor2D.module.css";
 
 export default function DesignEditor2D() {
-  const { project, activeView, selectedLayerId, selectLayer, updateLayer } = useDesignStore();
+  const { project, activeView, selectedLayerId, selectLayer, updateLayer } =
+    useDesignStore();
   const layers = project.designs[activeView] || [];
-  
+
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSvg = async () => {
+      try {
+        const url =
+          activeView === "back"
+            ? "/templates/Tshirt-back.svg"
+            : "/templates/Tshirt-front.svg";
+        const res = await fetch(url);
+        let text = await res.text();
+
+        // Inject colorHex into the first path (main body)
+        text = text.replace(
+          /fill="none"/g,
+          `fill="${project.apparelConfig.colorHex}"`,
+        );
+        // Ensure SVG scales to fit container
+        text = text.replace(
+          "<svg ",
+          '<svg style="width: 100%; height: 100%; object-fit: contain;" ',
+        );
+
+        setSvgContent(text);
+      } catch (err) {
+        console.error("Error fetching SVG template", err);
+      }
+    };
+    fetchSvg();
+  }, [activeView, project.apparelConfig.colorHex]);
+
   // The print area bounds
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -26,79 +58,109 @@ export default function DesignEditor2D() {
   };
 
   return (
-    <div 
-      className={styles.editorContainer} 
-      onClick={() => selectLayer(null)}
-    >
-      <div 
-        className={styles.printArea} 
-        ref={containerRef}
-        style={{ backgroundColor: project.apparelConfig.colorHex }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.printAreaGrid} />
-        
-        {layers.map((layer) => {
-          if (!layer.isVisible) return null;
+    <div className={styles.editorContainer} onClick={() => selectLayer(null)}>
+      <div className={styles.printAreaWrapper}>
+        <div
+          className={styles.printArea}
+          ref={containerRef}
+          style={{ backgroundColor: "transparent" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* T-Shirt overlay fetched and colored dynamically */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+            dangerouslySetInnerHTML={{ __html: svgContent || "" }}
+          />
 
-          const isSelected = selectedLayerId === layer.id;
+          <div className={styles.printAreaGrid} />
 
-          return (
-            <Rnd
-              key={layer.id}
-              size={{ width: layer.width, height: layer.height }}
-              position={{ x: layer.x, y: layer.y }}
-              onDragStop={(e, d) => handleDragStop(layer.id, d)}
-              onResizeStop={(e, dir, ref, delta, pos) => handleResizeStop(layer.id, ref, pos)}
-              disableDragging={layer.isLocked}
-              enableResizing={!layer.isLocked}
-              bounds="parent"
-              className={`${styles.layerNode} ${isSelected ? styles.selected : ''}`}
-              style={{
-                zIndex: layer.zIndex,
-                transform: `rotate(${layer.rotation}deg)`, // Apply rotation
-                opacity: layer.opacity,
-              }}
-              onMouseDown={() => selectLayer(layer.id)}
-            >
-              {layer.type === 'text' && (
-                <div 
-                  className={styles.textLayer}
+          {layers.map((layer) => {
+            if (!layer.isVisible) return null;
+
+            const isSelected = selectedLayerId === layer.id;
+
+            return (
+              <Rnd
+                key={layer.id}
+                size={{ width: layer.width, height: layer.height }}
+                position={{ x: layer.x, y: layer.y }}
+                onDragStop={(e, d) => handleDragStop(layer.id, d)}
+                onResizeStop={(e, dir, ref, delta, pos) =>
+                  handleResizeStop(layer.id, ref, pos)
+                }
+                disableDragging={layer.isLocked}
+                enableResizing={!layer.isLocked}
+                bounds="parent"
+                className={`${styles.layerNode} ${isSelected ? styles.selected : ""}`}
+                style={{
+                  zIndex: layer.zIndex,
+                }}
+                onMouseDown={() => selectLayer(layer.id)}
+              >
+                <div
                   style={{
-                    color: (layer as TextLayer).colorHex,
-                    fontFamily: (layer as TextLayer).fontFamily,
-                    fontSize: `${(layer as TextLayer).fontSize}px`,
-                    fontWeight: (layer as TextLayer).fontWeight,
-                    letterSpacing: `${(layer as TextLayer).letterSpacing}px`,
-                    textAlign: (layer as TextLayer).textAlign,
+                    width: "100%",
+                    height: "100%",
+                    transform: `rotate(${layer.rotation}deg)`,
+                    opacity: layer.opacity,
+                    transformOrigin: "center center",
+                    pointerEvents: "auto",
                   }}
                 >
-                  {(layer as TextLayer).text}
+                  {layer.type === "text" && (
+                    <div
+                      className={styles.textLayer}
+                      style={{
+                        color: (layer as TextLayer).colorHex,
+                        fontFamily: (layer as TextLayer).fontFamily,
+                        fontSize: `${(layer as TextLayer).fontSize}px`,
+                        fontWeight: (layer as TextLayer).fontWeight,
+                        letterSpacing: `${(layer as TextLayer).letterSpacing}px`,
+                        textAlign: (layer as TextLayer).textAlign,
+                      }}
+                    >
+                      {(layer as TextLayer).text}
+                    </div>
+                  )}
+                  {layer.type === "image" && (
+                    <img
+                      src={(layer as ImageLayer).asset.originalUrl}
+                      alt={layer.name}
+                      className={styles.imageLayer}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
+                  )}
+                  {layer.type === "line" && (
+                    <div
+                      className={styles.lineLayer}
+                      style={{
+                        backgroundColor: (layer as LineLayer).colorHex,
+                        height: `${(layer as LineLayer).thickness}px`,
+                        width: "100%",
+                        position: "absolute",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                      }}
+                    />
+                  )}
                 </div>
-              )}
-              {layer.type === 'image' && (
-                <img 
-                  src={(layer as ImageLayer).asset.originalUrl} 
-                  alt={layer.name}
-                  className={styles.imageLayer}
-                />
-              )}
-              {layer.type === 'line' && (
-                <div 
-                  className={styles.lineLayer}
-                  style={{
-                    backgroundColor: (layer as LineLayer).colorHex,
-                    height: `${(layer as LineLayer).thickness}px`,
-                    width: '100%',
-                    position: 'absolute',
-                    top: '50%',
-                    transform: 'translateY(-50%)'
-                  }}
-                />
-              )}
-            </Rnd>
-          );
-        })}
+              </Rnd>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

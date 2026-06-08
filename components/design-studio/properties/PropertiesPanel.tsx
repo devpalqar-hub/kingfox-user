@@ -4,7 +4,7 @@ import styles from './PropertiesPanel.module.css';
 
 export default function PropertiesPanel() {
   const { project, activeView, selectedLayerId, updateLayer } = useDesignStore();
-  
+
   const layers = project.designs[activeView] || [];
   const layer = layers.find(l => l.id === selectedLayerId);
 
@@ -25,24 +25,24 @@ export default function PropertiesPanel() {
       <div className={styles.header}>
         <h3 className={styles.title}>Properties</h3>
       </div>
-      
+
       <div className={styles.content}>
         {/* TEXT SPECIFIC CONTROLS */}
         {layer.type === 'text' && (
           <>
             <div className={styles.controlGroup}>
               <label>Text Content</label>
-              <textarea 
+              <textarea
                 className={styles.input}
                 value={(layer as TextLayer).text}
                 onChange={(e) => handleChange({ text: e.target.value })}
               />
             </div>
-            
+
             <div className={styles.row}>
               <div className={styles.controlGroup}>
                 <label>Font Family</label>
-                <select 
+                <select
                   className={styles.select}
                   value={(layer as TextLayer).fontFamily}
                   onChange={(e) => handleChange({ fontFamily: e.target.value })}
@@ -56,7 +56,7 @@ export default function PropertiesPanel() {
               </div>
               <div className={styles.controlGroup}>
                 <label>Weight</label>
-                <select 
+                <select
                   className={styles.select}
                   value={(layer as TextLayer).fontWeight}
                   onChange={(e) => handleChange({ fontWeight: parseInt(e.target.value) })}
@@ -74,7 +74,7 @@ export default function PropertiesPanel() {
               <div className={styles.controlGroup}>
                 <label>Color</label>
                 <div className={styles.colorPickerWrapper}>
-                  <input 
+                  <input
                     type="color"
                     className={styles.colorInput}
                     value={(layer as TextLayer).colorHex}
@@ -85,7 +85,7 @@ export default function PropertiesPanel() {
               </div>
               <div className={styles.controlGroup}>
                 <label>Align</label>
-                <select 
+                <select
                   className={styles.select}
                   value={(layer as TextLayer).textAlign}
                   onChange={(e) => handleChange({ textAlign: e.target.value })}
@@ -99,16 +99,16 @@ export default function PropertiesPanel() {
 
             <div className={styles.controlGroup}>
               <label>Letter Spacing: {(layer as TextLayer).letterSpacing}px</label>
-              <input 
+              <input
                 type="range" min="-5" max="20" step="1"
                 value={(layer as TextLayer).letterSpacing}
                 onChange={(e) => handleChange({ letterSpacing: parseInt(e.target.value) })}
               />
             </div>
-            
+
             <div className={styles.controlGroup}>
               <label>Font Size: {(layer as TextLayer).fontSize}px</label>
-              <input 
+              <input
                 type="range" min="12" max="200" step="1"
                 value={(layer as TextLayer).fontSize}
                 onChange={(e) => handleChange({ fontSize: parseInt(e.target.value) })}
@@ -134,7 +134,7 @@ export default function PropertiesPanel() {
             <div className={styles.controlGroup}>
               <label>Color</label>
               <div className={styles.colorPickerWrapper}>
-                <input 
+                <input
                   type="color"
                   className={styles.colorInput}
                   value={(layer as LineLayer).colorHex}
@@ -145,7 +145,7 @@ export default function PropertiesPanel() {
             </div>
             <div className={styles.controlGroup}>
               <label>Thickness: {(layer as LineLayer).thickness}px</label>
-              <input 
+              <input
                 type="range" min="1" max="50" step="1"
                 value={(layer as LineLayer).thickness}
                 onChange={(e) => handleChange({ thickness: parseInt(e.target.value) })}
@@ -159,7 +159,7 @@ export default function PropertiesPanel() {
         {/* COMMON CONTROLS */}
         <div className={styles.controlGroup}>
           <label>Opacity: {Math.round(layer.opacity * 100)}%</label>
-          <input 
+          <input
             type="range" min="0" max="1" step="0.05"
             value={layer.opacity}
             onChange={(e) => handleChange({ opacity: parseFloat(e.target.value) })}
@@ -169,7 +169,7 @@ export default function PropertiesPanel() {
         <div className={styles.row}>
           <div className={styles.controlGroup}>
             <label>Rotation: {Math.round(layer.rotation)}°</label>
-            <input 
+            <input
               type="range" min="0" max="360" step="1"
               value={layer.rotation}
               onChange={(e) => handleChange({ rotation: parseInt(e.target.value) })}
@@ -180,7 +180,7 @@ export default function PropertiesPanel() {
         <div className={styles.row}>
           <div className={styles.controlGroup}>
             <label>Width</label>
-            <input 
+            <input
               type="number" className={styles.input}
               value={layer.width}
               onChange={(e) => handleChange({ width: parseInt(e.target.value) || 0 })}
@@ -188,7 +188,7 @@ export default function PropertiesPanel() {
           </div>
           <div className={styles.controlGroup}>
             <label>Height</label>
-            <input 
+            <input
               type="number" className={styles.input}
               value={layer.height}
               onChange={(e) => handleChange({ height: parseInt(e.target.value) || 0 })}

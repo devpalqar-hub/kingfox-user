@@ -19,7 +19,7 @@ export default function ThreeCanvas() {
         <ShirtModel />
       </Center>
 
-      <OrbitControls 
+      <OrbitControls
         enablePan={false}
         enableZoom={true}
         maxPolarAngle={Math.PI / 2}

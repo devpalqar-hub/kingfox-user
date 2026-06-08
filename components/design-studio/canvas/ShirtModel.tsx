@@ -1,17 +1,17 @@
 "use client";
 
-import { useGLTF, Decal, useTexture } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import { easing } from 'maath';
-import { useDesignStore } from '@/stores/design-studio/useDesignStore';
-import { useRef, useEffect, useState } from 'react';
-import * as THREE from 'three';
+import { useGLTF, Decal, useTexture } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { easing } from "maath";
+import { useDesignStore } from "@/stores/design-studio/useDesignStore";
+import { useRef, useEffect, useState } from "react";
+import * as THREE from "three";
 
 export default function ShirtModel() {
   const { project, activeView } = useDesignStore();
 
   // The user will need the shirt_baked.glb in their public folder
-  const { nodes, materials } = useGLTF('/shirt_baked.glb') as any;
+  const { nodes, materials } = useGLTF("/shirt_baked.glb") as any;
   const group = useRef<THREE.Group>(null);
 
   const frontLayers = project.designs.front || [];
@@ -24,35 +24,43 @@ export default function ShirtModel() {
         materials.lambert1.color,
         project.apparelConfig.colorHex,
         0.25,
-        delta
+        delta,
       );
     }
 
     // Rotate model to show back if active view is back
-    const targetRotation = activeView === 'back' ? Math.PI : 0;
+    const targetRotation = activeView === "back" ? Math.PI : 0;
     if (group.current) {
-      easing.dampE(
-        group.current.rotation,
-        [0, targetRotation, 0],
-        0.25,
-        delta
-      );
+      easing.dampE(group.current.rotation, [0, targetRotation, 0], 0.25, delta);
     }
   });
 
+  // 2D canvas dimensions (must match DesignEditor2D printArea)
+  const CANVAS_W = 500;
+  const CANVAS_H = 600;
+
+  // The 3D shirt mesh printable area spans roughly this many Three.js units.
+  // These were measured against the shirt_baked.glb geometry so that a
+  // full-width layer in 2D maps edge-to-edge on the 3D mesh.
+  const PRINT_3D_W = 0.36; // total printable width  in Three.js units
+  const PRINT_3D_H = 0.44; // total printable height in Three.js units
+
   // Helper to map 2D editor coordinates (500x600 canvas) to 3D spatial offsets
-  const get3DPosition = (layer: any, baseZ: number, isBack: boolean = false) => {
-    // Canvas center is 250, 300
-    const centerX = layer.x + (layer.width / 2);
-    const centerY = layer.y + (layer.height / 2);
+  const get3DPosition = (
+    layer: any,
+    baseZ: number,
+    isBack: boolean = false,
+  ) => {
+    // Centre of the layer in 2D pixel space
+    const centerX = layer.x + layer.width / 2;
+    const centerY = layer.y + layer.height / 2;
 
-    // 500px in 2D roughly equals 1 unit in 3D (based on scale factor)
-    const offsetX = (centerX - 250) / 500;
+    // Normalise to [-0.5, +0.5] range, then scale by the 3D print area.
+    const offsetX = (centerX / CANVAS_W - 0.5) * PRINT_3D_W;
     // Y is inverted in 3D vs DOM
-    const offsetY = -(centerY - 300) / 500;
+    const offsetY = -(centerY / CANVAS_H - 0.5) * PRINT_3D_H;
 
-    // Adjust base Y to be around the chest (0.05 is the baseline we used)
-    return [isBack ? -offsetX : offsetX, 0.05 + offsetY, baseZ];
+    return [isBack ? -offsetX : offsetX, offsetY, baseZ];
   };
 
   if (!nodes || !materials) return null;
@@ -71,30 +79,36 @@ export default function ShirtModel() {
           if (!layer.isVisible) return null;
           const pos = get3DPosition(layer, 0.15, false);
 
-          if (layer.type === 'image') {
+          const rotZ = THREE.MathUtils.degToRad(layer.rotation || 0);
+          const frontRotation: [number, number, number] = [0, 0, rotZ];
+
+          if (layer.type === "image") {
             return (
               <DecalTexture
                 key={layer.id}
                 layer={layer as any}
                 position={pos}
+                rotation={frontRotation}
               />
             );
           }
-          if (layer.type === 'text') {
+          if (layer.type === "text") {
             return (
               <DecalText
                 key={layer.id}
                 layer={layer as any}
                 position={pos}
+                rotation={frontRotation}
               />
             );
           }
-          if (layer.type === 'line') {
+          if (layer.type === "line") {
             return (
               <DecalLine
                 key={layer.id}
                 layer={layer as any}
                 position={pos}
+                rotation={frontRotation}
               />
             );
           }
@@ -105,33 +119,36 @@ export default function ShirtModel() {
           if (!layer.isVisible) return null;
           const pos = get3DPosition(layer, -0.15, true);
 
-          if (layer.type === 'image') {
+          const rotZb = THREE.MathUtils.degToRad(layer.rotation || 0);
+          const backRotation: [number, number, number] = [0, Math.PI, rotZb];
+
+          if (layer.type === "image") {
             return (
               <DecalTexture
                 key={layer.id}
                 layer={layer as any}
                 position={pos}
-                rotation={[0, Math.PI, 0]}
+                rotation={backRotation}
               />
             );
           }
-          if (layer.type === 'text') {
+          if (layer.type === "text") {
             return (
               <DecalText
                 key={layer.id}
                 layer={layer as any}
                 position={pos}
-                rotation={[0, Math.PI, 0]}
+                rotation={backRotation}
               />
             );
           }
-          if (layer.type === 'line') {
+          if (layer.type === "line") {
             return (
               <DecalLine
                 key={layer.id}
                 layer={layer as any}
                 position={pos}
-                rotation={[0, Math.PI, 0]}
+                rotation={backRotation}
               />
             );
           }
@@ -144,22 +161,18 @@ export default function ShirtModel() {
 
 // Subcomponent to load texture for individual decals safely
 function DecalTexture({ layer, position, rotation = [0, 0, 0] }: any) {
-  const texture = useTexture(
-    layer.asset.originalUrl
-  ) as THREE.Texture & {
+  const texture = useTexture(layer.asset.originalUrl) as THREE.Texture & {
     image?: HTMLImageElement;
   };
 
-  const aspect = texture.image
-    ? texture.image.width / texture.image.height
-    : 1;
-  const baseScale = layer.width / 500; // Use layer width as scale factor
+  const scaleX = (layer.width / 500) * 0.36;
+  const scaleY = (layer.height / 600) * 0.44;
 
   return (
     <Decal
       position={position}
       rotation={rotation}
-      scale={[baseScale * aspect, baseScale, 0.15]}
+      scale={[scaleX, scaleY, 0.15]}
       map={texture}
     >
       <meshStandardMaterial
@@ -180,20 +193,20 @@ function DecalText({ layer, position, rotation = [0, 0, 0] }: any) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 1024;
     canvas.height = 256;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     if (ctx) {
       // Clear background (transparent)
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw Text
-      ctx.fillStyle = layer.colorHex || '#ffffff';
-      ctx.font = `bold ${layer.fontSize * 1.5}px ${layer.fontFamily || 'Arial'}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.fillStyle = layer.colorHex || "#ffffff";
+      ctx.font = `bold ${layer.fontSize * 1.5}px ${layer.fontFamily || "Arial"}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillText(layer.text, canvas.width / 2, canvas.height / 2);
 
       const newTexture = new THREE.CanvasTexture(canvas);
@@ -204,13 +217,14 @@ function DecalText({ layer, position, rotation = [0, 0, 0] }: any) {
 
   if (!texture) return null;
 
-  const baseScale = layer.width / 500;
+  const scaleX = (layer.width / 500) * 0.36;
+  const scaleY = (layer.height / 600) * 0.44;
 
   return (
     <Decal
       position={position}
       rotation={rotation}
-      scale={[baseScale, baseScale * 0.25, 0.15]} // Text aspect ratio normalized to the canvas (1024x256)
+      scale={[scaleX, scaleY, 0.15]}
       map={texture}
     >
       <meshStandardMaterial
@@ -231,16 +245,19 @@ function DecalLine({ layer, position, rotation = [0, 0, 0] }: any) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 1024;
     canvas.height = 128;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = layer.colorHex || '#ffffff';
+      ctx.fillStyle = layer.colorHex || "#ffffff";
       // Use thickness relative to height
-      const thickness = Math.max(1, Math.min(layer.thickness * 2, canvas.height));
+      const thickness = Math.max(
+        1,
+        Math.min(layer.thickness * 2, canvas.height),
+      );
       const yStart = (canvas.height - thickness) / 2;
       ctx.fillRect(0, yStart, canvas.width, thickness);
 
@@ -252,13 +269,14 @@ function DecalLine({ layer, position, rotation = [0, 0, 0] }: any) {
 
   if (!texture) return null;
 
-  const baseScale = layer.width / 500;
+  const scaleX = (layer.width / 500) * 0.36;
+  const scaleY = (layer.height / 600) * 0.44;
 
   return (
     <Decal
       position={position}
       rotation={rotation}
-      scale={[baseScale, baseScale * 0.125, 0.15]}
+      scale={[scaleX, scaleY, 0.15]}
       map={texture}
     >
       <meshStandardMaterial
@@ -274,4 +292,4 @@ function DecalLine({ layer, position, rotation = [0, 0, 0] }: any) {
   );
 }
 
-useGLTF.preload('/shirt_baked.glb');
+useGLTF.preload("/shirt_baked.glb");

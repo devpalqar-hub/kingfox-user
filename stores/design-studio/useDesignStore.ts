@@ -9,7 +9,7 @@ interface DesignState {
   activeView: ViewType;
   selectedLayerId: string | null;
   pricing: PricingEstimate | null;
-  
+
   // Actions
   setApparelCategory: (categoryId: string) => void;
   changeApparelColor: (hex: string, name: string) => void;
@@ -127,7 +127,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
       const view = state.activeView;
       const layers = state.project.designs[view] || [];
       const layerToDuplicate = layers.find((l) => l.id === id);
-      
+
       if (!layerToDuplicate) return state;
 
       const duplicatedLayer = {
@@ -156,7 +156,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
       const view = state.activeView;
       const layers = [...(state.project.designs[view] || [])];
       const index = layers.findIndex((l) => l.id === id);
-      
+
       if (index === -1) return state;
       if (direction === 'up' && index === layers.length - 1) return state;
       if (direction === 'down' && index === 0) return state;
@@ -165,7 +165,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
       const layer = layers[index];
       layers.splice(index, 1);
       layers.splice(newIndex, 0, layer);
-      
+
       // Update zIndex for all layers
       const updatedLayers = layers.map((l, i) => ({ ...l, zIndex: i + 1 }));
 
@@ -189,7 +189,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
           ...state.project,
           designs: {
             ...state.project.designs,
-            [view]: layers.map((layer) => 
+            [view]: layers.map((layer) =>
               layer.id === id ? { ...layer, isVisible: !layer.isVisible } : layer
             ) as Layer[],
           },
@@ -206,7 +206,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
           ...state.project,
           designs: {
             ...state.project.designs,
-            [view]: layers.map((layer) => 
+            [view]: layers.map((layer) =>
               layer.id === id ? { ...layer, isLocked: !layer.isLocked } : layer
             ) as Layer[],
           },
@@ -223,7 +223,7 @@ export const useDesignStore = create<DesignState>((set, get) => ({
           ...state.project,
           designs: {
             ...state.project.designs,
-            [view]: layers.map((layer) => 
+            [view]: layers.map((layer) =>
               layer.id === id ? { ...layer, name } : layer
             ) as Layer[],
           },
