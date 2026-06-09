@@ -15,25 +15,35 @@ export default function DesignEditor2D() {
   useEffect(() => {
     const fetchSvg = async () => {
       try {
-        const url =
-          activeView === "back"
-            ? "/templates/Tshirt-back.svg"
-            : "/templates/Tshirt-front.svg";
-        const res = await fetch(url);
-        let text = await res.text();
+        const base = `/templates/${project.apparelConfig.categoryId}`;
+        const candidate =
+          activeView === "back" ? `${base}-back.svg` : `${base}-front.svg`;
+
+        // Try category-specific template first
+        let res = await fetch(candidate);
+        if (!res.ok) {
+          // Fallback to the legacy Tshirt templates
+          const fallback =
+            activeView === "back"
+              ? "/templates/Tshirt-back.svg"
+              : "/templates/Tshirt-front.svg";
+          res = await fetch(fallback);
+        }
+
+        const text = await res.text();
 
         // Inject colorHex into the first path (main body)
-        text = text.replace(
+        let replaced = text.replace(
           /fill="none"/g,
           `fill="${project.apparelConfig.colorHex}"`,
         );
         // Ensure SVG scales to fit container
-        text = text.replace(
+        replaced = replaced.replace(
           "<svg ",
           '<svg style="width: 100%; height: 100%; object-fit: contain;" ',
         );
 
-        setSvgContent(text);
+        setSvgContent(replaced);
       } catch (err) {
         console.error("Error fetching SVG template", err);
       }

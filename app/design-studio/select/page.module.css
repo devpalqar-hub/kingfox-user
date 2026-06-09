@@ -2,8 +2,16 @@
   min-height: 100vh;
   background-color: #000;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   padding: 80px 20px;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(135deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.65) 100%),
+    url("/images/select-hero.png");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .header {
@@ -24,21 +32,26 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
-  max-width: 1200px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  max-width: 1400px;
   margin: 0 auto;
+  overflow-x: auto;
+  padding-bottom: 10px;
 }
 
 .card {
   background: #111;
   border: 1px solid #222;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .card:hover {
@@ -47,7 +60,7 @@
 }
 
 .imagePlaceholder {
-  height: 300px;
+  height: 180px;
   background: #1a1a1a;
   display: flex;
   align-items: center;
@@ -55,21 +68,33 @@
   position: relative;
 }
 
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .cardContent {
-  padding: 24px;
+  padding: 14px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .cardTitle {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.3;
 }
 
 .cardDesc {
   color: #888;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  flex: 1;
 }
 
 .cardFooter {
@@ -77,24 +102,87 @@
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
+  gap: 8px;
+}
+
+.priceSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.priceLabel {
+  font-size: 0.65rem;
+  color: #999;
+  line-height: 1.2;
 }
 
 .price {
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
+  color: #ff9500;
 }
 
 .selectBtn {
-  background: #fff;
+  background: linear-gradient(90deg, #ffcc00, #ffb800);
   color: #000;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition:
+    opacity 0.2s,
+    background 0.2s;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.selectBtn:hover {
+  background: linear-gradient(90deg, #ffcc00, #ffb800);
 }
 
 .card:hover .selectBtn {
   opacity: 0.9;
+}
+
+/* Responsive: stack cards on smaller screens */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 920px;
+    padding: 0 12px 30px 12px;
+    overflow: visible;
+  }
+
+  .container {
+    padding: 40px 12px;
+    background-position: top;
+  }
+
+  .imagePlaceholder {
+    height: 260px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero,
+  .container {
+    padding: 20px 8px;
+  }
+
+  .cardContent {
+    padding: 12px 10px;
+  }
+
+  .cardDesc {
+    font-size: 0.78rem;
+  }
 }

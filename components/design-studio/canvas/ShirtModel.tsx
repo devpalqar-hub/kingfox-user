@@ -10,8 +10,92 @@ import * as THREE from "three";
 export default function ShirtModel() {
   const { project, activeView } = useDesignStore();
 
-  // The user will need the shirt_baked.glb in their public folder
-  const { nodes, materials } = useGLTF("/shirt_baked.glb") as any;
+  // Attempt to load a category-specific model from /models/{categoryId}.glb.
+  // Fall back to the default shirt_baked.glb if the category-specific asset is missing.
+  const [modelUrl, setModelUrl] = useState<string>("/shirt_baked.glb");
+
+  useEffect(() => {
+    const rawId = (project.apparelConfig.categoryId || '').toString();
+    const normalized = rawId.toLowerCase();
+
+    // Fast-path mapping for known categories (avoid HEAD delays)
+    if (normalized === 'classic-hoodie' || normalized.includes('classic-hoodie')) {
+      console.debug('[ShirtModel] fast-path hoodie -> /models/hoodie.glb');
+      setModelUrl('/models/hoodie.glb');
+      return;
+    }
+
+    // Build an ordered list of candidate model paths to try (prefer explicit overrides)
+    const candidates: string[] = [];
+    if (normalized.includes('polo')) {
+      candidates.push('/t-shirt-polo.glb', `/models/${project.apparelConfig.categoryId}.glb`);
+    }
+    if (normalized.includes('hoodie')) {
+      candidates.push('/models/hoodie.glb', '/hoodie.glb', `/models/${project.apparelConfig.categoryId}.glb`);
+    }
+    // Default attempt: category-specific model in /models
+    candidates.push(`/models/${project.apparelConfig.categoryId}.glb`);
+    // Final fallback is the baked shirt
+    candidates.push('/shirt_baked.glb');
+
+    let cancelled = false;
+    (async () => {
+      console.debug('[ShirtModel] trying candidates:', candidates);
+      for (const c of candidates) {
+        try {
+          // Use HEAD so we don't download the full GLB unless it's available
+          const res = await fetch(c, { method: 'HEAD' });
+          console.debug('[ShirtModel] HEAD', c, res.status);
+          if (res.ok) {
+            if (!cancelled) {
+              console.debug('[ShirtModel] selected model:', c);
+              setModelUrl(c);
+            }
+            return;
+          }
+        } catch (e) {
+          console.warn('[ShirtModel] HEAD failed for', c, e);
+          // ignore and try next
+        }
+      }
+      if (!cancelled) {
+        console.debug('[ShirtModel] falling back to /shirt_baked.glb');
+        setModelUrl('/shirt_baked.glb');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [project.apparelConfig.categoryId]);
+
+  const gltf: any = useGLTF(modelUrl) as any;
+  const { nodes, materials, scene } = gltf || {};
+  console.debug('[ShirtModel] useGLTF modelUrl=', modelUrl, 'nodes=', !!nodes, 'materials=', !!materials, 'scene=', !!scene);
+  // Quick debug badge so we can see the chosen model and availability in the page
+  useEffect(() => {
+    try {
+      const id = 'shirt-model-debug';
+      let badge = document.getElementById(id) as HTMLDivElement | null;
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = id;
+        badge.style.position = 'fixed';
+        badge.style.right = '12px';
+        badge.style.bottom = '12px';
+        badge.style.zIndex = '9999';
+        badge.style.padding = '8px 10px';
+        badge.style.background = 'rgba(0,0,0,0.6)';
+        badge.style.color = '#fff';
+        badge.style.fontSize = '12px';
+        badge.style.borderRadius = '6px';
+        document.body.appendChild(badge);
+      }
+      badge.innerText = `model: ${modelUrl} | nodes:${!!nodes} materials:${!!materials} scene:${!!scene}`;
+    } catch (e) {
+      // ignore DOM errors in non-browser contexts
+    }
+  }, [modelUrl, nodes, materials, scene]);
   const group = useRef<THREE.Group>(null);
 
   const frontLayers = project.designs.front || [];
@@ -19,13 +103,9 @@ export default function ShirtModel() {
 
   // Smoothly interpolate color
   useFrame((state, delta) => {
-    if (materials?.lambert1) {
-      easing.dampC(
-        materials.lambert1.color,
-        project.apparelConfig.colorHex,
-        0.25,
-        delta,
-      );
+    const mat = materials?.lambert1 || Object.values(materials || {})[0];
+    if (mat && mat.color) {
+      easing.dampC(mat.color, project.apparelConfig.colorHex, 0.25, delta);
     }
 
     // Rotate model to show back if active view is back
@@ -63,17 +143,55 @@ export default function ShirtModel() {
     return [isBack ? -offsetX : offsetX, offsetY, baseZ];
   };
 
-  if (!nodes || !materials) return null;
+  // Avoid early return here; continue and attempt to resolve meshes from `scene` if
+  // `nodes`/`materials` are not present. Some GLTFs expose meshes only on `scene`.
+
+  // Resolve mesh geometry and material dynamically for category models.
+  // Some GLBs expose meshes via `nodes`, others nest meshes in `scene` children.
+  let meshNode: any = nodes?.T_Shirt_male || Object.values(nodes || {}).find((n: any) => n && n.geometry);
+  let meshGeometry = meshNode?.geometry;
+  let meshMaterial = materials?.lambert1 || Object.values(materials || {})[0];
+
+  // If we didn't find geometry via nodes, traverse the scene to locate the first mesh
+  if (!meshGeometry && scene) {
+    scene.traverse((obj: any) => {
+      if (!meshGeometry && obj.isMesh) {
+        meshGeometry = obj.geometry;
+        if (!meshMaterial) meshMaterial = obj.material;
+      }
+    });
+  }
+
+  if (!meshGeometry || !meshMaterial) return null;
+
+  // Render a small on-page debug badge to help diagnose missing models in dev.
+  useEffect(() => {
+    try {
+      const id = 'shirt-model-debug';
+      let badge = document.getElementById(id) as HTMLDivElement | null;
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = id;
+        badge.style.position = 'fixed';
+        badge.style.right = '12px';
+        badge.style.bottom = '12px';
+        badge.style.zIndex = '9999';
+        badge.style.padding = '8px 10px';
+        badge.style.background = 'rgba(0,0,0,0.6)';
+        badge.style.color = '#fff';
+        badge.style.fontSize = '12px';
+        badge.style.borderRadius = '6px';
+        document.body.appendChild(badge);
+      }
+      badge.innerText = `model: ${modelUrl} | nodes:${!!nodes} materials:${!!materials}`;
+    } catch (e) {
+      // ignore DOM errors in non-browser contexts
+    }
+  }, [modelUrl, nodes, materials]);
 
   return (
     <group ref={group}>
-      <mesh
-        castShadow
-        geometry={nodes.T_Shirt_male.geometry}
-        material={materials.lambert1}
-        material-roughness={1}
-        dispose={null}
-      >
+      <mesh castShadow geometry={meshGeometry} material={meshMaterial} material-roughness={1} dispose={null}>
         {/* Render Decals dynamically */}
         {frontLayers.map((layer) => {
           if (!layer.isVisible) return null;
@@ -293,3 +411,6 @@ function DecalLine({ layer, position, rotation = [0, 0, 0] }: any) {
 }
 
 useGLTF.preload("/shirt_baked.glb");
+useGLTF.preload("/t-shirt-polo.glb");
+useGLTF.preload("/hoodie.glb");
+useGLTF.preload("/models/hoodie.glb");
