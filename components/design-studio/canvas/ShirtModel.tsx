@@ -149,20 +149,17 @@ export default function ShirtModel() {
   // Resolve mesh geometry and material dynamically for category models.
   // Some GLBs expose meshes via `nodes`, others nest meshes in `scene` children.
   let meshNode: any = nodes?.T_Shirt_male || Object.values(nodes || {}).find((n: any) => n && n.geometry);
-  let meshGeometry = meshNode?.geometry;
-  let meshMaterial = materials?.lambert1 || Object.values(materials || {})[0];
 
   // If we didn't find geometry via nodes, traverse the scene to locate the first mesh
-  if (!meshGeometry && scene) {
+  if (!meshNode && scene) {
     scene.traverse((obj: any) => {
-      if (!meshGeometry && obj.isMesh) {
-        meshGeometry = obj.geometry;
-        if (!meshMaterial) meshMaterial = obj.material;
+      if (!meshNode && obj.isMesh) {
+        meshNode = obj;
       }
     });
   }
 
-  if (!meshGeometry || !meshMaterial) return null;
+  if (!meshNode || !scene) return null;
 
   // Render a small on-page debug badge to help diagnose missing models in dev.
   useEffect(() => {
@@ -189,96 +186,104 @@ export default function ShirtModel() {
     }
   }, [modelUrl, nodes, materials]);
 
+  const targetMeshRef = useRef<any>(null);
+  targetMeshRef.current = meshNode;
+
   return (
     <group ref={group}>
-      <mesh castShadow geometry={meshGeometry} material={meshMaterial} material-roughness={1} dispose={null}>
-        {/* Render Decals dynamically */}
-        {frontLayers.map((layer) => {
-          if (!layer.isVisible) return null;
-          const pos = get3DPosition(layer, 0.15, false);
+      <primitive object={scene} />
+      {/* Render Decals dynamically */}
+      {frontLayers.map((layer) => {
+        if (!layer.isVisible) return null;
+        const pos = get3DPosition(layer, 0.15, false);
 
-          const rotZ = THREE.MathUtils.degToRad(layer.rotation || 0);
-          const frontRotation: [number, number, number] = [0, 0, rotZ];
+        const rotZ = THREE.MathUtils.degToRad(layer.rotation || 0);
+        const frontRotation: [number, number, number] = [0, 0, rotZ];
 
-          if (layer.type === "image") {
-            return (
-              <DecalTexture
-                key={layer.id}
-                layer={layer as any}
-                position={pos}
-                rotation={frontRotation}
-              />
-            );
-          }
-          if (layer.type === "text") {
-            return (
-              <DecalText
-                key={layer.id}
-                layer={layer as any}
-                position={pos}
-                rotation={frontRotation}
-              />
-            );
-          }
-          if (layer.type === "line") {
-            return (
-              <DecalLine
-                key={layer.id}
-                layer={layer as any}
-                position={pos}
-                rotation={frontRotation}
-              />
-            );
-          }
-          return null;
-        })}
+        if (layer.type === "image") {
+          return (
+            <DecalTexture
+              key={layer.id}
+              layer={layer as any}
+              position={pos}
+              rotation={frontRotation}
+              mesh={targetMeshRef}
+            />
+          );
+        }
+        if (layer.type === "text") {
+          return (
+            <DecalText
+              key={layer.id}
+              layer={layer as any}
+              position={pos}
+              rotation={frontRotation}
+              mesh={targetMeshRef}
+            />
+          );
+        }
+        if (layer.type === "line") {
+          return (
+            <DecalLine
+              key={layer.id}
+              layer={layer as any}
+              position={pos}
+              rotation={frontRotation}
+              mesh={targetMeshRef}
+            />
+          );
+        }
+        return null;
+      })}
 
-        {backLayers.map((layer) => {
-          if (!layer.isVisible) return null;
-          const pos = get3DPosition(layer, -0.15, true);
+      {backLayers.map((layer) => {
+        if (!layer.isVisible) return null;
+        const pos = get3DPosition(layer, -0.15, true);
 
-          const rotZb = THREE.MathUtils.degToRad(layer.rotation || 0);
-          const backRotation: [number, number, number] = [0, Math.PI, rotZb];
+        const rotZb = THREE.MathUtils.degToRad(layer.rotation || 0);
+        const backRotation: [number, number, number] = [0, Math.PI, rotZb];
 
-          if (layer.type === "image") {
-            return (
-              <DecalTexture
-                key={layer.id}
-                layer={layer as any}
-                position={pos}
-                rotation={backRotation}
-              />
-            );
-          }
-          if (layer.type === "text") {
-            return (
-              <DecalText
-                key={layer.id}
-                layer={layer as any}
-                position={pos}
-                rotation={backRotation}
-              />
-            );
-          }
-          if (layer.type === "line") {
-            return (
-              <DecalLine
-                key={layer.id}
-                layer={layer as any}
-                position={pos}
-                rotation={backRotation}
-              />
-            );
-          }
-          return null;
-        })}
-      </mesh>
+        if (layer.type === "image") {
+          return (
+            <DecalTexture
+              key={layer.id}
+              layer={layer as any}
+              position={pos}
+              rotation={backRotation}
+              mesh={targetMeshRef}
+            />
+          );
+        }
+        if (layer.type === "text") {
+          return (
+            <DecalText
+              key={layer.id}
+              layer={layer as any}
+              position={pos}
+              rotation={backRotation}
+              mesh={targetMeshRef}
+            />
+          );
+        }
+        if (layer.type === "line") {
+          return (
+            <DecalLine
+              key={layer.id}
+              layer={layer as any}
+              position={pos}
+              rotation={backRotation}
+              mesh={targetMeshRef}
+            />
+          );
+        }
+        return null;
+      })}
     </group>
   );
 }
 
 // Subcomponent to load texture for individual decals safely
-function DecalTexture({ layer, position, rotation = [0, 0, 0] }: any) {
+function DecalTexture({ layer, position, rotation = [0, 0, 0], mesh }: any) {
   const texture = useTexture(layer.asset.originalUrl) as THREE.Texture & {
     image?: HTMLImageElement;
   };
@@ -288,6 +293,7 @@ function DecalTexture({ layer, position, rotation = [0, 0, 0] }: any) {
 
   return (
     <Decal
+      mesh={mesh}
       position={position}
       rotation={rotation}
       scale={[scaleX, scaleY, 0.15]}
@@ -307,7 +313,7 @@ function DecalTexture({ layer, position, rotation = [0, 0, 0] }: any) {
 }
 
 // Subcomponent to generate dynamic text textures
-function DecalText({ layer, position, rotation = [0, 0, 0] }: any) {
+function DecalText({ layer, position, rotation = [0, 0, 0], mesh }: any) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
@@ -340,6 +346,7 @@ function DecalText({ layer, position, rotation = [0, 0, 0] }: any) {
 
   return (
     <Decal
+      mesh={mesh}
       position={position}
       rotation={rotation}
       scale={[scaleX, scaleY, 0.15]}
@@ -359,7 +366,7 @@ function DecalText({ layer, position, rotation = [0, 0, 0] }: any) {
 }
 
 // Subcomponent to generate dynamic line textures
-function DecalLine({ layer, position, rotation = [0, 0, 0] }: any) {
+function DecalLine({ layer, position, rotation = [0, 0, 0], mesh }: any) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
@@ -392,6 +399,7 @@ function DecalLine({ layer, position, rotation = [0, 0, 0] }: any) {
 
   return (
     <Decal
+      mesh={mesh}
       position={position}
       rotation={rotation}
       scale={[scaleX, scaleY, 0.15]}

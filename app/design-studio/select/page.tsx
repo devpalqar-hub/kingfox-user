@@ -54,7 +54,7 @@ export default function ApparelSelection() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Choose Your Canvas</h1>
+        <h1 className={styles.title}>Choose Your <span className={styles.highlightText}>Canvas</span></h1>
         <p className={styles.subtitle}>
           Select the apparel type you want to customize.
         </p>
