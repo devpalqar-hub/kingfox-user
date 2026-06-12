@@ -483,8 +483,7 @@ export default function ShirtModel() {
 
 function DecalTexture({ layer, position, rotation, scale, meshRef }: any) {
   const texture = useTexture(layer.asset.originalUrl) as THREE.Texture;
-  if (texture)
-    texture.encoding = (THREE as any)["sRGBEncoding"] || texture.encoding;
+  if (texture) texture.colorSpace = THREE.SRGBColorSpace;
   if (!meshRef.current) {
     if (typeof window !== "undefined")
       console.log(
@@ -759,8 +758,7 @@ function DecalText({ layer, position, rotation, scale, meshRef }: any) {
           ) : null
         }
       >
-        console.log( meshRef.current, meshRef.current?.isMesh,
-        meshRef.current?.parent );
+        
         <Decal
           mesh={meshRef.current as any}
           position={[decalPosT.x, decalPosT.y, decalPosT.z]}
@@ -815,7 +813,7 @@ function DecalLine({ layer, position, rotation, scale, meshRef }: any) {
     ctx.fillRect(0, (canvas.height - thickness) / 2, canvas.width, thickness);
     const t = new THREE.CanvasTexture(canvas);
     t.needsUpdate = true;
-    t.encoding = (THREE as any)["sRGBEncoding"] || t.encoding;
+    t.colorSpace = THREE.SRGBColorSpace;
     setTexture(t);
   }, [layer.colorHex, layer.thickness]);
   const [decalPosL, setDecalPosL] = useState<THREE.Vector3 | null>(null);
