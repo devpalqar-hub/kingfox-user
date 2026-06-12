@@ -11,10 +11,14 @@ import {
   Trash2,
   Box,
   Layers,
-  Sliders,
   X,
-  Wrench,
-  ShoppingCart,
+  RotateCcw,
+  Maximize,
+  Plus,
+  Eye,
+  Square,
+  Bookmark,
+  Lightbulb
 } from "lucide-react";
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
 import { Layer, TextLayer, ImageLayer } from "@/types/design-studio";
@@ -42,14 +46,17 @@ export default function Workspace({ params }: { params: { id: string } }) {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
-  const [activeMobileTab, setActiveMobileTab] = useState<
-    "tools" | "layers" | "properties" | null
-  >(null);
   const [isMobile3DOpen, setIsMobile3DOpen] = useState(false);
+  
+  const [activeMobileTab, setActiveMobileTab] = useState<
+    "color" | "elements" | "size" | "layers"
+  >("color");
+  const [selectedSize, setSelectedSize] = useState<string>("M");
   const [rightPropsLayerId, setRightPropsLayerId] = useState<string | null>(
     null,
   );
 
+  const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
   const currentLayers = project.designs[activeView] || [];
 
   const handleAddText = () => {
@@ -62,7 +69,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
       fontSize: 100,
       fontWeight: 700,
       letterSpacing: 0,
-      colorHex: "#ffffff",
+      colorHex: "#000000",
       textAlign: "center",
       x: 150,
       y: 200,
@@ -115,11 +122,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
       type: "line",
       name: "Line Layer",
       thickness: 5,
-      colorHex: "#ffffff",
+      colorHex: "#000000",
       x: 150,
       y: 250,
       width: 200,
-      height: 20, // Rnd container height, visually driven by thickness
+      height: 20,
       rotation: 0,
       zIndex: currentLayers.length + 1,
       isLocked: false,
@@ -129,120 +136,116 @@ export default function Workspace({ params }: { params: { id: string } }) {
     addLayer(newLineLayer);
   };
 
+  const renderColorSection = () => (
+    <div className={styles.sectionBlock}>
+      <h3 className={styles.sectionTitle}>
+        <span className={styles.sectionNumber}>1</span> CHOOSE COLOR
+      </h3>
+      <p className={styles.sectionDesc}>Select a base color for your garment.</p>
+      <div className={styles.colorGrid}>
+        {[
+          "#FFFFFF",
+          "#000000",
+          "#9CA3AF",
+          "#D1D5DB",
+          "#EF4444",
+          "#F59E0B",
+          "#10B981",
+          "#3B82F6",
+          "#8B5CF6",
+          "#EC4899",
+          "#14B8A6",
+        ].map((hex) => (
+          <div
+            key={hex}
+            className={`${styles.colorSwatch} ${project.apparelConfig.colorHex === hex ? styles.active : ""}`}
+            onClick={() => changeApparelColor(hex, hex)}
+            style={{ backgroundColor: hex }}
+            title={hex}
+          />
+        ))}
+        <div className={`${styles.colorSwatch} ${styles.addMore}`}>+</div>
+      </div>
+    </div>
+  );
+
+  const renderElementsSection = () => (
+    <div className={styles.sectionBlock}>
+      <h3 className={styles.sectionTitle}>
+        <span className={styles.sectionNumber}>2</span> ADD ELEMENTS
+      </h3>
+      <p className={styles.sectionDesc}>Add text, artwork or lines to personalize your design.</p>
+      <div className={styles.elementsGrid}>
+        <label className={styles.elementBtn}>
+          <ImageIcon size={20} /> Upload Image (Decal)
+          <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+        </label>
+        <button className={styles.elementBtn} onClick={handleAddText}>
+          <Type size={20} /> Add Text
+        </button>
+        <button className={styles.elementBtn} onClick={handleAddLine}>
+          <Minus size={20} /> Add Line
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderSizeSection = () => (
+    <div className={styles.sectionBlock}>
+      <h3 className={styles.sectionTitle}>
+        <span className={styles.sectionNumber}>3</span> SIZE
+      </h3>
+      <p className={styles.sectionDesc}>Choose the size you want to preview.</p>
+      <div className={styles.sizeGrid}>
+        {SIZES.map((s) => (
+          <button
+            key={s}
+            className={`${styles.sizeBtn} ${selectedSize === s ? styles.active : ""}`}
+            onClick={() => setSelectedSize(s)}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderLayersSection = () => (
+    <div className={styles.sectionBlock} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <h3 className={styles.sectionTitle}>
+        <span className={styles.sectionNumber}>4</span> LAYERS ({currentLayers.length})
+      </h3>
+      <p className={styles.sectionDesc}>Manage and arrange your design layers.</p>
+      {currentLayers.length === 0 ? (
+        <div className={styles.layersEmpty}>
+          <Layers size={24} />
+          <span>No layers added yet.</span>
+        </div>
+      ) : (
+        <LayerPanel
+          onOpenProperties={(id: string) => {
+            selectLayer(id);
+            setRightPropsLayerId(id);
+          }}
+        />
+      )}
+    </div>
+  );
+
+  const renderActionButtons = () => (
+    <div className={styles.actionRow}>
+      <button className={styles.btnSecondary} onClick={() => setIsClearModalOpen(true)}>
+        <Trash2 size={18} /> Clear Canvas
+      </button>
+    </div>
+  );
+
   return (
     <div className={styles.workspaceContainer}>
-      {/* Left Sidebar - Tools */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2 className={styles.sidebarTitle}>Tools</h2>
-          <Settings2 size={20} />
-        </div>
-        <div className={styles.toolsPanel}>
-          <div className={styles.toolSection}>
-            <h3 className={styles.toolSectionTitle}>Apparel Color</h3>
-            <p className={styles.toolDesc}>
-              Quickly pick a base color for the garment. Click a swatch to apply
-              immediately.
-            </p>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              {[
-                "#000000",
-                "#FFFFFF",
-                "#FF0000",
-                "#00FF00",
-                "#0000FF",
-                "#FFFF00",
-                "#EF4444",
-                "#3B82F6",
-                "#10B981",
-              ].map((hex) => (
-                <div
-                  key={hex}
-                  onClick={() => changeApparelColor(hex, hex)}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "50%",
-                    backgroundColor: hex,
-                    cursor: "pointer",
-                    border:
-                      project.apparelConfig.colorHex === hex
-                        ? "2px solid #fff"
-                        : "1px solid #333",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-          <div className={styles.toolSection}>
-            <h3 className={styles.toolSectionTitle}>Add Elements</h3>
-            <p className={styles.toolDesc}>
-              Add artwork, text, or simple shapes. Use the image upload to add
-              decals.
-            </p>
-            <label className={styles.toolButton}>
-              <ImageIcon size={18} /> Upload Image (Decal)
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-            </label>
-            <button className={styles.toolButton} onClick={handleAddText}>
-              <Type size={18} /> Add Text
-            </button>
-            <button className={styles.toolButton} onClick={handleAddLine}>
-              <Minus size={18} /> Add Line
-            </button>
-          </div>
-
-          <div className={styles.toolSection} style={{ marginTop: "auto" }}>
-            <p className={styles.toolDesc}>
-              Reset the canvas to start over. This will remove all layers for
-              the current view.
-            </p>
-            <button
-              className={styles.toolButton}
-              onClick={() => setIsClearModalOpen(true)}
-              style={{
-                color: "#ef4444",
-                borderColor: "#331111",
-                backgroundColor: "#1a0505",
-              }}
-            >
-              <Trash2 size={18} /> Clear Design
-            </button>
-          </div>
-        </div>
-        {/* Layers & Properties moved here for single-side settings */}
-        <div className={styles.sidePanels}>
-          <LayerPanel
-            onOpenProperties={(id: string) => {
-              selectLayer(id);
-              setRightPropsLayerId(id);
-            }}
-          />
-
-          <button
-            className={styles.checkoutBtn}
-            onClick={() => {
-              calculatePricing();
-              setIsModalOpen(true);
-            }}
-            style={{ marginTop: "12px" }}
-          >
-            Get Estimated Cost
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Canvas Area */}
-      <main className={styles.canvasArea} onClick={() => selectLayer(null)}>
-        <div
-          className={styles.viewSwitcher}
-          onClick={(e) => e.stopPropagation()}
-        >
+      
+      {/* Mobile Top Navigation */}
+      <div className={styles.mobileTopNav}>
+        <div className={styles.viewSwitcher} style={{ margin: 0 }}>
           <button
             className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
             onClick={() => switchView("front")}
@@ -256,60 +259,27 @@ export default function Workspace({ params }: { params: { id: string } }) {
             Back
           </button>
         </div>
-
-        <div
-          className={styles.canvasWrapper}
-          style={{ backgroundColor: "#e2e2e2", border: "none" }}
-        >
-          <ThreeCanvas />
+        <div className={styles.canvasTools} style={{ boxShadow: "none" }}>
+          <button className={styles.iconBtn} aria-label="Reset" onClick={() => setIsClearModalOpen(true)}>
+            <RotateCcw size={18} />
+          </button>
         </div>
-      </main>
+      </div>
 
-      {/* Right properties drawer - opens when layer 'Properties' button clicked */}
-      {rightPropsLayerId && (
-        <aside
-          className={styles.rightPropsPanel}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className={styles.rightPropsHeader}>
-            <h3>Layer Properties</h3>
-            <button
-              className={styles.rightPropsClose}
-              onClick={() => setRightPropsLayerId(null)}
-            >
-              Close
-            </button>
-          </div>
-          <div className={styles.rightPropsContent}>
-            <PropertiesPanel />
-          </div>
-        </aside>
-      )}
+      {/* Left Sidebar - Tools (Desktop) */}
+      <aside className={styles.sidebar}>
+        {renderColorSection()}
+        {renderElementsSection()}
+        {renderSizeSection()}
+        {renderLayersSection()}
+        {renderActionButtons()}
+      </aside>
 
-      {/* 2D Interactive Editor */}
-      <DesignEditor2D />
-
-      {/* Move Layers/Properties into left sidebar for clearer layout */}
-      <div style={{ display: "none" }} />
-
-      {/* --- Mobile Responsiveness UI --- */}
-
-      {/* Mobile 3D Button */}
-      <button
-        className={styles.mobileView3DBtn}
-        onClick={() => setIsMobile3DOpen(true)}
-      >
-        <Box size={18} /> View 3D
-      </button>
-
-      {/* Mobile 3D Modal */}
-      {isMobile3DOpen && (
-        <div className={styles.modalOverlay}>
-          <div
-            className={styles.viewSwitcher}
-            onClick={(e) => e.stopPropagation()}
-            style={{ zIndex: 2020, top: "40px" }}
-          >
+      {/* Main Canvas Area */}
+      <main className={styles.canvasArea} onClick={() => selectLayer(null)}>
+        {/* Top Canvas Header (Desktop) */}
+        <div className={styles.canvasHeader}>
+          <div className={styles.viewSwitcher}>
             <button
               className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
               onClick={() => switchView("front")}
@@ -323,10 +293,163 @@ export default function Workspace({ params }: { params: { id: string } }) {
               Back
             </button>
           </div>
+          <div className={styles.canvasTools}>
+            <button className={styles.iconBtn} aria-label="Reset" onClick={() => setIsClearModalOpen(true)}>
+              <RotateCcw size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Main Editor Area (2D Editor) */}
+        <div className={styles.mainEditor}>
+          <DesignEditor2D />
+        </div>
+
+        {/* Mobile View 3D Button */}
+        <button className={styles.mobile3dToggle} onClick={() => setIsMobile3DOpen(true)}>
+          <Box size={18} /> View 3D
+        </button>
+
+        {/* Tips section (Desktop) */}
+        {/* <div className={styles.tipsSection}>
+           <h4 className={styles.tipsTitle}><Lightbulb size={16} color="#F59E0B" /> TIPS</h4>
+           <p className={styles.tipsDesc}>Use high resolution images for the best print quality. We recommend PNG files with transparent background.</p>
+        </div> */}
+      </main>
+
+      {/* Right Sidebar - Preview (Desktop) */}
+      <aside className={styles.rightSidebar}>
+        <div className={styles.sectionBlock} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <h3 className={styles.sectionTitle} style={{ marginBottom: "16px", textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+             DESIGN PREVIEW
+          </h3>
+          <p className={styles.sectionDesc}>See how your design will look.</p>
+
+          <div className={styles.previewBox}>
+            <ThreeCanvas />
+          </div>
+
+          <div className={styles.modelInfo}>
+            model: /shirt_baked.glb | nodes:true materials:true
+          </div>
+
           <button
-            className={styles.closeModalBtn}
-            onClick={() => setIsMobile3DOpen(false)}
+            className={styles.btnPrimary}
+            style={{ width: "100%", marginTop: "auto" }}
+            onClick={() => {
+              calculatePricing();
+              setIsModalOpen(true);
+            }}
           >
+            <Eye size={18} /> Preview Full Design
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Content Area (Tab Views) */}
+      <div className={styles.mobileContentArea}>
+        <div className={styles.mobileSectionCard}>
+          {activeMobileTab === "color" && renderColorSection()}
+          {activeMobileTab === "elements" && renderElementsSection()}
+          {activeMobileTab === "size" && renderSizeSection()}
+          {activeMobileTab === "layers" && (
+            <>
+              {renderLayersSection()}
+              {rightPropsLayerId && (
+                <div style={{ marginTop: "24px", borderTop: "1px solid #eaeaea", paddingTop: "20px" }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                     <h4 style={{ margin: 0 }}>Layer Properties</h4>
+                     <button className={styles.rightPropsClose} onClick={() => setRightPropsLayerId(null)}>Close</button>
+                  </div>
+                  <PropertiesPanel />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className={styles.mobileActions}>
+          <button className={styles.btnSecondary} onClick={() => setIsClearModalOpen(true)}>
+            <Trash2 size={18} /> Clear
+          </button>
+          <button className={styles.btnPrimary} onClick={() => setIsModalOpen(true)}>
+            <Eye size={18} /> Preview
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Bar (Tabs) */}
+      <div className={styles.mobileBottomBar}>
+        <button
+          className={`${styles.mobileTab} ${activeMobileTab === "color" ? styles.active : ""}`}
+          onClick={() => setActiveMobileTab("color")}
+        >
+          <span className={styles.mobileTabIcon}>
+            <Palette size={20} />
+          </span>
+          <span className={styles.mobileTabLabel}>Color</span>
+        </button>
+        <button
+          className={`${styles.mobileTab} ${activeMobileTab === "elements" ? styles.active : ""}`}
+          onClick={() => setActiveMobileTab("elements")}
+        >
+          <span className={styles.mobileTabIcon}>
+            <Plus size={20} />
+          </span>
+          <span className={styles.mobileTabLabel}>Elements</span>
+        </button>
+        <button
+          className={`${styles.mobileTab} ${activeMobileTab === "size" ? styles.active : ""}`}
+          onClick={() => setActiveMobileTab("size")}
+        >
+          <span className={styles.mobileTabIcon}>
+            <Box size={20} />
+          </span>
+          <span className={styles.mobileTabLabel}>Size</span>
+        </button>
+        <button
+          className={`${styles.mobileTab} ${activeMobileTab === "layers" ? styles.active : ""}`}
+          onClick={() => setActiveMobileTab("layers")}
+        >
+          <span className={styles.mobileTabIcon}>
+            <Layers size={20} />
+          </span>
+          <span className={styles.mobileTabLabel}>Layers</span>
+        </button>
+      </div>
+
+      {/* Properties Drawer for Desktop (Shows when layer selected) */}
+      {rightPropsLayerId && (
+        <aside className={styles.rightPropsPanel} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.rightPropsHeader}>
+            <h3>Layer Properties</h3>
+            <button className={styles.rightPropsClose} onClick={() => setRightPropsLayerId(null)}>
+              Close
+            </button>
+          </div>
+          <div className={styles.rightPropsContent}>
+            <PropertiesPanel />
+          </div>
+        </aside>
+      )}
+
+      {/* Mobile 3D Modal */}
+      {isMobile3DOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.viewSwitcher} style={{ position: 'absolute', top: '20px', zIndex: 2020 }}>
+            <button
+              className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
+              onClick={() => switchView("front")}
+            >
+              Front
+            </button>
+            <button
+              className={`${styles.viewBtn} ${activeView === "back" ? styles.active : ""}`}
+              onClick={() => switchView("back")}
+            >
+              Back
+            </button>
+          </div>
+          <button className={styles.closeModalBtn} onClick={() => setIsMobile3DOpen(false)}>
             <X size={24} />
           </button>
           <div className={styles.modalContent}>
@@ -335,136 +458,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      {/* Mobile Menu Toggle Button */}
-      <button
-        className={styles.mobileMenuBtn}
-        onClick={() => setActiveMobileTab(activeMobileTab ? null : "tools")}
-      >
-        <Settings2 size={24} />
-      </button>
-
-      {/* Mobile Sidebar Overlay */}
-      {activeMobileTab && (
-        <div
-          className={styles.mobileDrawerOverlay}
-          onClick={() => setActiveMobileTab(null)}
-        />
-      )}
-
-      {/* Mobile Sidebar */}
-      <div
-        className={`${styles.mobileSidebar} ${activeMobileTab ? styles.open : ""}`}
-      >
-        <button
-          className={styles.mobileSidebarClose}
-          onClick={() => setActiveMobileTab(null)}
-        >
-          <X size={24} />
-        </button>
-
-        <div className={styles.mobileSidebarTabs}>
-          <button
-            className={`${styles.mobileSidebarTabBtn} ${activeMobileTab === "tools" ? styles.active : ""}`}
-            onClick={() => setActiveMobileTab("tools")}
-          >
-            Tools
-          </button>
-          <button
-            className={`${styles.mobileSidebarTabBtn} ${activeMobileTab === "layers" ? styles.active : ""}`}
-            onClick={() => setActiveMobileTab("layers")}
-          >
-            Layers
-          </button>
-          <button
-            className={`${styles.mobileSidebarTabBtn} ${activeMobileTab === "properties" ? styles.active : ""}`}
-            onClick={() => setActiveMobileTab("properties")}
-          >
-            Props
-          </button>
-        </div>
-
-        {activeMobileTab === "tools" && (
-          <div className={styles.toolsPanel} style={{ padding: 0 }}>
-            <div className={styles.toolSection}>
-              <h3 className={styles.toolSectionTitle}>Apparel Color</h3>
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                {[
-                  "#000000",
-                  "#FFFFFF",
-                  "#FF0000",
-                  "#00FF00",
-                  "#0000FF",
-                  "#FFFF00",
-                  "#EF4444",
-                  "#3B82F6",
-                  "#10B981",
-                ].map((hex) => (
-                  <div
-                    key={hex}
-                    onClick={() => changeApparelColor(hex, hex)}
-                    style={{
-                      width: "30px",
-                      height: "30px",
-                      borderRadius: "50%",
-                      backgroundColor: hex,
-                      cursor: "pointer",
-                      border:
-                        project.apparelConfig.colorHex === hex
-                          ? "2px solid #fff"
-                          : "1px solid #333",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className={styles.toolSection}>
-              <h3 className={styles.toolSectionTitle}>Add Elements</h3>
-              <label className={styles.toolButton}>
-                <ImageIcon size={18} /> Upload Image (Decal)
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-              </label>
-              <button className={styles.toolButton} onClick={handleAddText}>
-                <Type size={18} /> Add Text
-              </button>
-              <button className={styles.toolButton} onClick={handleAddLine}>
-                <Minus size={18} /> Add Line
-              </button>
-            </div>
-          </div>
-        )}
-        {activeMobileTab === "layers" && (
-          <LayerPanel
-            onOpenProperties={(id: string) => {
-              selectLayer(id);
-              setActiveMobileTab("properties");
-            }}
-          />
-        )}
-        {activeMobileTab === "properties" && <PropertiesPanel />}
-
-        {/* <button
-          className={styles.checkoutBtn}
-          onClick={() => {
-            calculatePricing();
-            setIsModalOpen(true);
-            setActiveMobileTab(null);
-          }}
-          style={{ marginTop: "auto" }}
-        >
-          Checkout
-        </button> */}
-      </div>
-
+      {/* Modals */}
       {isModalOpen && (
         <CostEstimateModal
           onClose={() => setIsModalOpen(false)}
           onProceed={() => {
-            // Integration with checkout (Sprint 4)
             alert("Proceeding to checkout...");
             setIsModalOpen(false);
           }}

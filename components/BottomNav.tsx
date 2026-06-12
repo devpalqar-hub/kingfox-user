@@ -47,6 +47,10 @@ export default function BottomNav() {
     }
   };
 
+  if (pathname.startsWith("/design-studio/workspace")) {
+    return null;
+  }
+
   return (
     <nav className={styles.bottomNav}>
       {NAV.map(({ href, label, Icon, key, authGuarded }) => {

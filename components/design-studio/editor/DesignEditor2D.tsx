@@ -15,7 +15,12 @@ export default function DesignEditor2D() {
   useEffect(() => {
     const fetchSvg = async () => {
       try {
-        const base = `/templates/${project.apparelConfig.categoryId}`;
+        let base = `/templates/${project.apparelConfig.categoryId}`;
+        const normalized = (project.apparelConfig.categoryId || '').toString().toLowerCase();
+        if (normalized.includes('hoodie')) {
+          base = `/templates/hoodie`;
+        }
+
         const candidate =
           activeView === "back" ? `${base}-back.svg` : `${base}-front.svg`;
 
@@ -49,7 +54,7 @@ export default function DesignEditor2D() {
       }
     };
     fetchSvg();
-  }, [activeView, project.apparelConfig.colorHex]);
+  }, [activeView, project.apparelConfig.colorHex, project.apparelConfig.categoryId]);
 
   // The print area bounds
   const containerRef = useRef<HTMLDivElement>(null);

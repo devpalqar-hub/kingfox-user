@@ -52,7 +52,7 @@ const Designing = () => {
 
         //   window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
         // }}
-        href="/design-studio"
+        href="/design-studio/select"
       >
         START DESIGNING NOW
       </Link>

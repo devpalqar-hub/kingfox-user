@@ -1,16 +1,21 @@
-
 .page {
   min-height: 100vh;
   background-color: #ffffff;
   color: #111111;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
   overflow-x: hidden;
 }
 
 .hero {
   position: relative;
   width: 100%;
-  min-height:500px;
+  min-height: 500px;
   background-image: url("/images/herobg.png");
   background-size: cover;
   background-position: center 5%;
@@ -19,7 +24,7 @@
   align-items: center;
 }
 
-.heroOverlay {
+/* .heroOverlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -31,7 +36,7 @@
   );
   pointer-events: none;
   z-index: 1;
-}
+} */
 
 .heroContent {
   position: relative;
@@ -115,7 +120,9 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 300ms ease, transform 300ms ease;
+  transition:
+    background-color 300ms ease,
+    transform 300ms ease;
   outline: none;
 }
 
@@ -151,7 +158,10 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 300ms ease, color 300ms ease, transform 300ms ease;
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    transform 300ms ease;
   outline: none;
 }
 
@@ -214,7 +224,10 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  transition: transform 360ms ease, border-color 360ms ease, box-shadow 360ms ease;
+  transition:
+    transform 360ms ease,
+    border-color 360ms ease,
+    box-shadow 360ms ease;
   animation: cardIn 0.5s ease both;
   outline: none;
 }
@@ -269,7 +282,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 300ms ease, box-shadow 300ms ease;
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease;
   z-index: 2;
   padding: 0;
 }
@@ -352,7 +367,9 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 300ms ease, background-color 300ms ease;
+  transition:
+    transform 300ms ease,
+    background-color 300ms ease;
   padding: 0;
 }
 
@@ -361,23 +378,45 @@
   background-color: #333333;
 }
 
+
+.collectionHeader {
+  display: none; /* hidden on desktop, shown only in mobile media query */
+}
+
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .heroContent,
-  .card { animation: none; }
-  .card:hover { transform: none; }
-  .card:hover .cardImage { transform: none; }
+  .card {
+    animation: none;
+  }
+  .card:hover {
+    transform: none;
+  }
+  .card:hover .cardImage {
+    transform: none;
+  }
 }
-
 
 @media (max-width: 1100px) {
   .heroContent {
@@ -400,44 +439,93 @@
 
 @media (max-width: 768px) {
   .hero {
-    min-height: 480px;
-    background-position: center right 18%;
-    align-items: flex-end;
+    min-height: 420px;
+    background-position: center right -259px;
+    align-items: center;
+    overflow: hidden;
   }
 
   .heroOverlay {
     background: linear-gradient(
-      to top,
+      to bottom,
       rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 0.75) 50%,
-      rgba(255, 255, 255, 0.10) 100%
+      rgba(255, 255, 255, 0.92) 40%,
+      rgba(255, 255, 255, 0.4) 65%,
+      rgba(255, 255, 255, 0) 100%
     );
   }
 
   .heroContent {
-    padding: 40px 20px;
-    max-width: 100%;
+    padding: 40px 20px 40px 20px;
+    max-width: 65%;
+  }
+
+  .eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .eyebrowText {
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
   }
 
   .heroLine1 {
-    font-size: clamp(2.2rem, 9vw, 3.2rem);
+    font-size: 2.6rem;
+    font-weight: 900;
   }
 
   .heroLine2 {
-    font-size: clamp(3rem, 13vw, 4.5rem);
+    font-size: 2.6rem;
+    font-weight: 900;
   }
 
   .heroDesc {
-    font-size: 0.93rem;
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+  }
+
+  .heroButtons {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
   }
 
   .btnPrimary,
   .btnSecondary {
     justify-content: center;
+    padding: 13px 20px;
+    font-size: 0.72rem;
   }
 
   .gridSection {
-    padding: 24px 16px 48px 16px;
+    padding: 0 16px 48px 16px;
+  }
+
+  .collectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0 16px 0;
+  }
+
+  .collectionTitle {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #111111;
+    text-transform: uppercase;
+  }
+
+  .viewAll {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #111111;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-decoration: none;
   }
 
   .grid {
@@ -445,41 +533,79 @@
     gap: 12px;
   }
 
+  /* RESET: cards go back to vertical (image top, text bottom) */
   .card {
-    flex-direction: row;
-    border-radius: 16px;
-    align-items: stretch;
+    flex-direction: column;
+    border-radius: 18px;
+    align-items: unset;
   }
 
   .cardImageWrap {
-    width: 120px;
-    min-width: 120px;
-    aspect-ratio: unset;
+    width: 100%;
+    min-width: unset;
+    aspect-ratio: 4 / 3.4;
     border-radius: 0;
-    flex-shrink: 0;
+    flex-shrink: unset;
   }
 
   .cardImage {
-    padding: 10px;
+    padding: 0;
   }
 
+  /* Show the + button on mobile */
   .addBtn {
-    display: none;
+    display: flex;
   }
 
   .cardBody {
-    padding: 12px 14px;
+    padding: 12px 14px 14px 14px;
   }
 
-  .cardLabel { font-size: 0.6rem; }
-  .cardTitle  { font-size: 0.9rem; }
-  .cardDesc   { font-size: 0.74rem; }
-  .price      { font-size: 0.95rem; }
+  .cardLabel {
+    font-size: 0.6rem;
+  }
+  .cardTitle {
+    font-size: 0.92rem;
+  }
+  .cardDesc {
+    font-size: 0.75rem;
+  }
+  .price {
+    font-size: 1rem;
+  }
 
   .arrowBtn {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     font-size: 0.85rem;
+  }
+
+  .sideText {
+    display: none;
+  }
+}
+
+/* Remove the @media (max-width: 400px) block entirely, or replace with: */
+@media (max-width: 400px) {
+  .heroContent {
+    max-width: 60%;
+    padding: 32px 16px;
+  }
+
+  .heroLine1 {
+    font-size: 2.2rem;
+  }
+  .heroLine2 {
+    font-size: 3.2rem;
+  }
+
+  .heroButtons {
+    max-width: 100%;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
   }
 }
 
@@ -496,8 +622,14 @@
     font-size: 10px;
   }
 
-  .heroLine1 { font-size: 2rem; text-align: center; }
-  .heroLine2 { font-size: 2.8rem; text-align: center;}
+  .heroLine1 {
+    font-size: 2rem;
+    text-align: center;
+  }
+  .heroLine2 {
+    font-size: 2.8rem;
+    text-align: center;
+  }
   .heroButtons {
     flex-direction: column;
     align-items: center;

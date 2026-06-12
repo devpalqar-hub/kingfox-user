@@ -1,16 +1,20 @@
 "use client";
 
-import { Canvas } from '@react-three/fiber';
-import { Environment, Center, OrbitControls } from '@react-three/drei';
-import ShirtModel from './ShirtModel';
+import { Canvas } from "@react-three/fiber";
+import { Environment, Center, OrbitControls } from "@react-three/drei";
+import ShirtModel from "./ShirtModel";
 
 export default function ThreeCanvas() {
   return (
     <Canvas
+      dpr={[1, 2]}
+      gl={{
+        antialias: true,
+        preserveDrawingBuffer: true,
+      }}
       shadows
       camera={{ position: [0, 0, 2.5], fov: 25 }}
-      gl={{ preserveDrawingBuffer: true }}
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: "100%", height: "100%" }}
     >
       <ambientLight intensity={0.5} />
       <Environment preset="city" />

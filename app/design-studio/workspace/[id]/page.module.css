@@ -1,80 +1,244 @@
 .workspaceContainer {
   display: flex;
   height: 100vh;
-  background-color: #0a0a0a;
-  color: #fff;
+  background-color: #f8f9fa;
+  color: #111;
   font-family: "Inter", sans-serif;
   overflow: hidden;
 }
 
+/* Left Sidebar */
 .sidebar {
   width: 320px;
-  background-color: #111;
-  border-right: 1px solid #222;
+  min-width: 320px;
+  background-color: #fff;
+  border-right: 1px solid #eaeaea;
   display: flex;
   flex-direction: column;
-}
-
-.sidebarHeader {
-  padding: 16px;
-  border-bottom: 1px solid #222;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebarTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.toolsPanel {
-  padding: 16px;
-  flex: 1;
   overflow-y: auto;
+  padding: 24px;
 }
 
-.toolSection {
-  margin-bottom: 30px;
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
 }
 
-.toolSectionTitle {
-  font-size: 0.9rem;
-  color: #888;
+/* Right Sidebar */
+.rightSidebar {
+  width: 340px;
+  min-width: 340px;
+  background-color: #fff;
+  border-left: 1px solid #eaeaea;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Common Section Styles */
+.sectionBlock {
+  margin-bottom: 28px;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 15px;
-}
-
-.toolButton {
+  color: #111;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  background: #1a1a1a;
-  border: 1px solid #333;
+  gap: 10px;
+  letter-spacing: 0.5px;
+}
+
+.sectionNumber {
+  background: #111;
   color: #fff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+.sectionDesc {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+/* Color Swatches */
+.colorGrid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.colorSwatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   cursor: pointer;
-  transition:
-    background 0.2s,
-    border-color 0.2s;
+  border: 1px solid rgba(0,0,0,0.1);
+  transition: transform 0.1s;
 }
 
-.toolButton:hover {
-  background: #252525;
-  border-color: #444;
+.colorSwatch:hover {
+  transform: scale(1.1);
 }
 
-.toolDesc {
+.colorSwatch.active {
+  border: 2px solid #111;
+  padding: 2px;
+  background-clip: content-box;
+}
+
+.colorSwatch.addMore {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #666;
+  border: 1px dashed #ccc;
+}
+
+/* Element Buttons */
+.elementsGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.elementBtn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  color: #111;
+  padding: 14px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  justify-content: flex-start;
+}
+
+.elementBtn:hover {
+  background: #f8f9fa;
+  border-color: #ddd;
+}
+
+/* Size Toggle */
+.sizeGrid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sizeBtn {
+  flex: 1;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eaeaea;
+  background: #fff;
+  border-radius: 6px;
   font-size: 0.85rem;
-  color: #bdbdbd;
-  margin-top: 8px;
-  line-height: 1.3;
+  font-weight: 600;
+  cursor: pointer;
+  color: #111;
+  transition: all 0.2s;
 }
 
+.sizeBtn:hover {
+  background: #f8f9fa;
+}
+
+.sizeBtn.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* Layers list empty state */
+.layersEmpty {
+  border: 1px dashed #ddd;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* Action Buttons */
+.actionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.btnSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  color: #ef4444;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.btnSecondary:hover {
+  background: #fef2f2;
+}
+
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #111;
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.btnPrimary:hover {
+  background: #333;
+}
+
+/* Center Canvas Area */
 .canvasArea {
   flex: 1;
   position: relative;
@@ -82,334 +246,443 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-image: radial-gradient(#222 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.canvasHeader {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
 }
 
 .viewSwitcher {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
-  background: #111;
+  background: #fff;
   padding: 4px;
   border-radius: 8px;
-  border: 1px solid #333;
-  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .viewBtn {
   background: transparent;
-  color: #888;
+  color: #666;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 24px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .viewBtn.active {
-  background: #333;
+  background: #111;
   color: #fff;
+}
+
+.canvasTools {
+  display: flex;
+  gap: 4px;
+  background: #fff;
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  transition: background 0.2s;
+}
+
+.iconBtn:hover {
+  background: #f0f0f0;
+  color: #111;
 }
 
 .canvasWrapper {
-  width: 500px;
-  height: 600px;
-  background: #fff;
+  width: 100%;
+  max-width: 700px;
+  height: 700px;
   position: relative;
-  border-radius: 12px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.canvasBottomControls {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.zoomControl {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   overflow: hidden;
 }
 
-.imagePanel {
-  position: absolute;
-  right: 28px;
-  top: 140px;
-  width: 240px;
-  background: #111;
-  border: 1px solid #222;
-  padding: 12px;
-  border-radius: 10px;
-  z-index: 1500;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-}
-
-.imagePanelTitle {
-  font-size: 0.95rem;
-  color: #fff;
+.zoomBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 6px 0;
-}
-
-.imagePanelDesc {
-  font-size: 0.8rem;
-  color: #bdbdbd;
-  margin: 0 0 10px 0;
-}
-
-.imageUploadButton {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #111;
+}
+
+.zoomBtn:hover {
+  background: #f0f0f0;
+}
+
+.zoomLevel {
+  padding: 0 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111;
+  min-width: 70px;
+  text-align: center;
+}
+
+.fitBtn {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  background: #1a1a1a;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  cursor: pointer;
-}
-
-.shirtMockup {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  object-fit: cover;
-  opacity: 0.9;
-}
-
-.printArea {
-  position: absolute;
-  top: 25%;
-  left: 25%;
-  width: 50%;
-  height: 50%;
-  border: 1px dashed rgba(0, 0, 0, 0.2);
-}
-
-.sidePanels {
-  padding: 12px 16px 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border-top: 1px solid #222;
-  overflow: auto;
-}
-
-.checkoutBtn {
-  margin-top: 8px;
   background: #fff;
-  color: #000;
   border: none;
-  padding: 12px;
+  padding: 10px 16px;
   border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #111;
 }
 
+.fitBtn:hover {
+  background: #f0f0f0;
+}
+
+/* Tips section */
+.tipsSection {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 24px;
+  max-width: 600px;
+  width: calc(100% - 48px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tipsTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #111;
+}
+
+.tipsDesc {
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Right Sidebar Preview */
+.previewBox {
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+  min-height: 320px;
+  background-image: 
+    linear-gradient(to right, #f8f8f8 1px, transparent 1px),
+    linear-gradient(to bottom, #f8f8f8 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.previewImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.modelInfo {
+  background: #f8f9fa;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #666;
+  font-family: monospace;
+  margin-bottom: auto;
+}
+
+/* Properties Panel overlay (Desktop) */
 .rightPropsPanel {
-  position: fixed; /* stick to viewport */
+  position: fixed;
   right: 20px;
-  top: 160px; /* place below site header */
-  bottom: 20px; /* anchor to bottom so panel fits viewport */
+  top: 100px;
+  bottom: 20px;
   width: 340px;
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
   z-index: 1600;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 180px);
 }
 
 .rightPropsHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid #222;
-  position: absolute; /* stay within the panel */
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 56px;
-  background: #111;
-  z-index: 3;
+  padding: 16px;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .rightPropsHeader h3 {
   margin: 0;
   font-size: 1rem;
+  color: #111;
 }
 
 .rightPropsClose {
   background: transparent;
-  border: 1px solid #333;
-  color: #fff;
-  padding: 6px 8px;
-  border-radius: 8px;
+  border: 1px solid #ddd;
+  color: #111;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .rightPropsContent {
-  padding: 12px;
-  padding-top: 72px; /* leave room for absolute header */
+  padding: 16px;
   overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  color: #111;
 }
 
-/* --- Mobile Responsiveness --- */
-
+/* Mobile Responsiveness */
 .mobileBottomBar {
   display: none;
 }
-.mobileView3DBtn {
-  display: none;
-}
-.mobileDrawer {
-  display: none;
-}
-.modalOverlay {
+
+.mobileContentArea {
   display: none;
 }
 
-.mobileSidebar {
+.mobileTopNav {
   display: none;
+}
+
+.mobile3dToggle {
+  display: none;
+}
+
+.mobileEditor {
+  display: none;
+}
+
+.desktopEditor {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.desktopEditor > div > div {
+  transform: scale(0.55);
+}
+
+@media (max-width: 1024px) {
+  .rightSidebar {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
   .sidebar {
-    display: none !important;
+    display: none;
+  }
+
+  .mobileEditor {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .desktopEditor {
+    display: none;
   }
 
   .workspaceContainer {
     flex-direction: column;
-    padding-bottom: 0;
-  }
-
-  .canvasWrapper {
-    display: none !important;
+    background-color: #f5f5f5;
   }
 
   .canvasArea {
-    flex: none !important;
-    height: 0 !important;
-    padding-top: 0;
-    background: transparent !important; /* Remove black gradient */
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 50;
-    pointer-events: none; /* Let clicks pass through to the 2D editor */
+    flex: none;
+    height: 45vh;
+    border-radius: 0 0 20px 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    z-index: 10;
   }
 
-  .viewSwitcher {
-    pointer-events: auto; /* Make the Front/Back buttons clickable again */
+  .canvasWrapper {
+    display: none;
   }
 
-  .mobileBottomBar {
-    display: none; /* Removed */
+  .canvasHeader {
+    display: none; /* Move to mobile top nav */
   }
 
-  .mobileMenuBtn {
+  .canvasBottomControls {
+    display: none; /* Hide zoom on mobile canvas */
+  }
+  
+  .tipsSection {
+    display: none;
+  }
+
+  .mobileTopNav {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 80px; /* Below global navbar */
-    left: 20px;
-    background-color: #111;
-    color: #fff;
-    border: 1px solid #333;
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    z-index: 9999;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    padding: 12px 20px;
+    background: #fff;
+    z-index: 11;
   }
-
-  .mobileSidebar {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 300px;
-    height: 100vh;
-    background-color: #111;
-    border-right: 1px solid #333;
-    z-index: 10000;
-    padding: 20px;
-    padding-top: 80px;
-    overflow-y: auto;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .mobileSidebar.open {
-    transform: translateX(0);
-  }
-
-  .mobileSidebarClose {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: transparent;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  .mobileSidebarTabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .mobileSidebarTabBtn {
-    flex: 1;
-    background: #222;
-    color: #888;
-    border: 1px solid #333;
-    padding: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
-  }
-
-  .mobileSidebarTabBtn.active {
-    background: #333;
-    color: #fff;
-    border-color: #555;
-  }
-
-  .mobileDrawerOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
-  }
-
-  .mobileView3DBtn {
+  
+  .mobileTopNavTitle {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-weight: bold;
+    color: #111;
+  }
+
+  .mobileContentArea {
+    display: block;
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    padding-bottom: 100px;
+    background: #f5f5f5;
+  }
+  
+  .mobileSectionCard {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    margin-bottom: 20px;
+  }
+  
+  .mobileActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .mobileBottomBar {
+    display: flex;
     position: fixed;
-    top: 80px; /* Adjusted to clear global navbar */
-    right: 20px;
-    background-color: #111;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #eaeaea;
+    padding: 10px 20px 20px 20px;
+    justify-content: space-between;
+    z-index: 1000;
+  }
+
+  .mobileTab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .mobileTab.active {
+    color: #111;
+  }
+
+  .mobileTabIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    transition: all 0.2s;
+    color: inherit;
+  }
+
+  .mobileTab.active .mobileTabIcon {
+    background: #111;
     color: #fff;
-    border: 1px solid #333;
-    padding: 10px 16px;
-    border-radius: 8px;
-    z-index: 9999;
+  }
+
+  .mobileTabLabel {
+    font-size: 0.75rem;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .mobile3dToggle {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .modalOverlay {
@@ -419,7 +692,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: #111;
+    background: #f5f5f5;
     z-index: 10000;
     align-items: center;
     justify-content: center;
@@ -430,25 +703,15 @@
     width: 100%;
     height: 100%;
     position: relative;
-    background: #e2e2e2;
-  }
-
-  /* Hide right props panel on small screens to avoid overlap with mobile UI */
-  .rightPropsPanel {
-    display: none;
-  }
-
-  /* hide floating image panel on small screens */
-  .imagePanel {
-    display: none;
+    background: transparent;
   }
 
   .closeModalBtn {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.1);
+    color: #111;
     border: none;
     width: 40px;
     height: 40px;
@@ -461,3 +724,4 @@
     justify-content: center;
   }
 }
+
