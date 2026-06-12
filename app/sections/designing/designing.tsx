@@ -2,6 +2,7 @@
 import styles from "./designing.module.css";
 // Try Shirt instead of Hanger for a cleaner apparel look
 import { Shirt, Palette, ShoppingBag } from "lucide-react";
+import Link from "next/link";
 
 const Designing = () => {
   const steps = [
@@ -41,19 +42,20 @@ const Designing = () => {
         ))}
       </div>
 
-      <button
+      <Link
         className={styles.ctaButton}
-        onClick={() => {
-          const phoneNumber = "918129882245"; 
-          const message = encodeURIComponent(
-            "Hi, I want to design my own tee 👕",
-          );
+        // onClick={() => {
+        //   const phoneNumber = "918129882245"; 
+        //   const message = encodeURIComponent(
+        //     "Hi, I want to design my own tee 👕",
+        //   );
 
-          window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-        }}
+        //   window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+        // }}
+        href="/design-studio/select"
       >
         START DESIGNING NOW
-      </button>
+      </Link>
     </section>
   );
 };

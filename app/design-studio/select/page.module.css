@@ -1,0 +1,649 @@
+.page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #111111;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 500px;
+  background-image: url("/images/herobg.png");
+  background-size: cover;
+  background-position: center 5%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+}
+
+/* .heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.82) 38%,
+    rgba(255, 255, 255, 0.30) 65%,
+    rgba(255, 255, 255, 0.00) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+} */
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+  padding: 72px 64px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.eyebrowLine {
+  display: block;
+  width: 32px;
+  height: 1px;
+  background-color: #111111;
+  flex-shrink: 0;
+}
+
+.eyebrowText {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: #111111;
+  text-transform: uppercase;
+}
+
+.heroHeading {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 24px 0;
+  line-height: 0.95;
+}
+
+.heroLine1 {
+  font-size: clamp(2.8rem, 5vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #111111;
+  display: block;
+}
+
+.heroLine2 {
+  font-size: clamp(4rem, 7.5vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #111111;
+  display: block;
+  line-height: 1;
+}
+
+.heroDesc {
+  font-size: 1rem;
+  color: #555555;
+  line-height: 1.65;
+  margin: 0 0 36px 0;
+  font-weight: 400;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background-color: #111111;
+  color: #ffffff;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 300ms ease,
+    transform 300ms ease;
+  outline: none;
+}
+
+.btnPrimary:hover {
+  background-color: #333333;
+  transform: translateY(-1px);
+}
+
+.btnPrimary:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+.btnArrow {
+  font-size: 1rem;
+  transition: transform 300ms ease;
+}
+
+.btnPrimary:hover .btnArrow {
+  transform: translateX(3px);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background-color: transparent;
+  color: #111111;
+  border: 1.5px solid #111111;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    transform 300ms ease;
+  outline: none;
+}
+
+.btnSecondary:hover {
+  background-color: #111111;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btnSecondary:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+.btnIcon {
+  font-size: 0.85rem;
+}
+
+.sideText {
+  position: absolute;
+  right: -50px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: center center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: #aaaaaa;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.sideDot {
+  color: #cccccc;
+  letter-spacing: 0;
+}
+
+.gridSection {
+  margin: 0 auto;
+  padding: 40px 64px 80px 64px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 360ms ease,
+    border-color 360ms ease,
+    box-shadow 360ms ease;
+  animation: cardIn 0.5s ease both;
+  outline: none;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  border-color: #111111;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+}
+
+.card:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+.cardImageWrap {
+  position: relative;
+  background-color: #f8f8f8;
+  aspect-ratio: 4 / 3.4;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 400ms ease;
+}
+
+.card:hover .cardImage {
+  transform: scale(1.04);
+}
+
+.addBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  color: #111111;
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease;
+  z-index: 2;
+  padding: 0;
+}
+
+.addBtn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+}
+
+.cardBody {
+  padding: 16px 16px 14px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #888888;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 6px 0;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cardDesc {
+  font-size: 0.78rem;
+  color: #888888;
+  line-height: 1.5;
+  flex: 1;
+  margin: 0 0 14px 0;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.priceFrom {
+  font-size: 0.68rem;
+  color: #999999;
+  font-weight: 400;
+}
+
+.price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: -0.01em;
+}
+
+.arrowBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #111111;
+  color: #ffffff;
+  border: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    transform 300ms ease,
+    background-color 300ms ease;
+  padding: 0;
+}
+
+.arrowBtn:hover {
+  transform: scale(1.1) rotate(-10deg);
+  background-color: #333333;
+}
+
+
+.collectionHeader {
+  display: none; /* hidden on desktop, shown only in mobile media query */
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroContent,
+  .card {
+    animation: none;
+  }
+  .card:hover {
+    transform: none;
+  }
+  .card:hover .cardImage {
+    transform: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .heroContent {
+    padding: 56px 40px;
+  }
+
+  .gridSection {
+    padding: 32px 40px 60px 40px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .sideText {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 420px;
+    background-position: center right -259px;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .heroOverlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.92) 40%,
+      rgba(255, 255, 255, 0.4) 65%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+
+  .heroContent {
+    padding: 40px 20px 40px 20px;
+    max-width: 65%;
+  }
+
+  .eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .eyebrowText {
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+  }
+
+  .heroLine1 {
+    font-size: 2.6rem;
+    font-weight: 900;
+  }
+
+  .heroLine2 {
+    font-size: 2.6rem;
+    font-weight: 900;
+  }
+
+  .heroDesc {
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+  }
+
+  .heroButtons {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 0.72rem;
+  }
+
+  .gridSection {
+    padding: 0 16px 48px 16px;
+  }
+
+  .collectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0 16px 0;
+  }
+
+  .collectionTitle {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #111111;
+    text-transform: uppercase;
+  }
+
+  .viewAll {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #111111;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* RESET: cards go back to vertical (image top, text bottom) */
+  .card {
+    flex-direction: column;
+    border-radius: 18px;
+    align-items: unset;
+  }
+
+  .cardImageWrap {
+    width: 100%;
+    min-width: unset;
+    aspect-ratio: 4 / 3.4;
+    border-radius: 0;
+    flex-shrink: unset;
+  }
+
+  .cardImage {
+    padding: 0;
+  }
+
+  /* Show the + button on mobile */
+  .addBtn {
+    display: flex;
+  }
+
+  .cardBody {
+    padding: 12px 14px 14px 14px;
+  }
+
+  .cardLabel {
+    font-size: 0.6rem;
+  }
+  .cardTitle {
+    font-size: 0.92rem;
+  }
+  .cardDesc {
+    font-size: 0.75rem;
+  }
+  .price {
+    font-size: 1rem;
+  }
+
+  .arrowBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .sideText {
+    display: none;
+  }
+}
+
+/* Remove the @media (max-width: 400px) block entirely, or replace with: */
+@media (max-width: 400px) {
+  .heroContent {
+    max-width: 60%;
+    padding: 32px 16px;
+  }
+
+  .heroLine1 {
+    font-size: 2.2rem;
+  }
+  .heroLine2 {
+    font-size: 3.2rem;
+  }
+
+  .heroButtons {
+    max-width: 100%;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .heroContent {
+    padding: 32px 16px;
+    max-width: 100%;
+    width: 100%;
+  }
+  .eyebrow {
+    justify-content: center;
+  }
+  .eyebrowText {
+    font-size: 10px;
+  }
+
+  .heroLine1 {
+    font-size: 2rem;
+    text-align: center;
+  }
+  .heroLine2 {
+    font-size: 2.8rem;
+    text-align: center;
+  }
+  .heroButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+  .heroDesc {
+    text-align: center;
+  }
+  .btnPrimary,
+  .btnSecondary {
+    justify-content: center;
+    width: 100%;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
