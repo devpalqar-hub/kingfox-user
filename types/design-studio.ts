@@ -25,6 +25,8 @@ export interface BaseLayer {
   isLocked: boolean;
   isVisible: boolean;
   opacity: number; // 0 to 1
+  scaleX?: number;
+  scaleY?: number;
 }
 
 export interface TextLayer extends BaseLayer {

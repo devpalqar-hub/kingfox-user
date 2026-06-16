@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Type,
   Image as ImageIcon,
-  Download,
-  Settings2,
   Palette,
   Minus,
   Trash2,
@@ -13,15 +11,11 @@ import {
   Layers,
   X,
   RotateCcw,
-  Maximize,
   Plus,
   Eye,
-  Square,
-  Bookmark,
-  Lightbulb
 } from "lucide-react";
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
-import { Layer, TextLayer, ImageLayer } from "@/types/design-studio";
+import { TextLayer, ImageLayer } from "@/types/design-studio";
 import ThreeCanvas from "@/components/design-studio/canvas/ThreeCanvas";
 import DesignEditor2D from "@/components/design-studio/editor/DesignEditor2D";
 import LayerPanel from "@/components/design-studio/layers/LayerPanel";
@@ -31,33 +25,33 @@ import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmMod
 import styles from "./page.module.css";
 
 export default function Workspace({ params }: { params: { id: string } }) {
+  // ─── Store ────────────────────────────────────────────────────────────────
   const {
     project,
     activeView,
     selectedLayerId,
     switchView,
     addLayer,
-    updateLayer,
     selectLayer,
     calculatePricing,
     changeApparelColor,
     removeLayer,
   } = useDesignStore();
 
+  // ─── Local State ──────────────────────────────────────────────────────────
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
   const [isMobile3DOpen, setIsMobile3DOpen] = useState(false);
-  
   const [activeMobileTab, setActiveMobileTab] = useState<
-    "color" | "elements" | "size" | "layers"
-  >("color");
+    "size" | "color" | "elements" | "layers"
+  >("size");
   const [selectedSize, setSelectedSize] = useState<string>("M");
-  const [rightPropsLayerId, setRightPropsLayerId] = useState<string | null>(
-    null,
-  );
+  const [rightPropsLayerId, setRightPropsLayerId] = useState<string | null>(null);
 
   const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
   const currentLayers = project.designs[activeView] || [];
+
+  // ─── Layer Handlers ───────────────────────────────────────────────────────
 
   const handleAddText = () => {
     const newTextLayer: TextLayer = {
@@ -88,8 +82,8 @@ export default function Workspace({ params }: { params: { id: string } }) {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
+      reader.onload = (evt) => {
+        const dataUrl = evt.target?.result as string;
         const newImageLayer: ImageLayer = {
           id: `img_${Date.now()}`,
           type: "image",
@@ -136,66 +130,21 @@ export default function Workspace({ params }: { params: { id: string } }) {
     addLayer(newLineLayer);
   };
 
-  const renderColorSection = () => (
-    <div className={styles.sectionBlock}>
-      <h3 className={styles.sectionTitle}>
-        <span className={styles.sectionNumber}>1</span> CHOOSE COLOR
-      </h3>
-      <p className={styles.sectionDesc}>Select a base color for your garment.</p>
-      <div className={styles.colorGrid}>
-        {[
-          "#FFFFFF",
-          "#000000",
-          "#9CA3AF",
-          "#D1D5DB",
-          "#EF4444",
-          "#F59E0B",
-          "#10B981",
-          "#3B82F6",
-          "#8B5CF6",
-          "#EC4899",
-          "#14B8A6",
-        ].map((hex) => (
-          <div
-            key={hex}
-            className={`${styles.colorSwatch} ${project.apparelConfig.colorHex === hex ? styles.active : ""}`}
-            onClick={() => changeApparelColor(hex, hex)}
-            style={{ backgroundColor: hex }}
-            title={hex}
-          />
-        ))}
-        <div className={`${styles.colorSwatch} ${styles.addMore}`}>+</div>
-      </div>
-    </div>
-  );
+  // ─── Section Renderers ────────────────────────────────────────────────────
 
-  const renderElementsSection = () => (
-    <div className={styles.sectionBlock}>
-      <h3 className={styles.sectionTitle}>
-        <span className={styles.sectionNumber}>2</span> ADD ELEMENTS
-      </h3>
-      <p className={styles.sectionDesc}>Add text, artwork or lines to personalize your design.</p>
-      <div className={styles.elementsGrid}>
-        <label className={styles.elementBtn}>
-          <ImageIcon size={20} /> Upload Image (Decal)
-          <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-        </label>
-        <button className={styles.elementBtn} onClick={handleAddText}>
-          <Type size={20} /> Add Text
-        </button>
-        <button className={styles.elementBtn} onClick={handleAddLine}>
-          <Minus size={20} /> Add Line
-        </button>
-      </div>
-    </div>
-  );
-
+  /**
+   * Step 1 — SIZE
+   * Size is first so that in the future the API can filter available
+   * colors by the selected size.
+   */
   const renderSizeSection = () => (
     <div className={styles.sectionBlock}>
       <h3 className={styles.sectionTitle}>
-        <span className={styles.sectionNumber}>3</span> SIZE
+        <span className={styles.sectionNumber}>1</span> SIZE
       </h3>
-      <p className={styles.sectionDesc}>Choose the size you want to preview.</p>
+      <p className={styles.sectionDesc}>
+        Choose a size — available colors will update based on your selection.
+      </p>
       <div className={styles.sizeGrid}>
         {SIZES.map((s) => (
           <button
@@ -210,15 +159,84 @@ export default function Workspace({ params }: { params: { id: string } }) {
     </div>
   );
 
-  const renderLayersSection = () => (
-    <div className={styles.sectionBlock} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+  /**
+   * Step 2 — COLOR
+   * Colors shown here will be filtered by selected size via API in the future.
+   */
+  const renderColorSection = () => (
+    <div className={styles.sectionBlock}>
       <h3 className={styles.sectionTitle}>
-        <span className={styles.sectionNumber}>4</span> LAYERS ({currentLayers.length})
+        <span className={styles.sectionNumber}>2</span> COLOR
+      </h3>
+      <p className={styles.sectionDesc}>
+        Select a base color for your garment.
+      </p>
+      <div className={styles.colorGrid}>
+        {[
+          "#FFFFFF", "#000000", "#9CA3AF", "#D1D5DB",
+          "#EF4444", "#F59E0B", "#EAB308", "#10B981",
+          "#3B82F6", "#8B5CF6", "#EC4899", "#14B8A6",
+        ].map((hex) => (
+          <div
+            key={hex}
+            className={`${styles.colorSwatch} ${project.apparelConfig.colorHex === hex ? styles.active : ""
+              }`}
+            onClick={() => changeApparelColor(hex, hex)}
+            style={{ backgroundColor: hex }}
+            title={hex}
+          />
+        ))}
+        <div className={`${styles.colorSwatch} ${styles.addMore}`}>
+          <Plus size={14} />
+        </div>
+      </div>
+    </div>
+  );
+
+  /**
+   * Step 3 — ADD ELEMENTS
+   * Upload image decals, add text, or add lines.
+   */
+  const renderElementsSection = () => (
+    <div className={styles.sectionBlock}>
+      <h3 className={styles.sectionTitle}>
+        <span className={styles.sectionNumber}>3</span> ADD ELEMENTS
+      </h3>
+      <p className={styles.sectionDesc}>
+        Add text, artwork or lines to personalize your design.
+      </p>
+      <div className={styles.elementsGrid}>
+        <label className={styles.elementBtn}>
+          <ImageIcon size={18} />
+          <span>Upload Image (Decal)</span>
+          <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+        </label>
+        <button className={styles.elementBtn} onClick={handleAddText}>
+          <Type size={18} />
+          <span>Add Text</span>
+        </button>
+        <button className={styles.elementBtn} onClick={handleAddLine}>
+          <Minus size={18} />
+          <span>Add Line</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  /**
+   * Step 4 — LAYERS
+   * Manage, reorder, and control visibility of design layers.
+   */
+  const renderLayersSection = () => (
+    <div className={styles.sectionBlock}>
+      <h3 className={styles.sectionTitle}>
+        <span className={styles.sectionNumber}>4</span> LAYERS
+        <span className={styles.sectionCount}>{currentLayers.length}</span>
       </h3>
       <p className={styles.sectionDesc}>Manage and arrange your design layers.</p>
       {currentLayers.length === 0 ? (
         <div className={styles.layersEmpty}>
-          <Layers size={24} />
+          <Layers size={22} />
           <span>No layers added yet.</span>
         </div>
       ) : (
@@ -232,134 +250,167 @@ export default function Workspace({ params }: { params: { id: string } }) {
     </div>
   );
 
+  /** Action buttons: Clear Canvas + Preview Full Design */
   const renderActionButtons = () => (
     <div className={styles.actionRow}>
-      <button className={styles.btnSecondary} onClick={() => setIsClearModalOpen(true)}>
-        <Trash2 size={18} /> Clear Canvas
+      <button
+        className={styles.btnSecondary}
+        onClick={() => setIsClearModalOpen(true)}
+      >
+        <Trash2 size={16} /> Clear Canvas
+      </button>
+      <button
+        className={styles.btnPrimary}
+        onClick={() => {
+          calculatePricing();
+          setIsModalOpen(true);
+        }}
+      >
+        <Eye size={16} /> Preview Full Design
       </button>
     </div>
   );
 
+  /**
+   * Front / Back view switcher.
+   * Controls both the 2D canvas active face and the 3D model rotation.
+   */
+  const renderViewSwitcher = () => (
+    <div className={styles.viewSwitcher}>
+      <button
+        className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
+        onClick={() => switchView("front")}
+      >
+        Front
+      </button>
+      <button
+        className={`${styles.viewBtn} ${activeView === "back" ? styles.active : ""}`}
+        onClick={() => switchView("back")}
+      >
+        Back
+      </button>
+    </div>
+  );
+
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className={styles.workspaceContainer}>
-      
-      {/* Mobile Top Navigation */}
+
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * MOBILE TOP NAV  (hidden on desktop)
+       * Front/Back toggle + Reset — sits above the 2D canvas on mobile.
+       * ══════════════════════════════════════════════════════════════════
+       */}
       <div className={styles.mobileTopNav}>
-        <div className={styles.viewSwitcher} style={{ margin: 0 }}>
-          <button
-            className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
-            onClick={() => switchView("front")}
-          >
-            Front
-          </button>
-          <button
-            className={`${styles.viewBtn} ${activeView === "back" ? styles.active : ""}`}
-            onClick={() => switchView("back")}
-          >
-            Back
-          </button>
-        </div>
-        <div className={styles.canvasTools} style={{ boxShadow: "none" }}>
-          <button className={styles.iconBtn} aria-label="Reset" onClick={() => setIsClearModalOpen(true)}>
-            <RotateCcw size={18} />
-          </button>
-        </div>
+        {renderViewSwitcher()}
+        <button
+          className={styles.iconBtn}
+          aria-label="Reset canvas"
+          onClick={() => setIsClearModalOpen(true)}
+        >
+          <RotateCcw size={16} />
+        </button>
       </div>
 
-      {/* Left Sidebar - Tools (Desktop) */}
-      <aside className={styles.sidebar}>
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * 3D CANVAS AREA  (desktop center — 60%; hidden on mobile)
+       * ══════════════════════════════════════════════════════════════════
+       */}
+      {/* LEFT SIDEBAR */}
+      <aside className={styles.leftSidebar}>
+        {renderSizeSection()}
         {renderColorSection()}
         {renderElementsSection()}
-        {renderSizeSection()}
         {renderLayersSection()}
-        {renderActionButtons()}
       </aside>
 
-      {/* Main Canvas Area */}
-      <main className={styles.canvasArea} onClick={() => selectLayer(null)}>
-        {/* Top Canvas Header (Desktop) */}
-        <div className={styles.canvasHeader}>
-          <div className={styles.viewSwitcher}>
-            <button
-              className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
-              onClick={() => switchView("front")}
-            >
-              Front
-            </button>
-            <button
-              className={`${styles.viewBtn} ${activeView === "back" ? styles.active : ""}`}
-              onClick={() => switchView("back")}
-            >
-              Back
-            </button>
-          </div>
-          <div className={styles.canvasTools}>
-            <button className={styles.iconBtn} aria-label="Reset" onClick={() => setIsClearModalOpen(true)}>
-              <RotateCcw size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Main Editor Area (2D Editor) */}
-        <div className={styles.mainEditor}>
-          <DesignEditor2D />
-        </div>
-
-        {/* Mobile View 3D Button */}
-        <button className={styles.mobile3dToggle} onClick={() => setIsMobile3DOpen(true)}>
-          <Box size={18} /> View 3D
-        </button>
-
-        {/* Tips section (Desktop) */}
-        {/* <div className={styles.tipsSection}>
-           <h4 className={styles.tipsTitle}><Lightbulb size={16} color="#F59E0B" /> TIPS</h4>
-           <p className={styles.tipsDesc}>Use high resolution images for the best print quality. We recommend PNG files with transparent background.</p>
-        </div> */}
-      </main>
-
-      {/* Right Sidebar - Preview (Desktop) */}
-      <aside className={styles.rightSidebar}>
-        <div className={styles.sectionBlock} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <h3 className={styles.sectionTitle} style={{ marginBottom: "16px", textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-             DESIGN PREVIEW
-          </h3>
-          <p className={styles.sectionDesc}>See how your design will look.</p>
-
-          <div className={styles.previewBox}>
-            <ThreeCanvas />
-          </div>
-
-          <div className={styles.modelInfo}>
-            model: /shirt_baked.glb | nodes:true materials:true
-          </div>
+      {/* CENTER - 3D PREVIEW */}
+      <div className={styles.threeArea}>
+        <div className={styles.threeAreaHeader}>
+          {renderViewSwitcher()}
 
           <button
+            className={styles.iconBtn}
+            onClick={() => setIsClearModalOpen(true)}
+          >
+            <RotateCcw size={16} />
+          </button>
+        </div>
+
+        <ThreeCanvas />
+      </div>
+
+      {/* RIGHT - 2D PREVIEW */}
+      <div
+        className={styles.rightPanel}
+        onClick={() => selectLayer(null)}
+      >
+        <div
+          className={styles.twoDSection}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.twoDHeader}>
+            <span className={styles.twoDLabel}>
+              Design Preview
+            </span>
+          </div>
+
+          <div className={styles.twoDCanvasArea}>
+
+            <button
+              className={styles.mobile3dToggle}
+              onClick={() => setIsMobile3DOpen(true)}
+              aria-label="Open 3D view"
+            >
+              <Box size={15} />
+              3D
+            </button>
+
+            <div className={styles.twoDEditorScaler}>
+              <DesignEditor2D />
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.estimateSection}>
+          <button
             className={styles.btnPrimary}
-            style={{ width: "100%", marginTop: "auto" }}
             onClick={() => {
               calculatePricing();
               setIsModalOpen(true);
             }}
           >
-            <Eye size={18} /> Preview Full Design
+            Estimate Cost
           </button>
         </div>
-      </aside>
+      </div>
 
-      {/* Mobile Content Area (Tab Views) */}
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * MOBILE CONTENT AREA  (hidden on desktop)
+       * Tab-switched tool sections below the 2D canvas on mobile.
+       * ══════════════════════════════════════════════════════════════════
+       */}
       <div className={styles.mobileContentArea}>
         <div className={styles.mobileSectionCard}>
+          {activeMobileTab === "size" && renderSizeSection()}
           {activeMobileTab === "color" && renderColorSection()}
           {activeMobileTab === "elements" && renderElementsSection()}
-          {activeMobileTab === "size" && renderSizeSection()}
           {activeMobileTab === "layers" && (
             <>
               {renderLayersSection()}
               {rightPropsLayerId && (
-                <div style={{ marginTop: "24px", borderTop: "1px solid #eaeaea", paddingTop: "20px" }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                     <h4 style={{ margin: 0 }}>Layer Properties</h4>
-                     <button className={styles.rightPropsClose} onClick={() => setRightPropsLayerId(null)}>Close</button>
+                <div className={styles.mobilePropsInline}>
+                  <div className={styles.mobilePropsHeader}>
+                    <h4 className={styles.mobilePropsTitle}>Layer Properties</h4>
+                    <button
+                      className={styles.rightPropsClose}
+                      onClick={() => setRightPropsLayerId(null)}
+                    >
+                      Close
+                    </button>
                   </div>
                   <PropertiesPanel />
                 </div>
@@ -367,62 +418,115 @@ export default function Workspace({ params }: { params: { id: string } }) {
             </>
           )}
         </div>
+
         <div className={styles.mobileActions}>
-          <button className={styles.btnSecondary} onClick={() => setIsClearModalOpen(true)}>
-            <Trash2 size={18} /> Clear
+          <button
+            className={styles.btnSecondary}
+            onClick={() => setIsClearModalOpen(true)}
+          >
+            <Trash2 size={16} /> Clear
           </button>
-          <button className={styles.btnPrimary} onClick={() => setIsModalOpen(true)}>
-            <Eye size={18} /> Preview
+          <button
+            className={styles.btnPrimary}
+            onClick={() => {
+              calculatePricing();
+              setIsModalOpen(true);
+            }}
+          >
+            <Eye size={16} /> Preview
           </button>
         </div>
       </div>
 
-      {/* Mobile Bottom Bar (Tabs) */}
-      <div className={styles.mobileBottomBar}>
-        <button
-          className={`${styles.mobileTab} ${activeMobileTab === "color" ? styles.active : ""}`}
-          onClick={() => setActiveMobileTab("color")}
-        >
-          <span className={styles.mobileTabIcon}>
-            <Palette size={20} />
-          </span>
-          <span className={styles.mobileTabLabel}>Color</span>
-        </button>
-        <button
-          className={`${styles.mobileTab} ${activeMobileTab === "elements" ? styles.active : ""}`}
-          onClick={() => setActiveMobileTab("elements")}
-        >
-          <span className={styles.mobileTabIcon}>
-            <Plus size={20} />
-          </span>
-          <span className={styles.mobileTabLabel}>Elements</span>
-        </button>
-        <button
-          className={`${styles.mobileTab} ${activeMobileTab === "size" ? styles.active : ""}`}
-          onClick={() => setActiveMobileTab("size")}
-        >
-          <span className={styles.mobileTabIcon}>
-            <Box size={20} />
-          </span>
-          <span className={styles.mobileTabLabel}>Size</span>
-        </button>
-        <button
-          className={`${styles.mobileTab} ${activeMobileTab === "layers" ? styles.active : ""}`}
-          onClick={() => setActiveMobileTab("layers")}
-        >
-          <span className={styles.mobileTabIcon}>
-            <Layers size={20} />
-          </span>
-          <span className={styles.mobileTabLabel}>Layers</span>
-        </button>
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * MOBILE BOTTOM TAB BAR  (hidden on desktop; position: fixed)
+       * Order: Size → Color → Elements → Layers (matches step numbering)
+       * ══════════════════════════════════════════════════════════════════
+       */}
+      <nav className={styles.mobileBottomBar} aria-label="Design steps">
+        {(
+          [
+            { id: "size", label: "Size", Icon: Box },
+            { id: "color", label: "Color", Icon: Palette },
+            { id: "elements", label: "Elements", Icon: Plus },
+            { id: "layers", label: "Layers", Icon: Layers },
+          ] as const
+        ).map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            className={`${styles.mobileTab} ${activeMobileTab === id ? styles.active : ""}`}
+            onClick={() => setActiveMobileTab(id)}
+            aria-label={label}
+          >
+            <span className={styles.mobileTabIcon}>
+              <Icon size={19} />
+            </span>
+            <span className={styles.mobileTabLabel}>{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * MOBILE 3D DRAWER  (hidden on desktop)
+       *
+       * Backdrop: 25% left — tap to close.
+       * Drawer:   slides from right, 75% screen width.
+       * ThreeCanvas mounted only while open (avoids idle GPU cost).
+       * ══════════════════════════════════════════════════════════════════
+       */}
+      <div
+        className={`${styles.drawerBackdrop} ${isMobile3DOpen ? styles.open : ""}`}
+        onClick={() => setIsMobile3DOpen(false)}
+        aria-hidden="true"
+      />
+
+      <div
+        className={`${styles.mobile3dDrawer} ${isMobile3DOpen ? styles.open : ""}`}
+        aria-label="3D Preview"
+        aria-modal="true"
+        role="dialog"
+      >
+        <div className={styles.drawerHeader}>
+          <div>
+            <h3 className={styles.drawerTitle}>3D Preview</h3>
+            <p className={styles.drawerSubtitle}>Drag to rotate and inspect your design.</p>
+          </div>
+          <button
+            className={styles.drawerCloseBtn}
+            onClick={() => setIsMobile3DOpen(false)}
+            aria-label="Close 3D view"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className={styles.drawerCanvas}>
+          {isMobile3DOpen && <ThreeCanvas />}
+        </div>
+
+        <div className={styles.drawerViewSwitcher}>
+          {renderViewSwitcher()}
+        </div>
       </div>
 
-      {/* Properties Drawer for Desktop (Shows when layer selected) */}
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * PROPERTIES PANEL  (desktop: floating popup; mobile: inline above)
+       * ══════════════════════════════════════════════════════════════════
+       */}
       {rightPropsLayerId && (
-        <aside className={styles.rightPropsPanel} onClick={(e) => e.stopPropagation()}>
+        <aside
+          className={styles.rightPropsPanel}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className={styles.rightPropsHeader}>
             <h3>Layer Properties</h3>
-            <button className={styles.rightPropsClose} onClick={() => setRightPropsLayerId(null)}>
+            <button
+              className={styles.rightPropsClose}
+              onClick={() => setRightPropsLayerId(null)}
+            >
               Close
             </button>
           </div>
@@ -432,33 +536,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
         </aside>
       )}
 
-      {/* Mobile 3D Modal */}
-      {isMobile3DOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.viewSwitcher} style={{ position: 'absolute', top: '20px', zIndex: 2020 }}>
-            <button
-              className={`${styles.viewBtn} ${activeView === "front" ? styles.active : ""}`}
-              onClick={() => switchView("front")}
-            >
-              Front
-            </button>
-            <button
-              className={`${styles.viewBtn} ${activeView === "back" ? styles.active : ""}`}
-              onClick={() => switchView("back")}
-            >
-              Back
-            </button>
-          </div>
-          <button className={styles.closeModalBtn} onClick={() => setIsMobile3DOpen(false)}>
-            <X size={24} />
-          </button>
-          <div className={styles.modalContent}>
-            <ThreeCanvas />
-          </div>
-        </div>
-      )}
-
-      {/* Modals */}
+      {/*
+       * ══════════════════════════════════════════════════════════════════
+       * MODALS
+       * ══════════════════════════════════════════════════════════════════
+       */}
       {isModalOpen && (
         <CostEstimateModal
           onClose={() => setIsModalOpen(false)}

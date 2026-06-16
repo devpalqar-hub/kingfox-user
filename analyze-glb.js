@@ -19,7 +19,8 @@ function analyzeGLB(filePath) {
     const children = n.children ? n.children.join(',') : 'none';
     const tx = n.translation ? n.translation.map(v => v.toFixed(3)).join(',') : '0,0,0';
     const sc = n.scale ? n.scale.map(v => v.toFixed(3)).join(',') : '1,1,1';
-    console.log(`  [${i}] name="${n.name||'unnamed'}" mesh=${n.mesh??'none'} children=[${children}] translation=[${tx}] scale=[${sc}]`);
+    const rot = n.rotation ? n.rotation.map(v => v.toFixed(3)).join(',') : '0,0,0,1';
+    console.log(`  [${i}] name="${n.name||'unnamed'}" mesh=${n.mesh??'none'} children=[${children}] translation=[${tx}] scale=[${sc}] rotation=[${rot}]`);
   });
 
   // Meshes

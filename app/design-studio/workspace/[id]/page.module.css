@@ -1,171 +1,334 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DESIGN STUDIO WORKSPACE  —  page.module.css
+ *
+ * Desktop layout (> 768px):
+ *   [threeArea — 60%]  |  [rightPanel — 40%]
+ *   • threeArea:   Live 3D canvas with overlaid Front/Back + Reset controls
+ *   • rightPanel:  2D editor canvas (top) + scrollable tool sections (bottom)
+ *
+ * Mobile layout (≤ 768px):
+ *   [mobileTopNav]            ← Front/Back switcher + Reset
+ *   [rightPanel full-width]   ← 2D canvas only (toolSections hidden)
+ *   [mobileContentArea]       ← tab-switched tool sections
+ *   [mobileBottomBar fixed]   ← Size | Color | Elements | Layers tabs
+ *   [mobile3dDrawer]          ← 75%-width right-side drawer (slide animation)
+ *
+ * Step order: 1 Size → 2 Color → 3 Elements → 4 Layers
+ * (Size first enables future API: size selection → filters available colors)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ROOT CONTAINER
+   ───────────────────────────────────────────────────────────────────────── */
 .workspaceContainer {
-  display: flex;
+  display: grid;
+
+  grid-template-columns:
+    280px minmax(500px, 1fr) 450px;
+
+  gap: 16px;
+
   height: 100vh;
-  background-color: #f8f9fa;
-  color: #111;
-  font-family: "Inter", sans-serif;
+
+  padding: 16px;
+
+  background: #f5f5f5;
+
   overflow: hidden;
 }
 
-/* Left Sidebar */
-.sidebar {
-  width: 320px;
-  min-width: 320px;
-  background-color: #fff;
-  border-right: 1px solid #eaeaea;
+/* ─────────────────────────────────────────────────────────────────────────
+   3D CANVAS AREA  —  Desktop center (flex: 3 ≈ 60%)
+   Hidden on mobile; 3D is accessed via the right-slide drawer instead.
+   ───────────────────────────────────────────────────────────────────────── */
+.threeArea {
+  position: relative;
+
+  background: #fff;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  min-width: 0;
+}
+
+/* Overlaid controls (Front/Back switcher + Reset) inside the 3D area */
+.threeAreaHeader {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+  /* pass click-through to Three.js canvas */
+}
+
+.threeAreaHeader>* {
+  pointer-events: auto;
+  /* re-enable on child buttons */
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   RIGHT PANEL  —  Desktop 40% | Mobile full-width
+   Contains two stacked sections:
+     1. twoDSection  — the scaled 2D editor canvas + its header
+     2. toolSections — scrollable Size / Color / Elements / Layers steps
+   ───────────────────────────────────────────────────────────────────────── */
+.rightPanel {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  padding: 24px;
+
+  gap: 12px;
+
+  width: 450px;
+  min-width: 450px;
+  max-width: 450px;
 }
 
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-.sidebar::-webkit-scrollbar-thumb {
-  background: #ddd;
-  border-radius: 3px;
+/* ─────────────────────────────────────────────────────────────────────────
+   2D CANVAS SECTION  —  Top of the right panel
+   ───────────────────────────────────────────────────────────────────────── */
+.twoDSection {
+  flex-shrink: 0;
+  border-bottom: 1px solid #eaeaea;
+  background: #fff;
 }
 
-/* Right Sidebar */
-.rightSidebar {
-  width: 340px;
-  min-width: 340px;
-  background-color: #fff;
-  border-left: 1px solid #eaeaea;
+/* Header strip above the 2D canvas (desktop only; hidden on mobile) */
+.twoDHeader {
   display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  padding: 24px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #eaeaea;
+  background: #fff;
 }
 
-/* Common Section Styles */
+.twoDLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: #888;
+}
+
+/*
+ * Outer container that sets the visible height of the 2D canvas area.
+ * Height = 600px × scale factor (default scale 0.75 → 450px).
+ * overflow: hidden clips the un-scaled layout space of twoDEditorScaler.
+ */
+.twoDCanvasArea {
+  position: relative;
+  height: 400px;
+  /* = 600 × 0.75 */
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+/*
+ * Scales and centers the fixed 500×600 DesignEditor2D canvas to fit the
+ * right panel width without altering the editor's internal dimensions.
+ *
+ * Positioning:
+ *   top: 0                → top of scaled canvas aligns with container top
+ *   left: 50%             → start from center of container
+ *   margin-left: -250px   → shift left by half of canvas width (500px / 2)
+ *   transform-origin: top center → scale from the top-center point so the
+ *                                   top edge stays pinned and the visual
+ *                                   bottom matches the container height.
+ *
+ * DO NOT change the 500×600 dimensions — they are DesignEditor2D internals.
+ */
+.twoDEditorScaler {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -250px;
+  /* centers the 500px-wide canvas: -(500 / 2) */
+  width: 500px;
+  height: 600px;
+  transform: scale(0.68);
+  transform-origin: top center;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TOOL SECTIONS  —  Scrollable area below the 2D canvas (desktop only)
+   Hidden on mobile; replaced by the tab-switched mobileContentArea.
+   ───────────────────────────────────────────────────────────────────────── */
+.toolSections {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 20px 24px;
+  background: #fff;
+}
+
+.toolSections::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toolSections::-webkit-scrollbar-thumb {
+  background: #e4e4e4;
+  border-radius: 2px;
+}
+
+.leftSidebar {
+  width: 280px;
+  min-width: 280px;
+
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.estimateSection {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+
+  padding: 12px;
+}
+
+.estimateSection .btnPrimary {
+  width: 100%;
+  height: 52px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SHARED SECTION STYLES  (used in both desktop toolSections & mobile cards)
+   ───────────────────────────────────────────────────────────────────────── */
 .sectionBlock {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+}
+
+.sectionBlock:last-of-type {
+  margin-bottom: 0;
 }
 
 .sectionTitle {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.6px;
   color: #111;
-  margin-bottom: 8px;
+  margin: 0 0 5px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  letter-spacing: 0.5px;
+  gap: 8px;
 }
 
+/* Numbered circle badge (1, 2, 3, 4) */
 .sectionNumber {
   background: #111;
   color: #fff;
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Layer count badge (e.g. "(2)") */
+.sectionCount {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #999;
+  margin-left: 2px;
 }
 
 .sectionDesc {
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 0;
-  margin-bottom: 16px;
-  line-height: 1.4;
+  font-size: 0.76rem;
+  color: #777;
+  margin: 0 0 12px;
+  line-height: 1.45;
 }
 
-/* Color Swatches */
+/* ─────────────────────────────────────────────────────────────────────────
+   COLOR SWATCHES  (Step 2)
+   ───────────────────────────────────────────────────────────────────────── */
 .colorGrid {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.colorSwatch {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 1px solid rgba(0,0,0,0.1);
-  transition: transform 0.1s;
-}
-
-.colorSwatch:hover {
-  transform: scale(1.1);
-}
-
-.colorSwatch.active {
-  border: 2px solid #111;
-  padding: 2px;
-  background-clip: content-box;
-}
-
-.colorSwatch.addMore {
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: #666;
-  border: 1px dashed #ccc;
-}
-
-/* Element Buttons */
-.elementsGrid {
-  display: grid;
-  gap: 10px;
-}
-
-.elementBtn {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  background: #fff;
-  border: 1px solid #eaeaea;
-  color: #111;
-  padding: 14px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  justify-content: flex-start;
-}
-
-.elementBtn:hover {
-  background: #f8f9fa;
-  border-color: #ddd;
-}
-
-/* Size Toggle */
-.sizeGrid {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.sizeBtn {
-  flex: 1;
-  min-width: 40px;
-  height: 40px;
+.colorSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.18);
+}
+
+/* Active state: double-ring indicator */
+.colorSwatch.active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
+}
+
+/* "+" add-more swatch */
+.colorSwatch.addMore {
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #eaeaea;
+  color: #aaa;
+  border: 1.5px dashed #d0d0d0;
+}
+
+.colorSwatch.addMore:hover {
+  border-color: #aaa;
+  color: #666;
+  transform: scale(1.1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SIZE BUTTONS  (Step 1)
+   ───────────────────────────────────────────────────────────────────────── */
+.sizeGrid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sizeBtn {
+  flex: 1;
+  min-width: 38px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #e8e8e8;
   background: #fff;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 7px;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  color: #111;
-  transition: all 0.2s;
+  color: #444;
+  transition: all 0.16s ease;
 }
 
 .sizeBtn:hover {
-  background: #f8f9fa;
+  background: #f5f5f5;
+  border-color: #d0d0d0;
+  color: #111;
 }
 
 .sizeBtn.active {
@@ -174,110 +337,137 @@
   border-color: #111;
 }
 
-/* Layers list empty state */
+/* ─────────────────────────────────────────────────────────────────────────
+   ELEMENT BUTTONS  (Step 3 — Upload Image, Add Text, Add Line)
+   ───────────────────────────────────────────────────────────────────────── */
+.elementsGrid {
+  display: grid;
+  gap: 7px;
+}
+
+.elementBtn {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e8e8e8;
+  color: #222;
+  padding: 11px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition: all 0.16s ease;
+  text-align: left;
+}
+
+.elementBtn:hover {
+  background: #f8f8f8;
+  border-color: #ccc;
+  color: #111;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   LAYERS EMPTY STATE  (Step 4)
+   ───────────────────────────────────────────────────────────────────────── */
 .layersEmpty {
-  border: 1px dashed #ddd;
+  border: 1.5px dashed #e0e0e0;
   background: #fafafa;
   border-radius: 8px;
-  padding: 24px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  color: #888;
-  font-size: 0.85rem;
+  gap: 8px;
+  color: #ccc;
+  font-size: 0.8rem;
 }
 
-/* Action Buttons */
+/* ─────────────────────────────────────────────────────────────────────────
+   ACTION BUTTONS  (Clear Canvas + Preview Full Design)
+   ───────────────────────────────────────────────────────────────────────── */
 .actionRow {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 20px;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 4px;
 }
 
 .btnSecondary {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px;
+  gap: 7px;
+  padding: 12px;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 0.84rem;
   cursor: pointer;
   background: #fff;
-  border: 1px solid #eaeaea;
-  color: #ef4444;
-  transition: background 0.2s;
+  border: 1.5px solid #eaeaea;
+  color: #e53e3e;
+  transition: background 0.16s ease, border-color 0.16s ease;
   width: 100%;
 }
 
 .btnSecondary:hover {
-  background: #fef2f2;
+  background: #fff5f5;
+  border-color: #fca5a5;
 }
 
 .btnPrimary {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px;
+  gap: 7px;
+  padding: 12px;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 0.84rem;
   cursor: pointer;
   background: #111;
   color: #fff;
   border: none;
-  transition: background 0.2s;
+  transition: background 0.16s ease;
   width: 100%;
 }
 
 .btnPrimary:hover {
-  background: #333;
+  background: #2d2d2d;
 }
 
-/* Center Canvas Area */
-.canvasArea {
-  flex: 1;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #f5f5f5;
-  overflow: hidden;
-}
+/* ─────────────────────────────────────────────────────────────────────────
+   SHARED UI WIDGETS  (viewSwitcher, iconBtn)
+   ───────────────────────────────────────────────────────────────────────── */
 
-.canvasHeader {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  right: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-}
-
+/* Front / Back pill toggle */
 .viewSwitcher {
   display: flex;
   background: #fff;
-  padding: 4px;
+  padding: 3px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.09);
 }
 
 .viewBtn {
   background: transparent;
-  color: #666;
+  color: #777;
   border: none;
-  padding: 8px 24px;
+  padding: 7px 18px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.viewBtn:hover {
+  color: #111;
 }
 
 .viewBtn.active {
@@ -285,213 +475,92 @@
   color: #fff;
 }
 
-.canvasTools {
-  display: flex;
-  gap: 4px;
-  background: #fff;
-  padding: 4px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
+/* Square icon-only button (reset, etc.) */
 .iconBtn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
   cursor: pointer;
   color: #666;
-  transition: background 0.2s;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+  transition: all 0.16s ease;
+  flex-shrink: 0;
 }
 
 .iconBtn:hover {
-  background: #f0f0f0;
+  background: #f5f5f5;
   color: #111;
 }
 
-.canvasWrapper {
-  width: 100%;
-  max-width: 700px;
-  height: 700px;
-  position: relative;
-}
-
-.canvasBottomControls {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-}
-
-.zoomControl {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  overflow: hidden;
-}
-
-.zoomBtn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #111;
-}
-
-.zoomBtn:hover {
-  background: #f0f0f0;
-}
-
-.zoomLevel {
-  padding: 0 16px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #111;
-  min-width: 70px;
-  text-align: center;
-}
-
-.fitBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #111;
-}
-
-.fitBtn:hover {
-  background: #f0f0f0;
-}
-
-/* Tips section */
-.tipsSection {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  margin-top: 24px;
-  max-width: 600px;
-  width: calc(100% - 48px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.tipsTitle {
-  font-size: 0.85rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  color: #111;
-}
-
-.tipsDesc {
-  font-size: 0.8rem;
-  color: #666;
-  line-height: 1.4;
-}
-
-/* Right Sidebar Preview */
-.previewBox {
-  border: 1px solid #eaeaea;
-  border-radius: 12px;
-  padding: 20px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-  position: relative;
-  min-height: 320px;
-  background-image: 
-    linear-gradient(to right, #f8f8f8 1px, transparent 1px),
-    linear-gradient(to bottom, #f8f8f8 1px, transparent 1px);
-  background-size: 30px 30px;
-}
-
-.previewImage {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-
-.modelInfo {
-  background: #f8f9fa;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  color: #666;
-  font-family: monospace;
-  margin-bottom: auto;
-}
-
-/* Properties Panel overlay (Desktop) */
+/* ─────────────────────────────────────────────────────────────────────────
+   PROPERTIES PANEL  —  Desktop floating popup (position: fixed)
+   Appears when a layer is selected in the Layers section.
+   ───────────────────────────────────────────────────────────────────────── */
 .rightPropsPanel {
   position: fixed;
   right: 20px;
   top: 100px;
   bottom: 20px;
-  width: 340px;
+  width: 288px;
   background: #fff;
-  border: 1px solid #eaeaea;
+  border: 1px solid #e8e8e8;
   border-radius: 12px;
   z-index: 1600;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .rightPropsHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 13px 15px;
   border-bottom: 1px solid #eaeaea;
+  flex-shrink: 0;
 }
 
 .rightPropsHeader h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.87rem;
+  font-weight: 700;
   color: #111;
 }
 
 .rightPropsClose {
   background: transparent;
-  border: 1px solid #ddd;
-  color: #111;
-  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  color: #666;
+  padding: 4px 10px;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background 0.16s;
+}
+
+.rightPropsClose:hover {
+  background: #f5f5f5;
+  color: #111;
 }
 
 .rightPropsContent {
-  padding: 16px;
-  overflow: auto;
+  padding: 15px;
+  overflow-y: auto;
   color: #111;
+  flex: 1;
 }
 
-/* Mobile Responsiveness */
-.mobileBottomBar {
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE-ONLY ELEMENTS  —  Hidden on desktop by default
+   ───────────────────────────────────────────────────────────────────────── */
+.mobileTopNav {
   display: none;
 }
 
@@ -499,7 +568,7 @@
   display: none;
 }
 
-.mobileTopNav {
+.mobileBottomBar {
   display: none;
 }
 
@@ -507,117 +576,196 @@
   display: none;
 }
 
-.mobileEditor {
+.drawerBackdrop {
   display: none;
 }
 
-.desktopEditor {
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+.mobile3dDrawer {
+  display: none;
 }
 
-.desktopEditor > div > div {
-  transform: scale(0.55);
-}
-
+/* ─────────────────────────────────────────────────────────────────────────
+   RESPONSIVE — Tablet  (769px – 1024px)
+   Same row layout as desktop but tighter; scale 2D canvas to 65%.
+   ───────────────────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .rightSidebar {
-    display: none;
+  .rightPanel {
+    min-width: 320px;
+  }
+
+  /* Scale down the 2D canvas slightly for narrower panels */
+  .twoDCanvasArea {
+    height: 390px;
+  }
+
+  /* 600 × 0.65 */
+  .twoDEditorScaler {
+    transform: scale(0.65);
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   RESPONSIVE — Mobile  (≤ 768px)
+   Stacked column layout; 3D area hidden; drawer provides 3D access.
+   ───────────────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
 
-  .mobileEditor {
-    display: block;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .desktopEditor {
-    display: none;
-  }
-
+  /* ── Root: stack children vertically ─────────────────────────────────── */
   .workspaceContainer {
+    display: flex;
     flex-direction: column;
-    background-color: #f5f5f5;
+
+    width: 100%;
+    height: 100dvh;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    padding: 0;
+    gap: 0;
   }
 
-  .canvasArea {
-    flex: none;
-    height: 45vh;
-    border-radius: 0 0 20px 20px;
-    background-color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    z-index: 10;
-  }
-
-  .canvasWrapper {
+  .leftSidebar {
     display: none;
   }
 
-  .canvasHeader {
-    display: none; /* Move to mobile top nav */
-  }
-
-  .canvasBottomControls {
-    display: none; /* Hide zoom on mobile canvas */
-  }
-  
-  .tipsSection {
+  .estimateSection {
     display: none;
   }
 
+  /* ── Mobile top nav ───────────────────────────────────────────────────── */
   .mobileTopNav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
+    padding: 10px 16px;
     background: #fff;
-    z-index: 11;
-  }
-  
-  .mobileTopNavTitle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: bold;
-    color: #111;
+    border-bottom: 1px solid #eaeaea;
+    flex-shrink: 0;
+    z-index: 20;
   }
 
+  /* ── Hide the 3D canvas area entirely on mobile ───────────────────────── */
+  .threeArea {
+    display: none;
+  }
+
+  /* ── Right panel: full-width, shows 2D canvas only ───────────────────── */
+  .rightPanel {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    min-width: unset;
+    border-left: none;
+    overflow: hidden;
+    display: block;
+  }
+
+  /* Desktop 2D header hidden (mobileTopNav takes its place) */
+  .twoDHeader {
+    display: none;
+  }
+
+  /* 2D canvas scaled to 60% */
+  .twoDCanvasArea {
+    height: 470px;
+    /* 600 × 0.6 */
+    background: #fff;
+  }
+
+  .twoDEditorScaler {
+    left: 50%;
+    margin-left: -250px;
+
+    transform: scale(0.72);
+    transform-origin: top center;
+  }
+
+  /* "3D" overlay button — top-right corner of the 2D canvas */
+  .mobile3dToggle {
+    display: flex;
+    position: absolute;
+
+    top: 16px;
+    right: 16px;
+
+    z-index: 50;
+
+    align-items: center;
+    gap: 6px;
+
+    padding: 10px 14px;
+
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobile3dToggle:hover {
+    background: #f5f5f5;
+  }
+
+  /* Tool sections inside rightPanel hidden on mobile */
+  .toolSections {
+    display: none;
+  }
+
+  /* ── Mobile content area ─────────────────────────────────────────────── */
   .mobileContentArea {
     display: block;
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-    padding-bottom: 100px;
+    padding: 14px 14px 90px;
+    /* bottom clears fixed tab bar */
     background: #f5f5f5;
   }
-  
+
   .mobileSectionCard {
     background: #fff;
     border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-    margin-bottom: 20px;
+    padding: 18px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 12px;
   }
-  
+
+  /* Mobile layer properties inline block */
+  .mobilePropsInline {
+    margin-top: 20px;
+    border-top: 1px solid #eaeaea;
+    padding-top: 18px;
+  }
+
+  .mobilePropsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .mobilePropsTitle {
+    margin: 0;
+    font-size: 0.87rem;
+    font-weight: 700;
+    color: #111;
+  }
+
   .mobileActions {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 4px;
   }
 
+  .mobileActions .btnSecondary,
+  .mobileActions .btnPrimary {
+    flex: 1;
+  }
+
+  /* ── Fixed bottom tab bar ────────────────────────────────────────────── */
   .mobileBottomBar {
     display: flex;
     position: fixed;
@@ -626,21 +774,24 @@
     right: 0;
     background: #fff;
     border-top: 1px solid #eaeaea;
-    padding: 10px 20px 20px 20px;
-    justify-content: space-between;
+    padding: 7px 10px 14px;
+    justify-content: space-around;
     z-index: 1000;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
   }
 
   .mobileTab {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     background: transparent;
     border: none;
-    color: #888;
+    color: #bbb;
     cursor: pointer;
     flex: 1;
+    padding: 0;
+    transition: color 0.18s ease;
   }
 
   .mobileTab.active {
@@ -648,14 +799,14 @@
   }
 
   .mobileTabIcon {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f8f9fa;
-    transition: all 0.2s;
+    background: #f4f4f4;
+    transition: all 0.2s ease;
     color: inherit;
   }
 
@@ -665,63 +816,115 @@
   }
 
   .mobileTabLabel {
-    font-size: 0.75rem;
+    font-size: 0.66rem;
     font-weight: 600;
-  }
-  
-  .mobile3dToggle {
-    position: absolute;
-    right: 16px;
-    top: 16px;
-    background: #fff;
-    border: 1px solid #eaeaea;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    letter-spacing: 0.2px;
   }
 
-  .modalOverlay {
+  /* ── 3D Drawer — backdrop ────────────────────────────────────────────── */
+  .drawerBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 4999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s ease;
+  }
+
+  .drawerBackdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ── 3D Drawer — sliding panel ───────────────────────────────────────── */
+  .mobile3dDrawer {
     display: flex;
+    flex-direction: column;
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    right: 0;
+    width: 75%;
     height: 100%;
-    background: #f5f5f5;
-    z-index: 10000;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+    background: #fff;
+    z-index: 5000;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -6px 0 40px rgba(0, 0, 0, 0.16);
+    overflow: hidden;
   }
 
-  .modalContent {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    background: transparent;
+  .mobile3dDrawer.open {
+    transform: translateX(0);
   }
 
-  .closeModalBtn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.1);
+  /* Drawer header */
+  .drawerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 15px 13px;
+    border-bottom: 1px solid #eaeaea;
+    flex-shrink: 0;
+    background: #fff;
+  }
+
+  .drawerTitle {
+    margin: 0 0 3px;
+    font-size: 0.95rem;
+    font-weight: 700;
     color: #111;
+  }
+
+  .drawerSubtitle {
+    margin: 0;
+    font-size: 0.72rem;
+    color: #aaa;
+    line-height: 1.4;
+  }
+
+  /* Circular close button */
+  .drawerCloseBtn {
+    background: #f5f5f5;
     border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    z-index: 10010;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    color: #555;
+    flex-shrink: 0;
+    margin-left: 12px;
+    transition: background 0.16s ease;
+  }
+
+  .drawerCloseBtn:hover {
+    background: #e8e8e8;
+  }
+
+  /* 3D canvas fills the remaining drawer height */
+  .drawerCanvas {
+    flex: 1;
+    position: relative;
+    background: #f0f0f0;
+    overflow: hidden;
+  }
+
+  /* Front/Back switcher pinned to the bottom of the drawer */
+  .drawerViewSwitcher {
+    padding: 13px 16px;
+    border-top: 1px solid #eaeaea;
+    display: flex;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  /* Properties panel hidden on mobile (shown inline instead) */
+  .rightPropsPanel {
+    display: none;
   }
 }
-
