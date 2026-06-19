@@ -71,10 +71,10 @@ export const useNavCounts = () => {
           },
         });
 
-        const totalQty =
-          res.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        const normalQty = res.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        const customQty = res.customDesignItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-        setCartCount(totalQty);
+        setCartCount(normalQty + customQty);
       } catch (error: any) {
         if (error?.response?.status === 401) {
           console.warn("Cart 401 ignored");

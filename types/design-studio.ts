@@ -59,6 +59,8 @@ export interface ApparelConfig {
   colorHex: string;
   size: string;
   quantity: number;
+  customDesignVariantId?: number;
+  basePrice?: number;
 }
 
 export interface UploadedAsset {

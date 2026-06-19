@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { DesignProject, Layer, TextLayer, ImageLayer, ApparelConfig, PricingEstimate } from '@/types/design-studio';
 import { calculateEstimatedPricing } from '@/services/design-studio/pricingCalculator';
+import { CustomDesignVariant } from '@/services/custom-design.service';
 
 type ViewType = 'front' | 'back' | 'sleeve';
 
@@ -9,9 +10,12 @@ interface DesignState {
   activeView: ViewType;
   selectedLayerId: string | null;
   pricing: PricingEstimate | null;
+  availableVariants: CustomDesignVariant[];
 
   // Actions
+  setAvailableVariants: (variants: CustomDesignVariant[]) => void;
   setApparelCategory: (categoryId: string) => void;
+  setApparelSize: (size: string) => void;
   changeApparelColor: (hex: string, name: string) => void;
   addLayer: (layer: Layer) => void;
   updateLayer: (id: string, updates: Partial<Layer>) => void;
@@ -49,6 +53,9 @@ export const useDesignStore = create<DesignState>((set, get) => ({
   activeView: 'front',
   selectedLayerId: null,
   pricing: null,
+  availableVariants: [],
+
+  setAvailableVariants: (variants) => set({ availableVariants: variants }),
 
   setApparelCategory: (categoryId) =>
     set((state) => ({
@@ -58,13 +65,43 @@ export const useDesignStore = create<DesignState>((set, get) => ({
       },
     })),
 
+  setApparelSize: (size) =>
+    set((state) => {
+      const variant = state.availableVariants.find(
+        (v) => v.colorCode === state.project.apparelConfig.colorHex && v.size === size
+      );
+      return {
+        project: {
+          ...state.project,
+          apparelConfig: {
+            ...state.project.apparelConfig,
+            size,
+            customDesignVariantId: variant?.id,
+            basePrice: variant?.sellingPrice,
+          },
+        },
+      };
+    }),
+
   changeApparelColor: (colorHex, colorName) =>
-    set((state) => ({
-      project: {
-        ...state.project,
-        apparelConfig: { ...state.project.apparelConfig, colorHex, colorName },
-      },
-    })),
+    set((state) => {
+      // Find the variant with this color and the current size to update variantId and price
+      const variant = state.availableVariants.find(
+        (v) => v.colorCode === colorHex && v.size === state.project.apparelConfig.size
+      );
+      return {
+        project: {
+          ...state.project,
+          apparelConfig: {
+            ...state.project.apparelConfig,
+            colorHex,
+            colorName,
+            customDesignVariantId: variant?.id,
+            basePrice: variant?.sellingPrice,
+          },
+        },
+      };
+    }),
 
   addLayer: (layer) =>
     set((state) => {

@@ -42,10 +42,23 @@ export default function DesignEditor2D() {
           /fill="none"/g,
           `fill="${project.apparelConfig.colorHex}"`,
         );
+
+        // Add viewBox if missing to ensure uniform scaling
+        if (!replaced.includes("viewBox")) {
+          const widthMatch = replaced.match(/width="([\d.]+)"/);
+          const heightMatch = replaced.match(/height="([\d.]+)"/);
+          if (widthMatch && heightMatch) {
+            replaced = replaced.replace(
+              "<svg ",
+              `<svg viewBox="0 0 ${widthMatch[1]} ${heightMatch[1]}" preserveAspectRatio="xMidYMid meet" `
+            );
+          }
+        }
+
         // Ensure SVG scales to fit container
         replaced = replaced.replace(
           "<svg ",
-          '<svg style="width: 100%; height: 100%; object-fit: contain;" ',
+          '<svg style="width: 100%; height: 100%;" ',
         );
 
         setSvgContent(replaced);

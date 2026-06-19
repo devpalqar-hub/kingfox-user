@@ -31,36 +31,6 @@ export default function CostEstimateModal({ onClose, onProceed }: CostEstimateMo
             <span className={styles.label}>Base Apparel Cost</span>
             <span className={styles.value}>{formatCurrency(pricing.baseCost)}</span>
           </div>
-          {pricing.printingCostFront > 0 && (
-            <div className={styles.row}>
-              <span className={styles.label}>Front Print</span>
-              <span className={styles.value}>{formatCurrency(pricing.printingCostFront)}</span>
-            </div>
-          )}
-          {pricing.printingCostBack > 0 && (
-            <div className={styles.row}>
-              <span className={styles.label}>Back Print</span>
-              <span className={styles.value}>{formatCurrency(pricing.printingCostBack)}</span>
-            </div>
-          )}
-          {pricing.artworkHandlingFee > 0 && (
-            <div className={styles.row}>
-              <span className={styles.label}>Artwork Handling</span>
-              <span className={styles.value}>{formatCurrency(pricing.artworkHandlingFee)}</span>
-            </div>
-          )}
-          {pricing.quantityDiscountAmount > 0 && (
-            <div className={styles.row}>
-              <span className={styles.label}>Bulk Discount</span>
-              <span className={`${styles.value} ${styles.discount}`}>
-                -{formatCurrency(pricing.quantityDiscountAmount)}
-              </span>
-            </div>
-          )}
-          <div className={styles.row}>
-            <span className={styles.label}>GST (18%)</span>
-            <span className={styles.value}>{formatCurrency(pricing.gstAmount)}</span>
-          </div>
 
           <div className={styles.totalRow}>
             <span>Total Estimate</span>

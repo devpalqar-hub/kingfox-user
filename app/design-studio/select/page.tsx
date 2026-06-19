@@ -55,8 +55,7 @@ export default function ApparelSelection() {
 
   const handleSelect = (categoryId: string) => {
     setApparelCategory(categoryId);
-    const newProjectId = `proj_${Date.now()}`;
-    router.push(`/design-studio/workspace/${newProjectId}`);
+    router.push(`/design-studio/workspace/${categoryId}`);
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Type,
   Image as ImageIcon,
@@ -23,8 +23,21 @@ import PropertiesPanel from "@/components/design-studio/properties/PropertiesPan
 import CostEstimateModal from "@/components/design-studio/modals/CostEstimateModal";
 import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmModal";
 import styles from "./page.module.css";
+import { getCustomDesignTypesAPI, uploadImagesAPI, addToCustomCartAPI } from "@/services/custom-design.service";
+import { useToast } from "@/context/ToastContext";
+
+const categoryToShirtType: Record<string, string> = {
+  'oversized-tee': 'OVERSIZED',
+  'classic-hoodie': 'HOODIE',
+  'crewneck-sweatshirt': 'HALF_SLEEVE',
+  'long-sleeve-tee': 'FULL_SLEEVE',
+  'polo-Tshirt': 'POLO'
+};
 
 export default function Workspace({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const { showToast } = useToast();
+
   // ─── Store ────────────────────────────────────────────────────────────────
   const {
     project,
@@ -35,6 +48,9 @@ export default function Workspace({ params }: { params: { id: string } }) {
     selectLayer,
     calculatePricing,
     changeApparelColor,
+    setApparelSize,
+    setAvailableVariants,
+    availableVariants,
     removeLayer,
   } = useDesignStore();
 
@@ -45,11 +61,29 @@ export default function Workspace({ params }: { params: { id: string } }) {
   const [activeMobileTab, setActiveMobileTab] = useState<
     "size" | "color" | "elements" | "layers"
   >("size");
-  const [selectedSize, setSelectedSize] = useState<string>("M");
   const [rightPropsLayerId, setRightPropsLayerId] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
   const currentLayers = project.designs[activeView] || [];
+
+  // ─── Fetch Variants ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchVariants = async () => {
+      try {
+        const shirtType = categoryToShirtType[project.apparelConfig.categoryId] || 'HOODIE';
+        const data = await getCustomDesignTypesAPI(shirtType);
+        if (data[shirtType]) {
+          setAvailableVariants(data[shirtType]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch custom design types", error);
+      }
+    };
+    fetchVariants();
+  }, [project.apparelConfig.categoryId]);
+
+  const uniqueSizes = Array.from(new Set(availableVariants.map(v => v.size)));
+  const availableColorsForSize = availableVariants.filter(v => v.size === project.apparelConfig.size);
 
   // ─── Layer Handlers ───────────────────────────────────────────────────────
 
@@ -130,6 +164,116 @@ export default function Workspace({ params }: { params: { id: string } }) {
     addLayer(newLineLayer);
   };
 
+  // ─── Checkout Flow ────────────────────────────────────────────────────────
+  const captureScreenshot = (): Promise<string> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const canvas = document.querySelector('canvas');
+        if (canvas) {
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          resolve('');
+        }
+      }, 500); // give time for threejs to render
+    });
+  };
+
+  const handleCheckout = async () => {
+    try {
+      setIsCheckingOut(true);
+      showToast("Preparing your custom design...", "info");
+
+      // 1. Capture Front
+      switchView("front");
+      const frontDataUrl = await captureScreenshot();
+
+      // 2. Capture Back
+      switchView("back");
+      const backDataUrl = await captureScreenshot();
+
+      if (!frontDataUrl || !backDataUrl) {
+        showToast("Failed to capture design images.", "error");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      // Convert data URL to File
+      const dataURLtoFile = (dataurl: string, filename: string) => {
+        const arr = dataurl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+      };
+
+      const frontFile = dataURLtoFile(frontDataUrl, 'front.png');
+      const backFile = dataURLtoFile(backDataUrl, 'back.png');
+
+      const allImageLayers = [
+        ...project.designs.front.filter(l => l.type === 'image'),
+        ...project.designs.back.filter(l => l.type === 'image'),
+        ...(project.designs.sleeve ? project.designs.sleeve.filter(l => l.type === 'image') : [])
+      ] as ImageLayer[];
+
+      const allTextLayers = [
+        ...project.designs.front.filter(l => l.type === 'text'),
+        ...project.designs.back.filter(l => l.type === 'text'),
+        ...(project.designs.sleeve ? project.designs.sleeve.filter(l => l.type === 'text') : [])
+      ] as TextLayer[];
+
+      const stickerText = allTextLayers.map(l => l.text).join(' | ');
+
+      const filesToUpload: File[] = [frontFile, backFile];
+      allImageLayers.forEach((layer, idx) => {
+        if (layer.asset?.originalUrl?.startsWith('data:image')) {
+          filesToUpload.push(dataURLtoFile(layer.asset.originalUrl, `asset_${idx}.png`));
+        }
+      });
+
+      const { urls } = await uploadImagesAPI(filesToUpload);
+
+      if (!urls || urls.length < 2) {
+        showToast("Image upload failed.", "error");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      const uploadedFrontUrl = urls[0];
+      const uploadedBackUrl = urls[1];
+      const assetImageUrls = urls.slice(2);
+
+      // 3. Add to cart
+      const variantId = project.apparelConfig.customDesignVariantId;
+      if (!variantId) {
+        showToast("Please select a valid size and color combination.", "error");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      await addToCustomCartAPI({
+        customDesignVariantId: variantId,
+        quantity: project.apparelConfig.quantity,
+        frontImageUrl: uploadedFrontUrl,
+        backImageUrl: uploadedBackUrl,
+        stickerText: stickerText || undefined,
+        assetImageUrls: assetImageUrls.length > 0 ? assetImageUrls : undefined,
+      });
+
+      showToast("Custom design added to cart!", "success");
+      router.push("/cart");
+    } catch (err) {
+      console.error(err);
+      showToast("An error occurred during checkout.", "error");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
   // ─── Section Renderers ────────────────────────────────────────────────────
 
   /**
@@ -146,11 +290,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
         Choose a size — available colors will update based on your selection.
       </p>
       <div className={styles.sizeGrid}>
-        {SIZES.map((s) => (
+        {(uniqueSizes.length > 0 ? uniqueSizes : ["XS", "S", "M", "L", "XL", "XXL"]).map((s) => (
           <button
             key={s}
-            className={`${styles.sizeBtn} ${selectedSize === s ? styles.active : ""}`}
-            onClick={() => setSelectedSize(s)}
+            className={`${styles.sizeBtn} ${project.apparelConfig.size === s ? styles.active : ""}`}
+            onClick={() => setApparelSize(s)}
           >
             {s}
           </button>
@@ -172,23 +316,21 @@ export default function Workspace({ params }: { params: { id: string } }) {
         Select a base color for your garment.
       </p>
       <div className={styles.colorGrid}>
-        {[
-          "#FFFFFF", "#000000", "#9CA3AF", "#D1D5DB",
-          "#EF4444", "#F59E0B", "#EAB308", "#10B981",
-          "#3B82F6", "#8B5CF6", "#EC4899", "#14B8A6",
-        ].map((hex) => (
+        {availableColorsForSize.map((variant) => (
           <div
-            key={hex}
-            className={`${styles.colorSwatch} ${project.apparelConfig.colorHex === hex ? styles.active : ""
-              }`}
-            onClick={() => changeApparelColor(hex, hex)}
-            style={{ backgroundColor: hex }}
-            title={hex}
+            key={variant.colorCode}
+            className={`${styles.colorSwatch} ${project.apparelConfig.colorHex === variant.colorCode ? styles.active : ""} ${variant.outOfStock ? styles.outOfStock : ""}`}
+            onClick={() => {
+              if (!variant.outOfStock) {
+                changeApparelColor(variant.colorCode, variant.color);
+              } else {
+                showToast("This color is out of stock in the selected size.", "error");
+              }
+            }}
+            style={{ backgroundColor: variant.colorCode, opacity: variant.outOfStock ? 0.3 : 1, cursor: variant.outOfStock ? 'not-allowed' : 'pointer' }}
+            title={`${variant.color} ${variant.outOfStock ? '(Out of Stock)' : ''}`}
           />
         ))}
-        <div className={`${styles.colorSwatch} ${styles.addMore}`}>
-          <Plus size={14} />
-        </div>
       </div>
     </div>
   );
@@ -545,8 +687,8 @@ export default function Workspace({ params }: { params: { id: string } }) {
         <CostEstimateModal
           onClose={() => setIsModalOpen(false)}
           onProceed={() => {
-            alert("Proceeding to checkout...");
             setIsModalOpen(false);
+            handleCheckout();
           }}
         />
       )}
