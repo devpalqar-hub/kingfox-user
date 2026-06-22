@@ -4,84 +4,63 @@ import { useGLTF, Decal, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import * as THREE from "three";
-import { CgArrowLongRight } from "react-icons/cg";
-export default function ShirtModel() {
+import { SkeletonUtils } from "three-stdlib";
+
+export default function ShirtModel({ ...props }: any) {
 
   const { project, activeView } = useDesignStore();
-
-  // Attempt to load a category-specific model from /models/{categoryId}.glb.
-
-  // Fall back to the default shirt_baked.glb if the category-specific asset is missing.
 
   const [modelUrl, setModelUrl] = useState<string>("/models/shirt_baked.glb");
 
   const MODEL_CONFIG: Record<
 
     string,
-
     {
-
       printW: number;
-
       printH: number;
-
       frontZ: number;
-
       backZ: number;
-
       decalDepth: number;
-
       useUniformScale?: boolean;
-
       centerX?: number;
-
       centerY?: number;
-
+      bounds2D?: { x: number; y: number; width: number; height: number };
+      uvMapping?: { enabled: boolean };
     }
-
   > = {
-
     shirt: {
-
       printW: 0.66,
-
       printH: 0.54,
-
       frontZ: 0.15,
-
       backZ: -0.15,
-
       decalDepth: 0.15,
-
       useUniformScale: false,
-
       centerX: 0,
-
-      centerY: 0,
-
+      centerY: -0.08,
+      bounds2D: { x: 0, y: 0, width: 500, height: 600 },
+      uvMapping: { enabled: false },
+    },
+     hoodie: {
+      printW: 0.7,
+      printH: 1.3,
+      frontZ: 0.06,
+      backZ: -0.11,
+      decalDepth: 0.2,
+      centerX: 0.07,
+      centerY: -0.08,
+      bounds2D: { x: 0, y: 0, width: 500, height: 600 },
+      uvMapping: { enabled: false },
     },
 
-     hoodie: {
-    printW: 0.7,
-    printH: 1.3,
-    frontZ: 0.06,
-    backZ: -0.11,
-    decalDepth: 0.2,
-    centerX: 0,
-    centerY: -0.08,
-  },
-
   };
-
-  /** Resolve model type from the URL to select the right config */
 
   function getModelType(url: string): string {
 
     if (url.toLowerCase().includes("hoodie")) return "hoodie";
 
-    return "shirt"; // default fallback
+    return "shirt";
 
   }
 
@@ -91,8 +70,6 @@ export default function ShirtModel() {
 
     const normalized = rawId.toLowerCase();
 
-    // Fast-path mapping for known categories (avoid HEAD delays)
-
     if (
 
       normalized === "classic-hoodie" ||
@@ -101,15 +78,11 @@ export default function ShirtModel() {
 
     ) {
 
-      console.debug("[ShirtModel] fast-path hoodie -> /models/hoodie.glb");
-
       setModelUrl("/models/hoodie.glb");
 
       return;
 
     }
-
-    // Build an ordered list of candidate model paths to try (prefer explicit overrides)
 
     const candidates: string[] = [];
 
@@ -159,11 +132,7 @@ export default function ShirtModel() {
 
     }
 
-    // Default attempt: category-specific model in /models
-
     candidates.push(`/models/${project.apparelConfig.categoryId}.glb`);
-
-    // Final fallback is the baked shirt
 
     candidates.push("/models/shirt_baked.glb");
 
@@ -171,23 +140,15 @@ export default function ShirtModel() {
 
     (async () => {
 
-      console.debug("[ShirtModel] trying candidates:", candidates);
-
       for (const c of candidates) {
 
         try {
 
-          // Use HEAD so we don't download the full GLB unless it's available
-
           const res = await fetch(c, { method: "HEAD" });
-
-          console.debug("[ShirtModel] HEAD", c, res.status);
 
           if (res.ok) {
 
             if (!cancelled) {
-
-              console.debug("[ShirtModel] selected model:", c);
 
               setModelUrl(c);
 
@@ -199,17 +160,11 @@ export default function ShirtModel() {
 
         } catch (e) {
 
-          console.warn("[ShirtModel] HEAD failed for", c, e);
-
-          // ignore and try next
-
         }
 
       }
 
       if (!cancelled) {
-
-        console.debug("[ShirtModel] falling back to /shirt_baked.glb");
 
         setModelUrl("/models/shirt_baked.glb");
 
@@ -225,67 +180,17 @@ export default function ShirtModel() {
 
   }, [project.apparelConfig.categoryId]);
 
-  const gltf: any = useGLTF(modelUrl) as any;
+  const { scene: gltfScene, nodes, materials } = useGLTF(modelUrl) as any;
 
-  const { nodes, materials, scene } = gltf || {};
-
-  // Quick debug badge so we can see the chosen model and availability in the page
-
-  useEffect(() => {
-
-    try {
-
-      const id = "shirt-model-debug";
-
-      let badge = document.getElementById(id) as HTMLDivElement | null;
-
-      if (!badge) {
-
-        badge = document.createElement("div");
-
-        badge.id = id;
-
-        badge.style.position = "fixed";
-
-        badge.style.right = "12px";
-
-        badge.style.bottom = "12px";
-
-        badge.style.zIndex = "9999";
-
-        badge.style.padding = "8px 10px";
-
-        badge.style.background = "rgba(0,0,0,0.6)";
-
-        badge.style.color = "#fff";
-
-        badge.style.fontSize = "12px";
-
-        badge.style.borderRadius = "6px";
-
-        document.body.appendChild(badge);
-
-      }
-
-      badge.innerText = `model: ${modelUrl} | nodes:${!!nodes} materials:${!!materials} scene:${!!scene}`;
-
-    } catch (e) {
-
-      // ignore DOM errors in non-browser contexts
-
-    }
-
-  }, [modelUrl, nodes, materials, scene]);
+  const clonedScene = useMemo(() => {
+    return gltfScene ? SkeletonUtils.clone(gltfScene) : null;
+  }, [gltfScene]);
 
   const group = useRef<THREE.Group>(null);
-
-  const targetMeshRef = useRef<THREE.Mesh | null>(null);
 
   const frontLayers = project.designs.front || [];
 
   const backLayers = project.designs.back || [];
-
-  // Smoothly interpolate color
 
   useFrame((state, delta) => {
 
@@ -297,8 +202,6 @@ export default function ShirtModel() {
 
     }
 
-    // Rotate model to show back if active view is back
-
     const targetRotation = activeView === "back" ? Math.PI : 0;
 
     if (group.current) {
@@ -309,8 +212,6 @@ export default function ShirtModel() {
 
   });
 
-  // 2D canvas dimensions (must match DesignEditor2D printArea)
-
   const CANVAS_W = 500;
 
   const CANVAS_H = 600;
@@ -319,48 +220,34 @@ export default function ShirtModel() {
 
   const config = MODEL_CONFIG[modelType] ?? MODEL_CONFIG.shirt;
 
-  // Helper to map 2D editor coordinates (500x600 canvas) to 3D spatial offsets
-
   const get3DPosition = (
-
     layer: any,
-
     baseZ: number,
-
     isBack: boolean = false,
-
   ) => {
-
     const visualWidth = layer.width * (layer.scaleX || 1);
-
     const visualHeight = layer.height * (layer.scaleY || 1);
-
     const centerX = layer.x + visualWidth / 2;
-
     const centerY = layer.y + visualHeight / 2;
 
-    const PRINT_3D_W = activeConfig.printW || config.printW;
+    const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
 
+    const u = (centerX - bounds.x) / bounds.width;
+    const v = (centerY - bounds.y) / bounds.height;
+
+    const PRINT_3D_W = activeConfig.printW || config.printW;
     const PRINT_3D_H = activeConfig.printH || config.printH;
 
     let offsetX, offsetY;
-
     if (activeConfig.useUniformScale) {
-
-      offsetX = (centerX - CANVAS_W / 2) * (PRINT_3D_W / CANVAS_W);
-
-      offsetY = -(centerY - CANVAS_H / 2) * (PRINT_3D_W / CANVAS_W);
-
+      offsetX = (u - 0.5) * PRINT_3D_W;
+      offsetY = -(v - 0.5) * PRINT_3D_W * (bounds.height / bounds.width);
     } else {
-
-      offsetX = (centerX / CANVAS_W - 0.5) * PRINT_3D_W;
-
-      offsetY = -(centerY / CANVAS_H - 0.5) * PRINT_3D_H;
-
+      offsetX = (u - 0.5) * PRINT_3D_W;
+      offsetY = -(v - 0.5) * PRINT_3D_H;
     }
 
     const cx = activeConfig.centerX || 0;
-
     const cy = activeConfig.centerY || 0;
 
     return [(isBack ? -offsetX : offsetX) + cx, offsetY + cy, baseZ];
@@ -369,15 +256,13 @@ export default function ShirtModel() {
 
   const allMeshesRef = useRef<THREE.Mesh[]>([]);
 
-  // Collect all meshes in the scene
-
   useEffect(() => {
 
-    if (scene) {
+    if (clonedScene) {
 
       const arr: THREE.Mesh[] = [];
 
-      scene.traverse((obj: any) => {
+      clonedScene.traverse((obj: any) => {
 
         if (obj.isMesh && obj.geometry) {
 
@@ -391,62 +276,9 @@ export default function ShirtModel() {
 
     }
 
-  }, [scene]);
+  }, [clonedScene]);
 
-  if (!scene || allMeshesRef.current.length === 0) return null;
-
-  targetMeshRef.current = allMeshesRef.current[0] as THREE.Mesh;
-
-  // const activeConfig = (() => {
-
-  //   if (!group.current) return config;
-
-  //   const groupInverse = new THREE.Matrix4().copy(group.current.matrixWorld).invert();
-
-  //   const combinedBounds = new THREE.Box3();
-
-  //   for (const obj of allMeshesRef.current) {
-
-  //     obj.geometry.computeBoundingBox();
-
-  //     if (obj.geometry.boundingBox) {
-
-  //       const meshToGroup = groupInverse.clone().multiply(obj.matrixWorld);
-
-  //       const localBox = new THREE.Box3().copy(obj.geometry.boundingBox).applyMatrix4(meshToGroup);
-
-  //       combinedBounds.union(localBox);
-
-  //     }
-
-  //   }
-
-  //   if (combinedBounds.isEmpty()) return config;
-
-  //   const size = new THREE.Vector3();
-
-  //   combinedBounds.getSize(size);
-
-  //   const center = new THREE.Vector3();
-
-
-  //   combinedBounds.getCenter(center);
-
-  //   const scale = Math.max(size.x / 500, size.y / 600);
-
-  //   return {
-  //     ...config,
-  //     frontZ: combinedBounds.max.z,
-  //     backZ: combinedBounds.min.z,
-  //     decalDepth: THREE.MathUtils.clamp(size.z * 0.2, 0.05, 0.2),
-  //     printW: 500 * scale,
-  //     printH: 600 * scale,
-  //     useUniformScale: false,
-  //     centerX: center.x,
-  //     centerY: center.y,
-  //   };
-
-  // })();
+  if (!clonedScene || allMeshesRef.current.length === 0) return null;
 
   const activeConfig = config;
 
@@ -490,13 +322,7 @@ export default function ShirtModel() {
 
     const meshInverse = new THREE.Matrix4().copy(meshNode.matrixWorld).invert();
 
-
-
-    // Calculate local position
-
     const localPos = worldPos.clone().applyMatrix4(meshInverse);
-
-    // Calculate local rotation correctly without decompose
 
     const meshWorldQ = new THREE.Quaternion();
 
@@ -506,21 +332,13 @@ export default function ShirtModel() {
 
     const localRot = new THREE.Euler().setFromQuaternion(localQ);
 
-    // Keep scale intact for the projector box. DecalGeometry applies scale AFTER rotation, 
-
-    // so it must represent the dimensions of the projector box itself, not mapped to the mesh axes.
-
     const groupWorldScale = new THREE.Vector3();
 
     group.current.getWorldScale(groupWorldScale);
 
-
-
     const meshWorldScale = new THREE.Vector3();
 
     meshNode.getWorldScale(meshWorldScale);
-
-
 
     const finalScale = new THREE.Vector3(...groupScale)
 
@@ -566,9 +384,8 @@ export default function ShirtModel() {
 
   return (
 
-    <group ref={group}>
-
-      <primitive object={scene} />
+    <group ref={group} {...props} dispose={null}>
+      <primitive object={clonedScene} />
 
       {allMeshesRef.current.map((meshObj, meshIdx) => {
 
@@ -594,9 +411,9 @@ export default function ShirtModel() {
 
                 const visualHeight = layer.height * (layer.scaleY || 1);
 
-                const scaleX = activeConfig.useUniformScale ? (visualWidth / CANVAS_W) * activeConfig.printW : (visualWidth / 500) * activeConfig.printW;
-
-                const scaleY = activeConfig.useUniformScale ? (visualHeight / CANVAS_W) * activeConfig.printW : (visualHeight / 600) * activeConfig.printH;
+                const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
+                const scaleX = activeConfig.useUniformScale ? (visualWidth / bounds.width) * activeConfig.printW : (visualWidth / bounds.width) * activeConfig.printW;
+                const scaleY = activeConfig.useUniformScale ? (visualHeight / bounds.width) * activeConfig.printW : (visualHeight / bounds.height) * activeConfig.printH;
 
                 const scaleZ = activeConfig.decalDepth;
 
@@ -632,9 +449,9 @@ export default function ShirtModel() {
 
                 const visualHeight = layer.height * (layer.scaleY || 1);
 
-                const scaleX = activeConfig.useUniformScale ? (visualWidth / CANVAS_W) * activeConfig.printW : (visualWidth / 500) * activeConfig.printW;
-
-                const scaleY = activeConfig.useUniformScale ? (visualHeight / CANVAS_W) * activeConfig.printW : (visualHeight / 600) * activeConfig.printH;
+                const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
+                const scaleX = activeConfig.useUniformScale ? (visualWidth / bounds.width) * activeConfig.printW : (visualWidth / bounds.width) * activeConfig.printW;
+                const scaleY = activeConfig.useUniformScale ? (visualHeight / bounds.width) * activeConfig.printW : (visualHeight / bounds.height) * activeConfig.printH;
 
                 const scaleZ = activeConfig.decalDepth;
 
@@ -674,11 +491,9 @@ function DecalWrapper({ meshRef, groupRef, children }: any) {
 
     if (wrapperRef.current && meshRef.current && groupRef.current) {
 
+      // Use a fresh matrix for the multiplication to avoid in-place mutation bugs
       const groupInverse = new THREE.Matrix4().copy(groupRef.current.matrixWorld).invert();
-
-      const meshToGroup = groupInverse.multiply(meshRef.current.matrixWorld);
-
-
+      const meshToGroup = new THREE.Matrix4().multiplyMatrices(groupInverse, meshRef.current.matrixWorld);
 
       wrapperRef.current.matrixAutoUpdate = false;
 

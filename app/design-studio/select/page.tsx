@@ -18,7 +18,7 @@ const categories = [
     name: "Classic Hoodie",
     label: "BESTSELLER",
     description: "Ultra-soft fleece inner, perfect for bold graphics.",
-    basePrice: 1299,
+    basePrice: 799,
     image: "hoodie",
   },
   {
@@ -26,7 +26,7 @@ const categories = [
     name: "Half Sleeve T-shirt",
     label: "EVERYDAY",
     description: "Versatile daily wear with a comfortable fit.",
-    basePrice: 1099,
+    basePrice: 499,
     image: "half-sleeve",
   },
   {
@@ -34,7 +34,7 @@ const categories = [
     name: "Long Sleeve Tee",
     label: "LAYER UP",
     description: "Lightweight cotton, ideal for layered looks.",
-    basePrice: 799,
+    basePrice: 699,
     image: "full-sleeve",
   },
   {
@@ -42,7 +42,7 @@ const categories = [
     name: "Polo T-shirt",
     label: "CLASSIC",
     description: "Classic pique knit with a structured collar.",
-    basePrice: 899,
+    basePrice: 699,
     image: "polo",
   },
 ];
@@ -81,7 +81,7 @@ export default function ApparelSelection() {
             for everyday confidence.
           </p>
 
-          <div className={styles.heroButtons}>
+          {/* <div className={styles.heroButtons}>
             <button className={styles.btnPrimary}>
               SHOP ALL
               <span className={styles.btnArrow}>→</span>
@@ -90,7 +90,7 @@ export default function ApparelSelection() {
               CUSTOMIZE YOURS
               <span className={styles.btnIcon}>✦</span>
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Vertical side text */}

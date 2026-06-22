@@ -58,6 +58,16 @@ export default function Workspace({ params }: { params: { id: string } }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
   const [isMobile3DOpen, setIsMobile3DOpen] = useState(false);
+
+  // Force a resize event after the mobile drawer slides in to wake up the WebGL Canvas
+  useEffect(() => {
+    if (isMobile3DOpen) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 350); // wait for 0.35s CSS transition
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile3DOpen]);
   const [activeMobileTab, setActiveMobileTab] = useState<
     "size" | "color" | "elements" | "layers"
   >("size");
@@ -206,7 +216,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
         while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+          u8arr[n] = bstr.charCodeAt(n);
         }
         return new File([u8arr], filename, { type: mime });
       };

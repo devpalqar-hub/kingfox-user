@@ -55,10 +55,10 @@ export default function DesignEditor2D() {
           }
         }
 
-        // Ensure SVG scales to fit container
+        // Ensure SVG scales to fit container and is centered
         replaced = replaced.replace(
           "<svg ",
-          '<svg style="width: 100%; height: 100%;" ',
+          '<svg preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%; display: block; margin: auto;" ',
         );
 
         setSvgContent(replaced);
@@ -103,7 +103,11 @@ export default function DesignEditor2D() {
               width: "100%",
               height: "100%",
               pointerEvents: "none",
+              background: "transparent",
               zIndex: 0,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
             dangerouslySetInnerHTML={{ __html: svgContent || "" }}
           />
