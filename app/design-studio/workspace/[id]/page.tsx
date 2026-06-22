@@ -52,6 +52,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
     setAvailableVariants,
     availableVariants,
     removeLayer,
+    setApparelQuantity,
   } = useDesignStore();
 
   // ─── Local State ──────────────────────────────────────────────────────────
@@ -191,13 +192,30 @@ export default function Workspace({ params }: { params: { id: string } }) {
   const handleCheckout = async () => {
     try {
       setIsCheckingOut(true);
+
+      // 0. Check authentication
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) {
+        showToast("Please log in before checking out.", "error");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      // 1. Check variant selection
+      const variantId = project.apparelConfig.customDesignVariantId;
+      if (!variantId) {
+        showToast("Please select a valid size and color combination.", "error");
+        setIsCheckingOut(false);
+        return;
+      }
+
       showToast("Preparing your custom design...", "info");
 
-      // 1. Capture Front
+      // 2. Capture Front
       switchView("front");
       const frontDataUrl = await captureScreenshot();
 
-      // 2. Capture Back
+      // 3. Capture Back
       switchView("back");
       const backDataUrl = await captureScreenshot();
 
@@ -245,10 +263,25 @@ export default function Workspace({ params }: { params: { id: string } }) {
         }
       });
 
-      const { urls } = await uploadImagesAPI(filesToUpload);
+      // 4. Upload images
+      let urls: string[];
+      try {
+        const uploadResult = await uploadImagesAPI(filesToUpload);
+        urls = uploadResult.urls;
+      } catch (uploadErr: any) {
+        console.error("Image upload failed:", uploadErr);
+        const status = uploadErr?.response?.status;
+        if (status === 401 || status === 403) {
+          showToast("Session expired. Please log in again.", "error");
+        } else {
+          showToast("Image upload failed. Please try again.", "error");
+        }
+        setIsCheckingOut(false);
+        return;
+      }
 
       if (!urls || urls.length < 2) {
-        showToast("Image upload failed.", "error");
+        showToast("Image upload returned incomplete data.", "error");
         setIsCheckingOut(false);
         return;
       }
@@ -257,28 +290,33 @@ export default function Workspace({ params }: { params: { id: string } }) {
       const uploadedBackUrl = urls[1];
       const assetImageUrls = urls.slice(2);
 
-      // 3. Add to cart
-      const variantId = project.apparelConfig.customDesignVariantId;
-      if (!variantId) {
-        showToast("Please select a valid size and color combination.", "error");
+      // 5. Add to cart
+      try {
+        await addToCustomCartAPI({
+          customDesignVariantId: variantId,
+          quantity: project.apparelConfig.quantity,
+          frontImageUrl: uploadedFrontUrl,
+          backImageUrl: uploadedBackUrl,
+          stickerText: stickerText || undefined,
+          assetImageUrls: assetImageUrls.length > 0 ? assetImageUrls : undefined,
+        });
+      } catch (cartErr: any) {
+        console.error("Add to cart failed:", cartErr);
+        const status = cartErr?.response?.status;
+        if (status === 401 || status === 403) {
+          showToast("Session expired. Please log in again.", "error");
+        } else {
+          showToast("Failed to add to cart. Please try again.", "error");
+        }
         setIsCheckingOut(false);
         return;
       }
 
-      await addToCustomCartAPI({
-        customDesignVariantId: variantId,
-        quantity: project.apparelConfig.quantity,
-        frontImageUrl: uploadedFrontUrl,
-        backImageUrl: uploadedBackUrl,
-        stickerText: stickerText || undefined,
-        assetImageUrls: assetImageUrls.length > 0 ? assetImageUrls : undefined,
-      });
-
       showToast("Custom design added to cart!", "success");
       router.push("/cart");
     } catch (err) {
-      console.error(err);
-      showToast("An error occurred during checkout.", "error");
+      console.error("Checkout error:", err);
+      showToast("An unexpected error occurred. Please try again.", "error");
     } finally {
       setIsCheckingOut(false);
     }
@@ -294,21 +332,46 @@ export default function Workspace({ params }: { params: { id: string } }) {
   const renderSizeSection = () => (
     <div className={styles.sectionBlock}>
       <h3 className={styles.sectionTitle}>
-        <span className={styles.sectionNumber}>1</span> SIZE
+        <span className={styles.sectionNumber}>1</span> SIZE & QUANTITY
       </h3>
       <p className={styles.sectionDesc}>
-        Choose a size — available colors will update based on your selection.
+        Choose your size and how many you'd like to order.
       </p>
-      <div className={styles.sizeGrid}>
-        {(uniqueSizes.length > 0 ? uniqueSizes : ["XS", "S", "M", "L", "XL", "XXL"]).map((s) => (
+      
+      <div style={{ marginBottom: "16px" }}>
+        <span style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 600, color: "#888" }}>SIZE</span>
+        <div className={styles.sizeGrid}>
+          {(uniqueSizes.length > 0 ? uniqueSizes : ["XS", "S", "M", "L", "XL", "XXL"]).map((s) => (
+            <button
+              key={s}
+              className={`${styles.sizeBtn} ${project.apparelConfig.size === s ? styles.active : ""}`}
+              onClick={() => setApparelSize(s)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <span style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 600, color: "#888" }}>QUANTITY</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button
-            key={s}
-            className={`${styles.sizeBtn} ${project.apparelConfig.size === s ? styles.active : ""}`}
-            onClick={() => setApparelSize(s)}
+            style={{ width: "36px", height: "36px", border: "1px solid #333", background: "transparent", color: "#030303ff", borderRadius: "4px", cursor: "pointer" }}
+            onClick={() => setApparelQuantity(Math.max(1, (project.apparelConfig.quantity || 1) - 1))}
           >
-            {s}
+            -
           </button>
-        ))}
+          <span style={{ color: "#000000ff", width: "24px", textAlign: "center", fontWeight: "bold" }}>
+            {project.apparelConfig.quantity || 1}
+          </span>
+          <button
+            style={{ width: "36px", height: "36px", border: "1px solid #333", background: "transparent", color: "#0c0c0cff", borderRadius: "4px", cursor: "pointer" }}
+            onClick={() => setApparelQuantity((project.apparelConfig.quantity || 1) + 1)}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   );

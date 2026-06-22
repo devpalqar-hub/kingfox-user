@@ -16,6 +16,7 @@ interface DesignState {
   setAvailableVariants: (variants: CustomDesignVariant[]) => void;
   setApparelCategory: (categoryId: string) => void;
   setApparelSize: (size: string) => void;
+  setApparelQuantity: (quantity: number) => void;
   changeApparelColor: (hex: string, name: string) => void;
   addLayer: (layer: Layer) => void;
   updateLayer: (id: string, updates: Partial<Layer>) => void;
@@ -82,6 +83,17 @@ export const useDesignStore = create<DesignState>((set, get) => ({
         },
       };
     }),
+
+  setApparelQuantity: (quantity) =>
+    set((state) => ({
+      project: {
+        ...state.project,
+        apparelConfig: {
+          ...state.project.apparelConfig,
+          quantity: Math.max(1, quantity), // Ensure minimum quantity is 1
+        },
+      },
+    })),
 
   changeApparelColor: (colorHex, colorName) =>
     set((state) => {
