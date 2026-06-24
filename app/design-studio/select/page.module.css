@@ -586,7 +586,7 @@
 }
 
 /* Remove the @media (max-width: 400px) block entirely, or replace with: */
-@media (max-width: 400px) {
+/* @media (max-width: 400px) {
   .heroContent {
     max-width: 60%;
     padding: 32px 16px;
@@ -646,4 +646,4 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-}
+} */

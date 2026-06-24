@@ -600,6 +600,31 @@ export default function Workspace({ params }: { params: { id: string } }) {
             Estimate Cost
           </button>
         </div>
+
+        {/*
+         * ══════════════════════════════════════════════════════════════════
+         * PROPERTIES PANEL  (desktop: bottom of right panel; mobile: inline)
+         * ══════════════════════════════════════════════════════════════════
+         */}
+        {rightPropsLayerId && (
+          <aside
+            className={styles.rightPropsPanel}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.rightPropsHeader}>
+              <h3>Layer Properties</h3>
+              <button
+                className={styles.rightPropsClose}
+                onClick={() => setRightPropsLayerId(null)}
+              >
+                Close
+              </button>
+            </div>
+            <div className={styles.rightPropsContent}>
+              <PropertiesPanel />
+            </div>
+          </aside>
+        )}
       </div>
 
       {/*
@@ -725,31 +750,6 @@ export default function Workspace({ params }: { params: { id: string } }) {
           {renderViewSwitcher()}
         </div>
       </div>
-
-      {/*
-       * ══════════════════════════════════════════════════════════════════
-       * PROPERTIES PANEL  (desktop: floating popup; mobile: inline above)
-       * ══════════════════════════════════════════════════════════════════
-       */}
-      {rightPropsLayerId && (
-        <aside
-          className={styles.rightPropsPanel}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className={styles.rightPropsHeader}>
-            <h3>Layer Properties</h3>
-            <button
-              className={styles.rightPropsClose}
-              onClick={() => setRightPropsLayerId(null)}
-            >
-              Close
-            </button>
-          </div>
-          <div className={styles.rightPropsContent}>
-            <PropertiesPanel />
-          </div>
-        </aside>
-      )}
 
       {/*
        * ══════════════════════════════════════════════════════════════════

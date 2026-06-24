@@ -1,14 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import styles from "./Footer.module.css";
-import { useEffect } from "react";
 import { getAllCategories } from "@/services/category.service";
 import { LuFacebook, LuInstagram } from "react-icons/lu";
 
 const Footer = () => {
   const [open, setOpen] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
+  const pathname = usePathname() || "";
   const toggle = (section: string) => {
     setOpen(open === section ? null : section);
   };
@@ -30,8 +31,10 @@ const Footer = () => {
     loadCategories();
   }, []);
 
+  const isWorkspace = pathname.startsWith("/design-studio/workspace");
+
   return (
-    <footer className={styles.footer}>
+    <footer className={`${styles.footer} ${isWorkspace ? styles.hideOnMobileWorkspace : ""}`}>
       <div className={styles.container}>
         <div className={styles.grid}>
           {/* Company */}

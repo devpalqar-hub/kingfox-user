@@ -89,6 +89,10 @@
   width: 450px;
   min-width: 450px;
   max-width: 450px;
+  
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -502,19 +506,11 @@
    Appears when a layer is selected in the Layers section.
    ───────────────────────────────────────────────────────────────────────── */
 .rightPropsPanel {
-  position: fixed;
-  right: 20px;
-  top: 100px;
-  bottom: 20px;
-  width: 288px;
   background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 12px;
-  z-index: 1600;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .rightPropsHeader {
@@ -552,9 +548,7 @@
 
 .rightPropsContent {
   padding: 15px;
-  overflow-y: auto;
   color: #111;
-  flex: 1;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -633,6 +627,10 @@
     display: none;
   }
 
+  .rightPropsPanel {
+    display: none;
+  }
+
   /* ── Mobile top nav ───────────────────────────────────────────────────── */
   .mobileTopNav {
     display: flex;
@@ -659,6 +657,8 @@
     border-left: none;
     overflow: hidden;
     display: block;
+    height: auto;
+    min-height: unset;
   }
 
   /* Desktop 2D header hidden (mobileTopNav takes its place) */
