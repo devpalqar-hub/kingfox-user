@@ -89,7 +89,7 @@
   width: 450px;
   min-width: 450px;
   max-width: 450px;
-  
+
   height: 100%;
   min-height: 0;
   overflow-y: auto;
@@ -576,6 +576,51 @@
 
 .mobile3dDrawer {
   display: none;
+}
+
+.backButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 14px;
+  margin-bottom: 20px;
+
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: #f5f5f5;
+}
+
+.backButtonIcon {
+  flex-shrink: 0;
+}
+
+.mobileBackButton {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+
+  color: #666;
+  cursor: pointer;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

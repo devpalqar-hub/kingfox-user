@@ -25,6 +25,7 @@ import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmMod
 import styles from "./page.module.css";
 import { getCustomDesignTypesAPI, uploadImagesAPI, addToCustomCartAPI } from "@/services/custom-design.service";
 import { useToast } from "@/context/ToastContext";
+import { ArrowLeft } from "lucide-react";
 
 const categoryToShirtType: Record<string, string> = {
   'oversized-tee': 'OVERSIZED',
@@ -121,6 +122,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
       opacity: 1,
     };
     addLayer(newTextLayer);
+  };
+
+  const handleBack = () => {
+    useDesignStore.getState().clearAll();
+    router.push("/design-studio/select");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,7 +343,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
       <p className={styles.sectionDesc}>
         Choose your size and how many you'd like to order.
       </p>
-      
+
       <div style={{ marginBottom: "16px" }}>
         <span style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 600, color: "#888" }}>SIZE</span>
         <div className={styles.sizeGrid}>
@@ -518,6 +524,12 @@ export default function Workspace({ params }: { params: { id: string } }) {
        * ══════════════════════════════════════════════════════════════════
        */}
       <div className={styles.mobileTopNav}>
+        <button
+          className={styles.mobileBackButton}
+          onClick={handleBack}
+        >
+          <ArrowLeft size={16} />
+        </button>
         {renderViewSwitcher()}
         <button
           className={styles.iconBtn}
@@ -535,6 +547,14 @@ export default function Workspace({ params }: { params: { id: string } }) {
        */}
       {/* LEFT SIDEBAR */}
       <aside className={styles.leftSidebar}>
+        <button
+          className={styles.backButton}
+          onClick={handleBack}
+        >
+          <ArrowLeft size={18} className={styles.backButtonIcon} />
+          Back to Apparel Selection
+        </button>
+
         {renderSizeSection()}
         {renderColorSection()}
         {renderElementsSection()}

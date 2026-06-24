@@ -36,7 +36,6 @@ export default function ShirtModel({ ...props }: any) {
       frontZ: 0.15,
       backZ: -0.15,
       decalDepth: 0.15,
-      useUniformScale: false,
       centerX: 0,
       centerY: -0.08,
       bounds2D: { x: 0, y: 0, width: 500, height: 600 },
@@ -65,119 +64,21 @@ export default function ShirtModel({ ...props }: any) {
   }
 
   useEffect(() => {
-
     const rawId = (project.apparelConfig.categoryId || "").toString();
-
     const normalized = rawId.toLowerCase();
 
-    if (
-
-      normalized === "classic-hoodie" ||
-
-      normalized.includes("classic-hoodie")
-
-    ) {
-
-      setModelUrl("/models/hoodie.glb");
-
-      return;
-
-    }
-
-    const candidates: string[] = [];
-
+    // Deterministic model resolution without async fallback delays
     if (normalized.includes("polo")) {
-
-      candidates.push(
-
-        "/t-shirt-polo.glb",
-
-        `/models/${project.apparelConfig.categoryId}.glb`,
-
-      );
-
+      setModelUrl("/models/t-shirt-polo.glb");
+    } else if (normalized.includes("hoodie") || normalized === "classic-hoodie") {
+      setModelUrl("/models/hoodie.glb");
+    } else if (normalized.includes("long") || normalized.includes("full") || normalized.includes("sleeve")) {
+      setModelUrl("/models/LongSleeveTShirt.glb");
+    } else if (normalized.includes("oversize")) {
+      setModelUrl("/models/oversized-tee.glb");
+    } else {
+      setModelUrl("/models/shirt_baked.glb"); // Default fallback
     }
-
-    if (normalized.includes("hoodie")) {
-
-      candidates.push(
-
-        "/models/hoodie.glb",
-
-        "/hoodie.glb",
-
-        `/models/${project.apparelConfig.categoryId}.glb`,
-
-      );
-
-    }
-
-    if (normalized.includes("long") || normalized.includes("full") || normalized.includes("sleeve")) {
-
-      candidates.push(
-
-        "/models/LongSleeveTShirt.glb",
-
-      );
-
-    }
-
-    if (normalized.includes("oversize")) {
-
-      candidates.push(
-
-        "/models/oversized-tee.glb",
-
-      );
-
-    }
-
-    candidates.push(`/models/${project.apparelConfig.categoryId}.glb`);
-
-    candidates.push("/models/shirt_baked.glb");
-
-    let cancelled = false;
-
-    (async () => {
-
-      for (const c of candidates) {
-
-        try {
-
-          const res = await fetch(c, { method: "HEAD" });
-
-          if (res.ok) {
-
-            if (!cancelled) {
-
-              setModelUrl(c);
-
-            }
-
-            return;
-
-          }
-
-        } catch (e) {
-
-        }
-
-      }
-
-      if (!cancelled) {
-
-        setModelUrl("/models/shirt_baked.glb");
-
-      }
-
-    })();
-
-    return () => {
-
-      cancelled = true;
-
-    };
-
   }, [project.apparelConfig.categoryId]);
 
   const { scene: gltfScene, nodes, materials } = useGLTF(modelUrl) as any;
@@ -238,14 +139,9 @@ export default function ShirtModel({ ...props }: any) {
     const PRINT_3D_W = activeConfig.printW || config.printW;
     const PRINT_3D_H = activeConfig.printH || config.printH;
 
-    let offsetX, offsetY;
-    if (activeConfig.useUniformScale) {
-      offsetX = (u - 0.5) * PRINT_3D_W;
-      offsetY = -(v - 0.5) * PRINT_3D_W * (bounds.height / bounds.width);
-    } else {
-      offsetX = (u - 0.5) * PRINT_3D_W;
-      offsetY = -(v - 0.5) * PRINT_3D_H;
-    }
+    // Enforce uniform scaling mathematically to preserve exact image aspect ratio
+    const offsetX = (u - 0.5) * PRINT_3D_W;
+    const offsetY = -(v - 0.5) * PRINT_3D_W * (bounds.height / bounds.width);
 
     const cx = activeConfig.centerX || 0;
     const cy = activeConfig.centerY || 0;
@@ -412,8 +308,9 @@ export default function ShirtModel({ ...props }: any) {
                 const visualHeight = layer.height * (layer.scaleY || 1);
 
                 const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
-                const scaleX = activeConfig.useUniformScale ? (visualWidth / bounds.width) * activeConfig.printW : (visualWidth / bounds.width) * activeConfig.printW;
-                const scaleY = activeConfig.useUniformScale ? (visualHeight / bounds.width) * activeConfig.printW : (visualHeight / bounds.height) * activeConfig.printH;
+                // Uniform scaling so aspect ratios are perfectly maintained
+                const scaleX = (visualWidth / bounds.width) * activeConfig.printW;
+                const scaleY = (visualHeight / bounds.width) * activeConfig.printW;
 
                 const scaleZ = activeConfig.decalDepth;
 
@@ -450,8 +347,9 @@ export default function ShirtModel({ ...props }: any) {
                 const visualHeight = layer.height * (layer.scaleY || 1);
 
                 const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
-                const scaleX = activeConfig.useUniformScale ? (visualWidth / bounds.width) * activeConfig.printW : (visualWidth / bounds.width) * activeConfig.printW;
-                const scaleY = activeConfig.useUniformScale ? (visualHeight / bounds.width) * activeConfig.printW : (visualHeight / bounds.height) * activeConfig.printH;
+                // Uniform scaling so aspect ratios are perfectly maintained
+                const scaleX = (visualWidth / bounds.width) * activeConfig.printW;
+                const scaleY = (visualHeight / bounds.width) * activeConfig.printW;
 
                 const scaleZ = activeConfig.decalDepth;
 
