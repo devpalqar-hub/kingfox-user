@@ -12,8 +12,20 @@ interface DesignState {
   pricing: PricingEstimate | null;
   availableVariants: CustomDesignVariant[];
 
+  // GLB Snapshot state (front + back renders of the selected garment)
+  glbSnapshots: {
+    front: string | null;
+    back: string | null;
+    loading: boolean;
+  };
+
   // Actions
   setAvailableVariants: (variants: CustomDesignVariant[]) => void;
+  setGLBSnapshots: (snapshots: {
+    front: string | null;
+    back: string | null;
+    loading: boolean;
+  }) => void;
   setApparelCategory: (categoryId: string) => void;
   setApparelSize: (size: string) => void;
   setApparelQuantity: (quantity: number) => void;
@@ -55,8 +67,10 @@ export const useDesignStore = create<DesignState>((set, get) => ({
   selectedLayerId: null,
   pricing: null,
   availableVariants: [],
+  glbSnapshots: { front: null, back: null, loading: false },
 
   setAvailableVariants: (variants) => set({ availableVariants: variants }),
+  setGLBSnapshots: (snapshots) => set({ glbSnapshots: snapshots }),
 
   setApparelCategory: (categoryId) =>
     set((state) => ({

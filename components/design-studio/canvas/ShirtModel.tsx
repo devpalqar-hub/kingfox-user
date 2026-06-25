@@ -1,674 +1,411 @@
 "use client";
 
-import { useGLTF, Decal, useTexture } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { easing } from "maath";
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { SkeletonUtils } from "three-stdlib";
+import { getPrintBounds800 } from "@/utils/printBounds";
 
-export default function ShirtModel({ ...props }: any) {
+// ─── Constants ────────────────────────────────────────────────────────────────
+const TEX_RES = 2048;
 
-  const { project, activeView } = useDesignStore();
+// Editor canvas dimensions (500×600) — the space layers are stored in
+const EDITOR_W = 500;
+const EDITOR_H = 600;
 
-  const [modelUrl, setModelUrl] = useState<string>("/models/shirt_baked.glb");
+// GLB snapshot dimensions (800×960) — the space printBounds800 values are in
+const SNAP_W = 800;
+const SNAP_H = 960;
 
-  const MODEL_CONFIG: Record<
+const IMG_CACHE = new Map<string, HTMLImageElement>();
 
-    string,
-    {
-      printW: number;
-      printH: number;
-      frontZ: number;
-      backZ: number;
-      decalDepth: number;
-      useUniformScale?: boolean;
-      centerX?: number;
-      centerY?: number;
-      bounds2D?: { x: number; y: number; width: number; height: number };
-      uvMapping?: { enabled: boolean };
-    }
-  > = {
-    shirt: {
-      printW: 0.66,
-      printH: 0.54,
-      frontZ: 0.15,
-      backZ: -0.15,
-      decalDepth: 0.15,
-      centerX: 0,
-      centerY: -0.08,
-      bounds2D: { x: 0, y: 0, width: 500, height: 600 },
-      uvMapping: { enabled: false },
-    },
-     hoodie: {
-      printW: 0.7,
-      printH: 1.3,
-      frontZ: 0.06,
-      backZ: -0.11,
-      decalDepth: 0.2,
-      centerX: 0.07,
-      centerY: -0.08,
-      bounds2D: { x: 0, y: 0, width: 500, height: 600 },
-      uvMapping: { enabled: false },
-    },
+function loadImg(src: string): Promise<HTMLImageElement> {
+  if (IMG_CACHE.has(src)) return Promise.resolve(IMG_CACHE.get(src)!);
+  return new Promise((res, rej) => {
+    const img = new Image();
+    if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
+    img.onload = () => { IMG_CACHE.set(src, img); res(img); };
+    img.onerror = rej;
+    img.src = src;
+  });
+}
 
-  };
+// ─── Find largest UV-bearing mesh ─────────────────────────────────────────────
+function findMainMesh(root: THREE.Object3D): THREE.Mesh | null {
+  let best: { mesh: THREE.Mesh; vol: number } | null = null;
+  root.traverse((obj: any) => {
+    if (!obj.isMesh || !obj.geometry?.getAttribute("uv")) return;
+    const b = new THREE.Box3().setFromObject(obj);
+    const s = b.getSize(new THREE.Vector3());
+    const vol = s.x * s.y * s.z;
+    if (!best || vol > (best as { mesh: THREE.Mesh; vol: number }).vol)
+      best = { mesh: obj as THREE.Mesh, vol };
+  });
+  return (best as { mesh: THREE.Mesh; vol: number } | null)?.mesh ?? null;
+}
 
-  function getModelType(url: string): string {
+// ─── Extract base color from material ─────────────────────────────────────────
+function getBaseTexture(mesh: THREE.Mesh): THREE.Texture | null {
+  const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+  return (mat as THREE.MeshStandardMaterial)?.map ?? null;
+}
 
-    if (url.toLowerCase().includes("hoodie")) return "hoodie";
-
-    return "shirt";
-
+// ─── UV region detection ───────────────────────────────────────────────────────
+// Returns the UV bounding box for the left (u<0.5) and right (u>=0.5) halves.
+// We then assign front/back based on per-model config (see UV_FRONT_IS_LEFT below).
+function detectUvRegions(mesh: THREE.Mesh): {
+  left: { u0: number; v0: number; u1: number; v1: number };
+  right: { u0: number; v0: number; u1: number; v1: number };
+} {
+  const uv = mesh.geometry.getAttribute("uv") as THREE.BufferAttribute;
+  if (!uv) {
+    return {
+      left: { u0: 0, v0: 0, u1: 0.5, v1: 1 },
+      right: { u0: 0.5, v0: 0, u1: 1, v1: 1 },
+    };
   }
 
-  useEffect(() => {
-    const rawId = (project.apparelConfig.categoryId || "").toString();
-    const normalized = rawId.toLowerCase();
+  let lU0 = 1, lV0 = 1, lU1 = 0, lV1 = 0;
+  let rU0 = 1, rV0 = 1, rU1 = 0, rV1 = 0;
+  let hasLeft = false, hasRight = false;
 
-    // Deterministic model resolution without async fallback delays
-    if (normalized.includes("polo")) {
-      setModelUrl("/models/t-shirt-polo.glb");
-    } else if (normalized.includes("hoodie") || normalized === "classic-hoodie") {
-      setModelUrl("/models/hoodie.glb");
-    } else if (normalized.includes("long") || normalized.includes("full") || normalized.includes("sleeve")) {
-      setModelUrl("/models/LongSleeveTShirt.glb");
-    } else if (normalized.includes("oversize")) {
-      setModelUrl("/models/oversized-tee.glb");
+  for (let i = 0; i < uv.count; i++) {
+    const u = uv.getX(i);
+    const v = uv.getY(i);
+    if (u < 0.5) {
+      lU0 = Math.min(lU0, u); lV0 = Math.min(lV0, v);
+      lU1 = Math.max(lU1, u); lV1 = Math.max(lV1, v);
+      hasLeft = true;
     } else {
-      setModelUrl("/models/shirt_baked.glb"); // Default fallback
+      rU0 = Math.min(rU0, u); rV0 = Math.min(rV0, v);
+      rU1 = Math.max(rU1, u); rV1 = Math.max(rV1, v);
+      hasRight = true;
     }
+  }
+
+  return {
+    left: hasLeft ? { u0: lU0, v0: lV0, u1: lU1, v1: lV1 } : { u0: 0, v0: 0, u1: 0.5, v1: 1 },
+    right: hasRight ? { u0: rU0, v0: rV0, u1: rU1, v1: rV1 } : { u0: 0.5, v0: 0, u1: 1, v1: 1 },
+  };
+}
+
+// ─── Per-model UV orientation config ──────────────────────────────────────────
+// Set true  → left UV half (u < 0.5) is the FRONT panel
+// Set false → right UV half (u ≥ 0.5) is the FRONT panel
+// Flip this per-model if the design shows on the wrong side.
+const UV_FRONT_IS_LEFT: Record<string, boolean> = {
+  shirt: true,   // shirt_baked.glb   — left UV = front
+  polo: true,   // t-shirt-polo.glb  — left UV = front
+  hoodie: true,   // hoodie.glb        — left UV = front
+  long: true,   // LongSleeveTShirt.glb
+  oversize: false,  // oversized-tee.glb — right UV = front (flipped UV layout)
+};
+
+function getModelKey(categoryId: string): string {
+  const n = (categoryId || "").toLowerCase();
+  if (n.includes("hoodie")) return "hoodie";
+  if (n.includes("polo")) return "polo";
+  if (n.includes("long") || n.includes("sleeve") || n.includes("full")) return "long";
+  if (n.includes("oversize")) return "oversize";
+  return "shirt";
+}
+
+// ─── Paint design layers into a UV region on the canvas ───────────────────────
+//
+// Coordinate mapping strategy:
+//   • Layers are stored in editor-canvas space (500 × 600 px).
+//   • Print-bounds (pb800) are in GLB-snapshot space (800 × 960).
+//   • The UV region covers the entire front or back shirt half in the texture.
+//
+// We need to paint each layer so it appears at the correct position and scale
+// on the physical shirt. The approach:
+//
+//   1. Convert pb800 → editor pixel space (pb500).
+//   2. Compute a uniform scale:  editorPx → texturePx
+//        scaleU = (UV region width  in texture px) / (UV region width  as fraction of editor canvas)
+//      This maps 1 editor pixel → N texture pixels such that the whole editor
+//      canvas is "stretched" over the UV region.
+//   3. The UV region top-left in the texture canvas is the anchor.
+//   4. Each layer's centre (in editor px) is offset from the UV region anchor
+//      and scaled by scaleU/scaleV to arrive at texture canvas coordinates.
+//
+// This ensures the size and position shown in the 2D editor exactly matches
+// what is painted on the 3D texture.
+
+async function paintLayers(
+  ctx: CanvasRenderingContext2D,
+  layers: any[],
+  pb800: { x: number; y: number; w: number; h: number },
+  uvRegion: { u0: number; v0: number; u1: number; v1: number },
+) {
+  const visible = layers.filter(l => l.isVisible !== false);
+  if (!visible.length) return;
+
+  // ── Convert print-bounds from 800×960 snapshot space → 500×600 editor space ──
+  const pb500 = {
+    x: pb800.x * (EDITOR_W / SNAP_W),
+    y: pb800.y * (EDITOR_H / SNAP_H),
+    w: pb800.w * (EDITOR_W / SNAP_W),
+    h: pb800.h * (EDITOR_H / SNAP_H),
+  };
+
+  // ── UV region in texture-canvas pixel space ───────────────────────────────
+  // THREE UV: V=0 is bottom, V=1 is top → canvas Y inverted.
+  // region top-left in canvas = (u0 * TEX_RES, (1 - v1) * TEX_RES)
+  const rX = uvRegion.u0 * TEX_RES;
+  const rY = (1 - uvRegion.v1) * TEX_RES;
+  const rW = (uvRegion.u1 - uvRegion.u0) * TEX_RES;
+  const rH = (uvRegion.v1 - uvRegion.v0) * TEX_RES;
+
+  // ── Unified scale: editor canvas → texture canvas ─────────────────────────
+  // The UV region covers the entire half of the shirt in texture space.
+  // The editor canvas (EDITOR_W × EDITOR_H) is the full view of that shirt half.
+  // So 1 editor pixel = (rW / EDITOR_W) texture pixels horizontally, etc.
+  const scaleU = rW / EDITOR_W;
+  const scaleV = rH / EDITOR_H;
+
+  for (const layer of visible) {
+    // Layer centre in editor space
+    const lCX = layer.x + layer.width / 2;
+    const lCY = layer.y + layer.height / 2;
+
+    // Map to texture canvas:
+    //   editor (0,0) → texture (rX, rY)
+    //   editor (EDITOR_W, EDITOR_H) → texture (rX+rW, rY+rH)
+    const tCX = rX + lCX * scaleU;
+    const tCY = rY + lCY * scaleV;
+    const tW = layer.width * scaleU;
+    const tH = layer.height * scaleV;
+
+    ctx.save();
+    ctx.globalAlpha = layer.opacity ?? 1;
+    ctx.translate(tCX, tCY);
+    if (layer.rotation) ctx.rotate((layer.rotation * Math.PI) / 180);
+
+    if (layer.type === "image") {
+      try {
+        const img = await loadImg(layer.asset?.originalUrl ?? "");
+        ctx.drawImage(img, -tW / 2, -tH / 2, tW, tH);
+      } catch (e) {
+        console.warn("[ShirtModel] image load failed", e);
+      }
+    } else if (layer.type === "text") {
+      const fs = Math.min(layer.fontSize * scaleV, 400);
+      ctx.font = `${layer.fontWeight ?? 700} ${fs}px "${layer.fontFamily || "Inter"}", sans-serif`;
+      ctx.fillStyle = layer.colorHex || "#000";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(layer.text || "", 0, 0);
+    } else if (layer.type === "line") {
+      const thick = Math.max(1, layer.thickness * scaleV);
+      ctx.fillStyle = layer.colorHex || "#000";
+      ctx.fillRect(-tW / 2, -thick / 2, tW, thick);
+    }
+
+    ctx.restore();
+  }
+
+  // Debug: draw print-bounds zone outline on the texture (visible in dev)
+  if (process.env.NODE_ENV === "development") {
+    const dbgX = rX + pb500.x * scaleU;
+    const dbgY = rY + pb500.y * scaleV;
+    const dbgW = pb500.w * scaleU;
+    const dbgH = pb500.h * scaleV;
+    ctx.save();
+    ctx.strokeStyle = "rgba(59,130,246,0.3)";
+    ctx.lineWidth = 4;
+    ctx.setLineDash([12, 6]);
+    ctx.strokeRect(dbgX, dbgY, dbgW, dbgH);
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+}
+
+// ─── Build full garment canvas ─────────────────────────────────────────────────
+async function buildGarmentCanvas(
+  baseTexture: THREE.Texture | null,
+  colorHex: string,
+  frontLayers: any[],
+  backLayers: any[],
+  frontBounds800: { x: number; y: number; w: number; h: number },
+  backBounds800: { x: number; y: number; w: number; h: number },
+  frontUvRegion: { u0: number; v0: number; u1: number; v1: number },
+  backUvRegion: { u0: number; v0: number; u1: number; v1: number },
+): Promise<HTMLCanvasElement> {
+  const c = document.createElement("canvas");
+  c.width = TEX_RES;
+  c.height = TEX_RES;
+  const ctx = c.getContext("2d")!;
+
+  // 1. Base layer: original baked texture tinted with garment colour,
+  //    or a solid colour fill if the model has no base texture.
+  if (baseTexture?.image) {
+    ctx.drawImage(baseTexture.image as HTMLImageElement, 0, 0, TEX_RES, TEX_RES);
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = colorHex;
+    ctx.fillRect(0, 0, TEX_RES, TEX_RES);
+    ctx.globalCompositeOperation = "source-over";
+  } else {
+    ctx.fillStyle = colorHex;
+    ctx.fillRect(0, 0, TEX_RES, TEX_RES);
+  }
+
+  // 2. Paint design layers for each panel
+  await paintLayers(ctx, frontLayers, frontBounds800, frontUvRegion);
+  await paintLayers(ctx, backLayers, backBounds800, backUvRegion);
+
+  return c;
+}
+
+// ─── Apply or update the override texture on the mesh material ────────────────
+function applyTexture(mesh: THREE.Mesh, tex: THREE.CanvasTexture) {
+  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  mats.forEach((m: any) => {
+    if (m.map !== tex) {
+      m.map = tex;
+      m.needsUpdate = true;
+    }
+    tex.needsUpdate = true;
+  });
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+export default function ShirtModel({ ...props }: any) {
+  const { project, activeView } = useDesignStore();
+
+  const modelUrl = useMemo(() => {
+    const n = (project.apparelConfig.categoryId || "").toString().toLowerCase();
+    if (n.includes("polo")) return "/models/polo-Tshirt.glb";
+    if (n.includes("hoodie") || n === "classic-hoodie") return "/models/Hoodie.glb";
+    if (n.includes("long") || n.includes("full") || n.includes("sleeve")) return "/models/LongSleeveTShirt.glb";
+    if (n.includes("oversize")) return "/models/oversized-tee.glb";
+    return "/models/shirt_baked.glb";
   }, [project.apparelConfig.categoryId]);
 
-  const { scene: gltfScene, nodes, materials } = useGLTF(modelUrl) as any;
+  const { scene: gltfScene } = useGLTF(modelUrl) as any;
 
-  const clonedScene = useMemo(() => {
-    return gltfScene ? SkeletonUtils.clone(gltfScene) : null;
-  }, [gltfScene]);
+  const clonedScene = useMemo(
+    () => (gltfScene ? SkeletonUtils.clone(gltfScene) : null),
+    [gltfScene],
+  );
 
   const group = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  const baseTexRef = useRef<THREE.Texture | null>(null);
+  const uvRegions = useRef<{
+    front: { u0: number; v0: number; u1: number; v1: number };
+    back: { u0: number; v0: number; u1: number; v1: number };
+  } | null>(null);
+  const overrideTex = useRef<THREE.CanvasTexture | null>(null);
 
-  const frontLayers = project.designs.front || [];
+  const catId = (project.apparelConfig.categoryId || "").toString();
+  const modelKey = getModelKey(catId);
+  const frontBounds = useMemo(() => getPrintBounds800(catId, "front"), [catId]);
+  const backBounds = useMemo(() => getPrintBounds800(catId, "back"), [catId]);
 
-  const backLayers = project.designs.back || [];
-
-  useFrame((state, delta) => {
-
-    const mat = materials?.lambert1 || Object.values(materials || {})[0];
-
-    if (mat && mat.color) {
-
-      easing.dampC(mat.color, project.apparelConfig.colorHex, 0.25, delta);
-
-    }
-
-    const targetRotation = activeView === "back" ? Math.PI : 0;
-
-    if (group.current) {
-
-      easing.dampE(group.current.rotation, [0, targetRotation, 0], 0.25, delta);
-
-    }
-
-  });
-
-  const CANVAS_W = 500;
-
-  const CANVAS_H = 600;
-
-  const modelType = getModelType(modelUrl);
-
-  const config = MODEL_CONFIG[modelType] ?? MODEL_CONFIG.shirt;
-
-  const get3DPosition = (
-    layer: any,
-    baseZ: number,
-    isBack: boolean = false,
-  ) => {
-    const visualWidth = layer.width * (layer.scaleX || 1);
-    const visualHeight = layer.height * (layer.scaleY || 1);
-    const centerX = layer.x + visualWidth / 2;
-    const centerY = layer.y + visualHeight / 2;
-
-    const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
-
-    const u = (centerX - bounds.x) / bounds.width;
-    const v = (centerY - bounds.y) / bounds.height;
-
-    const PRINT_3D_W = activeConfig.printW || config.printW;
-    const PRINT_3D_H = activeConfig.printH || config.printH;
-
-    // Enforce uniform scaling mathematically to preserve exact image aspect ratio
-    const offsetX = (u - 0.5) * PRINT_3D_W;
-    const offsetY = -(v - 0.5) * PRINT_3D_W * (bounds.height / bounds.width);
-
-    const cx = activeConfig.centerX || 0;
-    const cy = activeConfig.centerY || 0;
-
-    return [(isBack ? -offsetX : offsetX) + cx, offsetY + cy, baseZ];
-
-  };
-
-  const allMeshesRef = useRef<THREE.Mesh[]>([]);
-
+  // ── Scene setup ────────────────────────────────────────────────────────────
   useEffect(() => {
+    if (!clonedScene) return;
 
-    if (clonedScene) {
+    overrideTex.current?.dispose();
+    overrideTex.current = null;
+    meshRef.current = null;
+    baseTexRef.current = null;
+    uvRegions.current = null;
 
-      const arr: THREE.Mesh[] = [];
+    clonedScene.updateMatrixWorld(true);
+    const bb = new THREE.Box3().setFromObject(clonedScene);
+    const center = bb.getCenter(new THREE.Vector3());
+    clonedScene.position.sub(center);
+    clonedScene.updateMatrixWorld(true);
 
-      clonedScene.traverse((obj: any) => {
+    const mesh = findMainMesh(clonedScene);
+    if (!mesh) { console.error("[ShirtModel] No mesh found"); return; }
 
-        if (obj.isMesh && obj.geometry) {
+    meshRef.current = mesh;
+    baseTexRef.current = getBaseTexture(mesh);
 
-          arr.push(obj);
+    // Detect UV left/right halves, then assign front/back per model config
+    const { left, right } = detectUvRegions(mesh);
+    const frontIsLeft = UV_FRONT_IS_LEFT[modelKey] ?? true;
 
-        }
-
-      });
-
-      allMeshesRef.current = arr;
-
-    }
-
-  }, [clonedScene]);
-
-  if (!clonedScene || allMeshesRef.current.length === 0) return null;
-
-  const activeConfig = config;
-
-  const getLocalParams = (
-
-    groupPos: [number, number, number],
-
-    groupRotation: [number, number, number],
-
-    groupScale: [number, number, number],
-
-    meshNode: THREE.Mesh
-
-  ) => {
-
-    if (!group.current || !meshNode) {
-
-      return { position: groupPos, rotation: groupRotation, scale: groupScale };
-
-    }
-
-    group.current.updateMatrixWorld(true);
-
-    meshNode.updateMatrixWorld(true);
-
-    const worldPos = new THREE.Vector3(...groupPos);
-
-    group.current.localToWorld(worldPos);
-
-    const groupQ = new THREE.Quaternion().setFromEuler(
-
-      new THREE.Euler(...groupRotation),
-
-    );
-
-    const worldQ = new THREE.Quaternion();
-
-    group.current.getWorldQuaternion(worldQ);
-
-    worldQ.multiply(groupQ);
-
-    const meshInverse = new THREE.Matrix4().copy(meshNode.matrixWorld).invert();
-
-    const localPos = worldPos.clone().applyMatrix4(meshInverse);
-
-    const meshWorldQ = new THREE.Quaternion();
-
-    meshNode.getWorldQuaternion(meshWorldQ);
-
-    const localQ = meshWorldQ.clone().invert().multiply(worldQ);
-
-    const localRot = new THREE.Euler().setFromQuaternion(localQ);
-
-    const groupWorldScale = new THREE.Vector3();
-
-    group.current.getWorldScale(groupWorldScale);
-
-    const meshWorldScale = new THREE.Vector3();
-
-    meshNode.getWorldScale(meshWorldScale);
-
-    const finalScale = new THREE.Vector3(...groupScale)
-
-      .multiply(groupWorldScale)
-
-      .divide(new THREE.Vector3(
-
-        meshWorldScale.x || 1,
-
-        meshWorldScale.y || 1,
-
-        meshWorldScale.z || 1
-
-      ));
-
-    return {
-
-      position: [localPos.x, localPos.y, localPos.z] as [
-
-        number,
-
-        number,
-
-        number,
-
-      ],
-
-      rotation: [localRot.x, localRot.y, localRot.z] as [
-        number,
-        number,
-        number,
-      ],
-
-      scale: [finalScale.x, finalScale.y, finalScale.z] as [
-        number,
-        number,
-        number,
-      ],
-
+    uvRegions.current = {
+      front: frontIsLeft ? left : right,
+      back: frontIsLeft ? right : left,
     };
 
-  };
+    console.log("[ShirtModel] UV regions:", uvRegions.current, "| modelKey:", modelKey, "| frontIsLeft:", frontIsLeft);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clonedScene, modelKey]);
 
-  return (
+  // ── Rebuild texture whenever design, color, or model changes ──────────────
+  useEffect(() => {
+    if (!meshRef.current || !uvRegions.current) return;
 
-    <group ref={group} {...props} dispose={null}>
-      <primitive object={clonedScene} />
+    const mesh = meshRef.current;
+    const regions = uvRegions.current;
+    let cancelled = false;
 
-      {allMeshesRef.current.map((meshObj, meshIdx) => {
+    const rebuild = async () => {
+      const canvas = await buildGarmentCanvas(
+        baseTexRef.current,
+        project.apparelConfig.colorHex,
+        project.designs.front || [],
+        project.designs.back || [],
+        frontBounds,
+        backBounds,
+        regions.front,
+        regions.back,
+      );
+      if (cancelled) return;
 
-        const meshRef = { current: meshObj };
+      if (!overrideTex.current) {
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = true;
+        tex.flipY = false;
+        overrideTex.current = tex;
+      } else {
+        (overrideTex.current as any).image = canvas;
+        overrideTex.current.needsUpdate = true;
+      }
 
-        return (
+      applyTexture(mesh, overrideTex.current);
+      console.log("[ShirtModel] Texture rebuilt and applied");
+    };
 
-          <DecalWrapper key={meshIdx} meshRef={meshRef} groupRef={group}>
+    rebuild().catch(e => console.error("[ShirtModel] Texture build error:", e));
+    return () => { cancelled = true; };
+  }, [
+    clonedScene,
+    project.apparelConfig.colorHex,
+    project.designs.front,
+    project.designs.back,
+    frontBounds,
+    backBounds,
+  ]);
 
-            {frontLayers.map((layer) => {
-
-              if (!layer.isVisible) return null;
-
-              const local = (() => {
-
-                const pos = get3DPosition(layer, activeConfig.frontZ, false);
-
-                const rotZ = THREE.MathUtils.degToRad(layer.rotation || 0);
-
-                const frontRotation: [number, number, number] = [0, 0, rotZ];
-
-                const visualWidth = layer.width * (layer.scaleX || 1);
-
-                const visualHeight = layer.height * (layer.scaleY || 1);
-
-                const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
-                // Uniform scaling so aspect ratios are perfectly maintained
-                const scaleX = (visualWidth / bounds.width) * activeConfig.printW;
-                const scaleY = (visualHeight / bounds.width) * activeConfig.printW;
-
-                const scaleZ = activeConfig.decalDepth;
-
-                return getLocalParams(pos as [number, number, number], frontRotation, [scaleX, scaleY, scaleZ], meshObj);
-
-              })();
-
-              if (!local) return null;
-
-              if (layer.type === "image") return <DecalTexture key={layer.id} layer={layer as any} position={local.position} rotation={local.rotation} scale={local.scale} mesh={meshRef} />;
-
-              if (layer.type === "text") return <DecalText key={layer.id} layer={layer as any} position={local.position} rotation={local.rotation} scale={local.scale} mesh={meshRef} />;
-
-              if (layer.type === "line") return <DecalLine key={layer.id} layer={layer as any} position={local.position} rotation={local.rotation} scale={local.scale} mesh={meshRef} />;
-
-              return null;
-
-            })}
-
-            {backLayers.map((layer) => {
-
-              if (!layer.isVisible) return null;
-
-              const local = (() => {
-
-                const pos = get3DPosition(layer, activeConfig.backZ, true);
-
-                const rotZb = THREE.MathUtils.degToRad(layer.rotation || 0);
-
-                const backRotation: [number, number, number] = [0, Math.PI, rotZb];
-
-                const visualWidth = layer.width * (layer.scaleX || 1);
-
-                const visualHeight = layer.height * (layer.scaleY || 1);
-
-                const bounds = activeConfig.bounds2D || { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H };
-                // Uniform scaling so aspect ratios are perfectly maintained
-                const scaleX = (visualWidth / bounds.width) * activeConfig.printW;
-                const scaleY = (visualHeight / bounds.width) * activeConfig.printW;
-
-                const scaleZ = activeConfig.decalDepth;
-
-                return getLocalParams(pos as [number, number, number], backRotation, [scaleX, scaleY, scaleZ], meshObj);
-
-              })();
-
-              if (!local) return null;
-
-              if (layer.type === "image") return <DecalTexture key={layer.id} layer={layer as any} position={local.position} rotation={local.rotation} scale={local.scale} mesh={meshRef} />;
-
-              if (layer.type === "text") return <DecalText key={layer.id} layer={layer as any} position={local.position} rotation={local.rotation} scale={local.scale} mesh={meshRef} />;
-
-              if (layer.type === "line") return <DecalLine key={layer.id} layer={layer as any} position={local.position} rotation={local.rotation} scale={local.scale} mesh={meshRef} />;
-
-              return null;
-
-            })}
-
-          </DecalWrapper>
-
-        );
-
-      })}
-
-    </group>
-
-  );
-
-}
-
-function DecalWrapper({ meshRef, groupRef, children }: any) {
-
-  const wrapperRef = useRef<THREE.Group>(null);
-
-  useFrame(() => {
-
-    if (wrapperRef.current && meshRef.current && groupRef.current) {
-
-      // Use a fresh matrix for the multiplication to avoid in-place mutation bugs
-      const groupInverse = new THREE.Matrix4().copy(groupRef.current.matrixWorld).invert();
-      const meshToGroup = new THREE.Matrix4().multiplyMatrices(groupInverse, meshRef.current.matrixWorld);
-
-      wrapperRef.current.matrixAutoUpdate = false;
-
-      wrapperRef.current.matrix.copy(meshToGroup);
-
+  // ── Animation ──────────────────────────────────────────────────────────────
+  useFrame((_s, delta) => {
+    if (group.current) {
+      easing.dampE(
+        group.current.rotation,
+        [0, activeView === "back" ? Math.PI : 0, 0],
+        0.25,
+        delta,
+      );
     }
-
   });
 
-  return <group ref={wrapperRef}>{children}</group>;
-
-}
-
-// Subcomponent to load texture for individual decals safely
-
-function DecalTexture({
-
-  layer,
-
-  position,
-
-  rotation = [0, 0, 0],
-
-  scale,
-
-  mesh,
-
-}: any) {
-
-  const texture = useTexture(layer.asset.originalUrl) as THREE.Texture & {
-
-    image?: HTMLImageElement;
-
-  };
-
-  if (!mesh?.current) return null;
-
+  if (!clonedScene) return null;
   return (
-
-    <Decal
-
-      mesh={mesh}
-
-      position={position}
-
-      rotation={rotation}
-
-      scale={scale}
-
-      map={texture}
-
-    >
-
-      <meshStandardMaterial
-
-        map={texture}
-
-        transparent
-
-        opacity={layer.opacity ?? 1}
-
-        polygonOffset
-
-        polygonOffsetFactor={-10}
-
-        depthWrite={true}
-
-      />
-
-    </Decal>
-
+    <group ref={group} {...props} dispose={null}>
+      <primitive object={clonedScene} />
+    </group>
   );
-
 }
-
-// Subcomponent to generate dynamic text textures
-
-function DecalText({
-
-  layer,
-
-  position,
-
-  rotation = [0, 0, 0],
-
-  scale,
-
-  mesh,
-
-}: any) {
-
-  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
-
-  useEffect(() => {
-
-    const canvas = document.createElement("canvas");
-
-    canvas.width = 1024;
-
-    canvas.height = 256;
-
-    const ctx = canvas.getContext("2d");
-
-    if (ctx) {
-
-      // Clear background (transparent)
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw Text
-
-      ctx.fillStyle = layer.colorHex || "#ffffff";
-
-      ctx.font = `bold ${layer.fontSize * 1.5}px ${layer.fontFamily || "Arial"}`;
-
-      ctx.textAlign = "center";
-
-      ctx.textBaseline = "middle";
-
-      ctx.fillText(layer.text, canvas.width / 2, canvas.height / 2);
-
-      const newTexture = new THREE.CanvasTexture(canvas);
-
-      newTexture.needsUpdate = true;
-
-      setTexture(newTexture);
-
-    }
-
-  }, [layer.text, layer.colorHex, layer.fontSize, layer.fontFamily]);
-
-  if (!texture || !mesh?.current) return null;
-
-  return (
-
-    <Decal
-
-      mesh={mesh}
-
-      position={position}
-
-      rotation={rotation}
-
-      scale={scale}
-
-      map={texture}
-
-    >
-
-      <meshStandardMaterial
-
-        map={texture}
-
-        transparent
-
-        opacity={layer.opacity ?? 1}
-
-        polygonOffset
-
-        polygonOffsetFactor={-10}
-
-        depthWrite={true}
-
-      />
-
-    </Decal>
-
-  );
-
-}
-
-// Subcomponent to generate dynamic line textures
-
-function DecalLine({
-
-  layer,
-
-  position,
-
-  rotation = [0, 0, 0],
-
-  scale,
-
-  mesh,
-
-}: any) {
-
-  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
-
-  useEffect(() => {
-
-    const canvas = document.createElement("canvas");
-
-    canvas.width = 1024;
-
-    canvas.height = 128;
-
-    const ctx = canvas.getContext("2d");
-
-    if (ctx) {
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = layer.colorHex || "#ffffff";
-
-      // Use thickness relative to height
-
-      const thickness = Math.max(
-
-        1,
-
-        Math.min(layer.thickness * 2, canvas.height),
-
-      );
-
-      const yStart = (canvas.height - thickness) / 2;
-
-      ctx.fillRect(0, yStart, canvas.width, thickness);
-
-      const newTexture = new THREE.CanvasTexture(canvas);
-
-      newTexture.needsUpdate = true;
-
-      setTexture(newTexture);
-
-    }
-
-  }, [layer.colorHex, layer.thickness]);
-
-  if (!texture || !mesh?.current) return null;
-
-  return (
-
-    <Decal
-
-      mesh={mesh}
-
-      position={position}
-
-      rotation={rotation}
-
-      scale={scale}
-
-      map={texture}
-
-    >
-
-      <meshStandardMaterial
-
-        map={texture}
-
-        transparent
-
-        opacity={layer.opacity ?? 1}
-
-        polygonOffset
-
-        polygonOffsetFactor={-10}
-
-        depthWrite={true}
-
-      />
-
-    </Decal>
-
-  );
-
-}
-
-useGLTF.preload("/models/shirt_baked.glb");
-
-useGLTF.preload("/models/t-shirt-polo.glb");
-
-useGLTF.preload("/models/short_sleeve_polo.glb");
-
-useGLTF.preload("/models/hoodie.glb");
-
-useGLTF.preload("/models/LongSleeveTShirt.glb");
-
-useGLTF.preload("/models/oversized-tee.glb");

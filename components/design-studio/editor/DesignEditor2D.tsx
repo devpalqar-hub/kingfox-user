@@ -1,122 +1,243 @@
+"use client";
+
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
 import { Rnd } from "react-rnd";
-import { Layer, TextLayer, ImageLayer, LineLayer } from "@/types/design-studio";
-import { RotateCw } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { TextLayer, ImageLayer, LineLayer } from "@/types/design-studio";
+import { useRef, useEffect, useCallback } from "react";
+import { getPrintBounds500 } from "@/utils/printBounds";
 import styles from "./DesignEditor2D.module.css";
 
-export default function DesignEditor2D() {
-  const { project, activeView, selectedLayerId, selectLayer, updateLayer } =
-    useDesignStore();
-  const layers = project.designs[activeView] || [];
+const CANVAS_W = 500;
+const CANVAS_H = 600;
 
-  const [svgContent, setSvgContent] = useState<string | null>(null);
+// ─── Image cache ──────────────────────────────────────────────────────────────
+// Keyed by src string. loadImage returns instantly on cache hit.
+const imgCache = new Map<string, HTMLImageElement>();
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  if (imgCache.has(src)) return Promise.resolve(imgCache.get(src)!);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    // NOTE: do NOT set crossOrigin for data: URLs — browsers reject it and the
+    // image load silently fails, causing the canvas to show nothing.
+    if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
+    img.onload  = () => { imgCache.set(src, img); resolve(img); };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// ─── Offscreen compositing ────────────────────────────────────────────────────
+// Draws GLB snapshot → print-zone guide → design layers onto an OffscreenCanvas,
+// then atomically blits the result to avoid any flicker.
+async function composite(
+  bgSnapshot: string | null,
+  layers: ReturnType<typeof useDesignStore.getState>["project"]["designs"]["front"],
+  cancelled: { v: boolean },
+  categoryId: string,
+  view: "front" | "back",
+): Promise<ImageBitmap | null> {
+  const offscreen = new OffscreenCanvas(CANVAS_W, CANVAS_H);
+  const ctx = offscreen.getContext("2d")!;
+
+  // ── 1. White base (prevents transparent-canvas black flash) ──────────────
+  ctx.fillStyle = "#f8f8f8";
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  // ── 2. GLB snapshot background ────────────────────────────────────────────
+  if (bgSnapshot) {
+    try {
+      const bgImg = await loadImage(bgSnapshot);
+      if (cancelled.v) return null;
+      ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
+    } catch (e) {
+      console.warn("[2D Editor] snapshot load failed:", e);
+    }
+  }
+
+  // ── 3. Printable zone guide (dashed rectangle, drawn under design layers) ─
+  const pb = getPrintBounds500(categoryId, view);
+  if (pb) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(59, 130, 246, 0.65)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 3]);
+    ctx.strokeRect(pb.x + 0.75, pb.y + 0.75, pb.w - 1.5, pb.h - 1.5);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(59, 130, 246, 0.85)";
+    [[pb.x, pb.y], [pb.x + pb.w, pb.y], [pb.x, pb.y + pb.h], [pb.x + pb.w, pb.y + pb.h]]
+      .forEach(([cx, cy]) => ctx.fillRect(cx - 4, cy - 4, 8, 8));
+    ctx.restore();
+  }
+
+  // ── 4. Design layers at pixel-exact positions ─────────────────────────────
+  for (const layer of layers) {
+    if (!layer.isVisible) continue;
+    if (cancelled.v) return null;
+
+    ctx.save();
+    ctx.globalAlpha = layer.opacity ?? 1;
+
+    // Translate to layer centre so rotation pivots correctly
+    const cx = layer.x + layer.width  / 2;
+    const cy = layer.y + layer.height / 2;
+    ctx.translate(cx, cy);
+    if (layer.rotation) ctx.rotate((layer.rotation * Math.PI) / 180);
+
+    if (layer.type === "image") {
+      const imageLayer = layer as ImageLayer;
+      try {
+        const img = await loadImage(imageLayer.asset.originalUrl);
+        if (cancelled.v) return null;
+        // Fill exact layer bounds → canvas visual matches Rnd selection border 1:1
+        ctx.drawImage(img, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+      } catch (e) {
+        // Draw a placeholder rectangle so the user sees something even if image fails
+        ctx.fillStyle = "rgba(200,200,200,0.7)";
+        ctx.fillRect(-layer.width / 2, -layer.height / 2, layer.width, layer.height);
+        ctx.strokeStyle = "#aaa";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-layer.width / 2, -layer.height / 2, layer.width, layer.height);
+      }
+
+    } else if (layer.type === "text") {
+      const textLayer = layer as TextLayer;
+      ctx.fillStyle  = textLayer.colorHex || "#000";
+      ctx.font       = `${textLayer.fontWeight ?? 700} ${textLayer.fontSize}px "${textLayer.fontFamily || "Inter"}", sans-serif`;
+      ctx.textBaseline = "middle";
+      ctx.textAlign    = (textLayer.textAlign as CanvasTextAlign) || "center";
+
+      if (textLayer.letterSpacing && textLayer.letterSpacing !== 0) {
+        const chars    = [...(textLayer.text || "")];
+        const spacing  = textLayer.letterSpacing;
+        const totalW   = chars.reduce((a, ch) => a + ctx.measureText(ch).width + spacing, 0);
+        let startX = -(totalW / 2);
+        if (textLayer.textAlign === "left")  startX = -layer.width / 2;
+        if (textLayer.textAlign === "right") startX =  layer.width / 2 - totalW;
+        for (const ch of chars) {
+          ctx.fillText(ch, startX, 0);
+          startX += ctx.measureText(ch).width + spacing;
+        }
+      } else {
+        let xOff = 0;
+        if (textLayer.textAlign === "left")  xOff = -layer.width / 2;
+        if (textLayer.textAlign === "right") xOff =  layer.width / 2;
+        ctx.fillText(textLayer.text || "", xOff, 0);
+      }
+
+    } else if (layer.type === "line") {
+      const lineLayer = layer as LineLayer;
+      ctx.fillStyle = lineLayer.colorHex || "#000";
+      const half = lineLayer.thickness / 2;
+      ctx.fillRect(-layer.width / 2, -half, layer.width, lineLayer.thickness);
+    }
+
+    ctx.restore();
+  }
+
+  return offscreen.transferToImageBitmap();
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+interface Props {
+  onLayerSelect?: (id: string | null) => void;
+}
+
+export default function DesignEditor2D({ onLayerSelect }: Props) {
+  const {
+    project, activeView, selectedLayerId, selectLayer, updateLayer, glbSnapshots,
+  } = useDesignStore();
+
+  const layers     = project.designs[activeView] || [];
+  const bgSnapshot = activeView === "back" ? glbSnapshots.back : glbSnapshots.front;
+  const categoryId = (project.apparelConfig.categoryId || "").toString();
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+
+  // ─── Canvas redraw ─────────────────────────────────────────────────────────
+  const redraw = useCallback(async (cancelled: { v: boolean }) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const bitmap = await composite(
+      bgSnapshot, layers, cancelled, categoryId, activeView as "front" | "back",
+    );
+    if (cancelled.v || !bitmap) return;
+
+    // Atomic blit — no partial-draw flicker
+    const ctx = canvas.getContext("2d")!;
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close();
+  }, [bgSnapshot, layers, categoryId, activeView]);
 
   useEffect(() => {
-    const fetchSvg = async () => {
-      try {
-        let base = `/templates/${project.apparelConfig.categoryId}`;
-        const normalized = (project.apparelConfig.categoryId || '').toString().toLowerCase();
-        if (normalized.includes('hoodie')) {
-          base = `/templates/hoodie`;
-        }
+    const cancelled = { v: false };
+    const id = requestAnimationFrame(() => {
+      redraw(cancelled).catch(console.error);
+    });
+    return () => { cancelled.v = true; cancelAnimationFrame(id); };
+  }, [redraw]);
 
-        const candidate =
-          activeView === "back" ? `${base}-back.svg` : `${base}-front.svg`;
-
-        // Try category-specific template first
-        let res = await fetch(candidate);
-        if (!res.ok) {
-          // Fallback to the legacy Tshirt templates
-          const fallback =
-            activeView === "back"
-              ? "/templates/Tshirt-back.svg"
-              : "/templates/Tshirt-front.svg";
-          res = await fetch(fallback);
-        }
-
-        const text = await res.text();
-
-        // Inject colorHex into the first path (main body)
-        let replaced = text.replace(
-          /fill="none"/g,
-          `fill="${project.apparelConfig.colorHex}"`,
-        );
-
-        // Add viewBox if missing to ensure uniform scaling
-        if (!replaced.includes("viewBox")) {
-          const widthMatch = replaced.match(/width="([\d.]+)"/);
-          const heightMatch = replaced.match(/height="([\d.]+)"/);
-          if (widthMatch && heightMatch) {
-            replaced = replaced.replace(
-              "<svg ",
-              `<svg viewBox="0 0 ${widthMatch[1]} ${heightMatch[1]}" preserveAspectRatio="xMidYMid meet" `
-            );
-          }
-        }
-
-        // Ensure SVG scales to fit container and is centered
-        replaced = replaced.replace(
-          "<svg ",
-          '<svg preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%; display: block; margin: auto;" ',
-        );
-
-        setSvgContent(replaced);
-      } catch (err) {
-        console.error("Error fetching SVG template", err);
-      }
-    };
-    fetchSvg();
-  }, [activeView, project.apparelConfig.colorHex, project.apparelConfig.categoryId]);
-
-  // The print area bounds
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleDragStop = (id: string, d: any) => {
-    updateLayer(id, { x: d.x, y: d.y });
+  // ─── Drag / resize handlers ────────────────────────────────────────────────
+  const handleDrag = (id: string, d: { x: number; y: number }) => {
+    updateLayer(id, { x: Math.round(d.x), y: Math.round(d.y) });
   };
 
-  const handleResizeStop = (id: string, ref: any, position: any) => {
+  const handleDragStop = (id: string, d: { x: number; y: number }) => {
+    updateLayer(id, { x: Math.round(d.x), y: Math.round(d.y) });
+  };
+
+  // Live resize: update layer dimensions in the store on every move so the
+  // canvas visual tracks the handle in real-time.
+  const handleResize = (
+    id: string,
+    ref: HTMLElement,
+    position: { x: number; y: number },
+  ) => {
     updateLayer(id, {
-      width: parseInt(ref.style.width, 10),
-      height: parseInt(ref.style.height, 10),
-      x: position.x,
-      y: position.y,
+      width:  parseInt(ref.style.width,  10) || 1,
+      height: parseInt(ref.style.height, 10) || 1,
+      x: Math.round(position.x),
+      y: Math.round(position.y),
     });
   };
 
+  const handleLayerSelect = (id: string) => {
+    selectLayer(id);
+    onLayerSelect?.(id);
+  };
+
+  const handleDeselect = () => {
+    selectLayer(null);
+    onLayerSelect?.(null);
+  };
+
   return (
-    <div className={styles.editorContainer} onClick={() => selectLayer(null)}>
+    <div className={styles.editorContainer} onClick={handleDeselect}>
       <div className={styles.printAreaWrapper}>
         <div
           className={styles.printArea}
-          ref={containerRef}
-          style={{ backgroundColor: "transparent" }}
+          data-print-area="true"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* T-Shirt overlay fetched and colored dynamically */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              pointerEvents: "none",
-              background: "transparent",
-              zIndex: 0,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            dangerouslySetInnerHTML={{ __html: svgContent || "" }}
+          {/* ── Canvas: GLB snapshot + print guide + design layers ─────────── */}
+          <canvas
+            ref={canvasRef}
+            width={CANVAS_W}
+            height={CANVAS_H}
+            className={styles.compositeCanvas}
           />
 
-          <div className={styles.printAreaGrid} />
+          {/* Loading shimmer */}
+          {glbSnapshots.loading && (
+            <div className={styles.snapshotLoading}>
+              <span>Generating preview…</span>
+            </div>
+          )}
 
+          {/* ── Rnd interaction handles (transparent — only for drag/resize) ── */}
           {layers.map((layer) => {
             if (!layer.isVisible) return null;
-
             const isSelected = selectedLayerId === layer.id;
 
             return (
@@ -124,72 +245,34 @@ export default function DesignEditor2D() {
                 key={layer.id}
                 size={{ width: layer.width, height: layer.height }}
                 position={{ x: layer.x, y: layer.y }}
-                onDragStop={(e, d) => handleDragStop(layer.id, d)}
-                onResizeStop={(e, dir, ref, delta, pos) =>
-                  handleResizeStop(layer.id, ref, pos)
-                }
+                onDrag={(_e, d) => handleDrag(layer.id, d)}
+                onDragStop={(_e, d) => handleDragStop(layer.id, d)}
+                // Live resize: update store while dragging handle for real-time canvas tracking
+                onResize={(_e, _dir, ref, _delta, pos) => handleResize(layer.id, ref, pos)}
+                onResizeStop={(_e, _dir, ref, _delta, pos) => handleResize(layer.id, ref, pos)}
                 disableDragging={layer.isLocked}
-                enableResizing={!layer.isLocked}
-                bounds="parent"
-                className={`${styles.layerNode} ${isSelected ? styles.selected : ""}`}
-                style={{
-                  zIndex: layer.zIndex,
+                enableResizing={
+                  !layer.isLocked
+                    ? {
+                        top: false, right: true, bottom: true, left: false,
+                        topRight: true, bottomRight: true, bottomLeft: true, topLeft: true,
+                      }
+                    : false
+                }
+                resizeHandleStyles={{
+                  topRight:    { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", right: -5, top: -5 },
+                  bottomRight: { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", right: -5, bottom: -5 },
+                  bottomLeft:  { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", left: -5, bottom: -5 },
+                  topLeft:     { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", left: -5, top: -5 },
+                  right:  { width: 6, height: 24, background: "#0070f3", borderRadius: 3, right: -3, top: "calc(50% - 12px)" },
+                  bottom: { width: 24, height: 6, background: "#0070f3", borderRadius: 3, bottom: -3, left: "calc(50% - 12px)" },
                 }}
-                onMouseDown={() => selectLayer(layer.id)}
-              >
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    transform: `rotate(${layer.rotation}deg)`,
-                    opacity: layer.opacity,
-                    transformOrigin: "center center",
-                    pointerEvents: "auto",
-                  }}
-                >
-                  {layer.type === "text" && (
-                    <div
-                      className={styles.textLayer}
-                      style={{
-                        color: (layer as TextLayer).colorHex,
-                        fontFamily: (layer as TextLayer).fontFamily,
-                        fontSize: `${(layer as TextLayer).fontSize}px`,
-                        fontWeight: (layer as TextLayer).fontWeight,
-                        letterSpacing: `${(layer as TextLayer).letterSpacing}px`,
-                        textAlign: (layer as TextLayer).textAlign,
-                      }}
-                    >
-                      {(layer as TextLayer).text}
-                    </div>
-                  )}
-                  {layer.type === "image" && (
-                    <img
-                      src={(layer as ImageLayer).asset.originalUrl}
-                      alt={layer.name}
-                      className={styles.imageLayer}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        display: "block",
-                      }}
-                    />
-                  )}
-                  {layer.type === "line" && (
-                    <div
-                      className={styles.lineLayer}
-                      style={{
-                        backgroundColor: (layer as LineLayer).colorHex,
-                        height: `${(layer as LineLayer).thickness}px`,
-                        width: "100%",
-                        position: "absolute",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                      }}
-                    />
-                  )}
-                </div>
-              </Rnd>
+                bounds="parent"
+                dragGrid={[1, 1]}
+                className={`${styles.layerHandle} ${isSelected ? styles.selected : ""}`}
+                style={{ zIndex: (layer.zIndex ?? 1) + 10 }}
+                onMouseDown={() => handleLayerSelect(layer.id)}
+              />
             );
           })}
         </div>

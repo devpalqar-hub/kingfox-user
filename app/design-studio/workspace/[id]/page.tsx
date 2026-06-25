@@ -22,10 +22,14 @@ import LayerPanel from "@/components/design-studio/layers/LayerPanel";
 import PropertiesPanel from "@/components/design-studio/properties/PropertiesPanel";
 import CostEstimateModal from "@/components/design-studio/modals/CostEstimateModal";
 import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmModal";
+import { GLBSnapshotProvider } from "@/components/design-studio/GLBSnapshotProvider";
+import { DesignCanvas } from "@/components/design-studio/DesignCanvas";
 import styles from "./page.module.css";
 import { getCustomDesignTypesAPI, uploadImagesAPI, addToCustomCartAPI } from "@/services/custom-design.service";
 import { useToast } from "@/context/ToastContext";
 import { ArrowLeft } from "lucide-react";
+import { PrintAreaMeasurer } from "@/components/design-studio/dev/PrintAreaMeasurer";
+import { getPrintBounds500 } from "@/utils/printBounds";
 
 const categoryToShirtType: Record<string, string> = {
   'oversized-tee': 'OVERSIZED',
@@ -135,27 +139,52 @@ export default function Workspace({ params }: { params: { id: string } }) {
       const reader = new FileReader();
       reader.onload = (evt) => {
         const dataUrl = evt.target?.result as string;
-        const newImageLayer: ImageLayer = {
-          id: `img_${Date.now()}`,
-          type: "image",
-          name: file.name || "Image Layer",
-          asset: {
-            assetId: "local",
-            originalUrl: dataUrl,
-            thumbnailUrl: dataUrl,
-            mimeType: file.type,
-          },
-          x: 175,
-          y: 200,
-          width: 150,
-          height: 150,
-          rotation: 0,
-          zIndex: currentLayers.length + 1,
-          isLocked: false,
-          isVisible: true,
-          opacity: 1,
+
+        // Measure actual image dimensions, then scale to fit within the
+        // printable zone (80% of the zone's dimensions), centered inside it.
+        const tempImg = new window.Image();
+        tempImg.onload = () => {
+          const categoryId = (project.apparelConfig.categoryId || "").toString();
+          const pb = getPrintBounds500(categoryId, activeView as "front" | "back") ??
+            { x: 100, y: 150, w: 300, h: 300 };
+
+          const MAX_W = Math.round(pb.w * 0.8);
+          const MAX_H = Math.round(pb.h * 0.8);
+          const iw = tempImg.naturalWidth  || tempImg.width;
+          const ih = tempImg.naturalHeight || tempImg.height;
+          const scale = Math.min(MAX_W / iw, MAX_H / ih, 1);
+          const fw = Math.round(iw * scale);
+          const fh = Math.round(ih * scale);
+          // Center within the printable zone
+          const startX = Math.round(pb.x + (pb.w - fw) / 2);
+          const startY = Math.round(pb.y + (pb.h - fh) / 2);
+
+          const newImageLayer: ImageLayer = {
+            id: `img_${Date.now()}`,
+            type: "image",
+            name: file.name || "Image Layer",
+            asset: {
+              assetId: "local",
+              originalUrl: dataUrl,
+              thumbnailUrl: dataUrl,
+              mimeType: file.type,
+            },
+            x: startX,
+            y: startY,
+            width: fw,
+            height: fh,
+            rotation: 0,
+            zIndex: currentLayers.length + 1,
+            isLocked: false,
+            isVisible: true,
+            opacity: 1,
+          };
+          addLayer(newImageLayer);
+          // Auto-open properties for the new layer
+          setRightPropsLayerId(newImageLayer.id);
+          selectLayer(newImageLayer.id);
         };
-        addLayer(newImageLayer);
+        tempImg.src = dataUrl;
       };
       reader.readAsDataURL(file);
     }
@@ -517,6 +546,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
   return (
     <div className={styles.workspaceContainer}>
 
+      {/* Invisible snapshot generator — triggers GLB render on load/color change */}
+      <GLBSnapshotProvider />
+      {/* Dev-only: floating 2D print-area calibration tool */}
+      <PrintAreaMeasurer />
+
       {/*
        * ══════════════════════════════════════════════════════════════════
        * MOBILE TOP NAV  (hidden on desktop)
@@ -554,6 +588,23 @@ export default function Workspace({ params }: { params: { id: string } }) {
           <ArrowLeft size={18} className={styles.backButtonIcon} />
           Back to Apparel Selection
         </button>
+
+        {/* When a layer is selected, show its properties panel at the top */}
+        {rightPropsLayerId && (
+          <div className={styles.leftPropsPanel}>
+            <div className={styles.leftPropsHeader}>
+              <span className={styles.leftPropsTitle}>Layer Properties</span>
+              <button
+                className={styles.leftPropsClose}
+                onClick={() => { setRightPropsLayerId(null); selectLayer(null); }}
+                aria-label="Close properties"
+              >
+                ×
+              </button>
+            </div>
+            <PropertiesPanel />
+          </div>
+        )}
 
         {renderSizeSection()}
         {renderColorSection()}
@@ -604,7 +655,13 @@ export default function Workspace({ params }: { params: { id: string } }) {
             </button>
 
             <div className={styles.twoDEditorScaler}>
-              <DesignEditor2D />
+              <DesignEditor2D
+                onLayerSelect={(id) => {
+                  if (id) setRightPropsLayerId(id);
+                  else setRightPropsLayerId(null);
+                }}
+              />
+              {/* <DesignCanvas /> */}
             </div>
           </div>
         </div>

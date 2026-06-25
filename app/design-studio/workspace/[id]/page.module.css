@@ -193,6 +193,55 @@
   overflow-y: auto;
 }
 
+/* Properties panel card that slides in at the top of the left sidebar
+   when a design layer is selected. Slides down via max-height animation. */
+.leftPropsPanel {
+  background: #f8f9ff;
+  border: 1.5px solid #d0e0ff;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  animation: slideDown 0.22s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.leftPropsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid #dce8ff;
+}
+
+.leftPropsTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #2563eb;
+}
+
+.leftPropsClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #6b7280;
+  padding: 0 2px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.leftPropsClose:hover {
+  color: #111;
+  background: rgba(0, 0, 0, 0.06);
+}
+
 .estimateSection {
   background: #fff;
   border: 1px solid #eaeaea;
