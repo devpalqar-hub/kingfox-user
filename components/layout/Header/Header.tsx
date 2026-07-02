@@ -309,9 +309,9 @@ const Header = () => {
               </div>
             )}
           </li>
-          <li>
+          {/* <li>
             <Link href="/design-studio/select">CUSTOMIZE</Link>
-          </li>
+          </li> */}
           <li>
             <Link href="/new-arrivals">NEW ARRIVALS</Link>
           </li>
