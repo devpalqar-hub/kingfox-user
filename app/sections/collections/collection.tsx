@@ -7,19 +7,127 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getAllCategories } from "@/services/category.service";
 
+// ─── Slot definitions ─────────────────────────────────────────────────────────
+// Each slot maps to one card in the Collections grid.
+// `keywords` are checked case-insensitively against the admin category name.
+// Add more keywords to a slot if the admin ever renames a category.
+// Add a completely new slot if a new featured category should appear here.
+const SLOTS = [
+  {
+    key: "jeans",
+    keywords: ["jean", "jeans", "denim"],
+    fallbackImage: "/jeans.png",
+    fallbackLabel: "JEANS",
+  },
+  {
+    key: "half-sleeve",
+    keywords: ["half sleeve", "half-sleeve", "halfsleeve", "half"],
+    fallbackImage: "/half-sleeve.png",
+    fallbackLabel: "HALF SLEEVE",
+  },
+  {
+    key: "linen-pant",
+    keywords: ["linen pant", "linen-pant", "linen"],
+    fallbackImage: "/linenPant.png",
+    fallbackLabel: "LINEN PANT",
+  },
+  {
+    key: "shirts",
+    keywords: ["shirt", "shirts"],
+    fallbackImage: "/shirts.png",
+    fallbackLabel: "SHIRTS",
+  },
+] as const;
+
+interface MatchedCategory {
+  id: string | number;
+  name: string;
+  image?: string;
+}
+
+/** Find the best-matching admin category for a given slot (case-insensitive). */
+function findCategory(
+  categories: MatchedCategory[],
+  keywords: readonly string[]
+): MatchedCategory | null {
+  return (
+    categories.find((cat) => {
+      const name = (cat.name || "").toLowerCase();
+      return keywords.some((kw) => name.includes(kw));
+    }) ?? null
+  );
+}
+
+// ─── Reusable collection card ─────────────────────────────────────────────────
+interface CardProps {
+  category: MatchedCategory | null;
+  fallbackImage: string;
+  fallbackLabel: string;
+  sizes?: string;
+  onClick: () => void;
+}
+
+function CollectionCard({
+  category,
+  fallbackImage,
+  fallbackLabel,
+  sizes = "(max-width:768px) 100vw, 33vw",
+  onClick,
+}: CardProps) {
+  return (
+    <div className={styles.card} onClick={onClick}>
+      <Image
+        src={category?.image || fallbackImage}
+        alt={category?.name || fallbackLabel}
+        fill
+        sizes={sizes}
+        className={styles.img}
+      />
+      <div className={styles.overlay}>
+        <span className={styles.cardTitle}>
+          {category?.name?.toUpperCase() || fallbackLabel}
+        </span>
+        <button className={styles.exploreBtn}>
+          EXPLORE <span className={styles.arrow}>→</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 const Collections = () => {
   const router = useRouter();
-  const [categories, setCategories] = useState<any[]>([]);
+  const [allCategories, setAllCategories] = useState<MatchedCategory[]>([]);
 
   useEffect(() => {
     const loadCategories = async () => {
       const data = await getAllCategories();
-      setCategories(data.slice(0, 4));
+      // Load ALL categories — matching happens by name, not position
+      setAllCategories(data);
     };
     loadCategories();
   }, []);
 
-  const [cat0, cat1, cat2, cat3] = categories;
+  // Map every display slot to the best-matching admin category (or null if absent)
+  const matched = SLOTS.map((slot) => ({
+    ...slot,
+    category: findCategory(allCategories, slot.keywords),
+  }));
+
+  const [jeans, halfSleeve, linenPant, shirts] = matched;
+
+  /**
+   * Navigate to the products page filtered by category.
+   * If no admin category matched this slot, redirect to /not-found instead.
+   */
+  const goTo = (cat: MatchedCategory | null) => {
+    if (cat?.id) {
+      router.push(`/products?categoryId=${cat.id}`);
+    } else {
+      router.push("/not-found");
+    }
+  };
 
   return (
     <section className={styles.wrapper}>
@@ -35,52 +143,23 @@ const Collections = () => {
 
       {/* ── DESKTOP GRID ── */}
       <div className={styles.desktopGrid}>
-        {/* LEFT COLUMN — cat0 + cat2 */}
+        {/* LEFT COLUMN — Jeans + Half Sleeve */}
         <div className={styles.col}>
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat0?.id}`)}
-          >
-            <Image
-              src={cat0?.image || "/jeans.png"}
-              alt={cat0?.name || "Full Sleeve"}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat0?.name?.toUpperCase() || "JEANS"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
-
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat2?.id}`)}
-          >
-            <Image
-              src={cat2?.image || "/half-sleeve.png"}
-              alt={cat2?.name || "Half Sleeve"}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat2?.name?.toUpperCase() || "HALF SLEEVE"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
+          <CollectionCard
+            category={jeans.category}
+            fallbackImage={jeans.fallbackImage}
+            fallbackLabel={jeans.fallbackLabel}
+            onClick={() => goTo(jeans.category)}
+          />
+          <CollectionCard
+            category={halfSleeve.category}
+            fallbackImage={halfSleeve.fallbackImage}
+            fallbackLabel={halfSleeve.fallbackLabel}
+            onClick={() => goTo(halfSleeve.category)}
+          />
         </div>
 
-        {/* CENTER — New Arrival (tall) */}
+        {/* CENTER — New Arrival (tall hero card) */}
         <div
           className={`${styles.card} ${styles.newArrivalCard}`}
           onClick={() => router.push("/new-arrivals")}
@@ -104,93 +183,38 @@ const Collections = () => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN — cat1 + cat3 */}
+        {/* RIGHT COLUMN — Linen Pant + Shirts */}
         <div className={styles.col}>
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat1?.id}`)}
-          >
-            <Image
-              src={cat1?.image || "/linenPant.png"}
-              alt={cat1?.name || "Oversize"}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat1?.name?.toUpperCase() || "LINEN PANT"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
-
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat3?.id}`)}
-          >
-            <Image
-              src={cat3?.image || "/shirts.png"}
-              alt={cat3?.name || "Shirts"}
-              fill
-              sizes="(max-width:768px) 100vw, 33vw"
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat3?.name?.toUpperCase() || "SHIRTS"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
+          <CollectionCard
+            category={linenPant.category}
+            fallbackImage={linenPant.fallbackImage}
+            fallbackLabel={linenPant.fallbackLabel}
+            onClick={() => goTo(linenPant.category)}
+          />
+          <CollectionCard
+            category={shirts.category}
+            fallbackImage={shirts.fallbackImage}
+            fallbackLabel={shirts.fallbackLabel}
+            onClick={() => goTo(shirts.category)}
+          />
         </div>
       </div>
 
       {/* ── MOBILE GRID ── */}
       <div className={styles.mobileGrid}>
         <div className={styles.mobileRow}>
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat0?.id}`)}
-          >
-            <Image
-              src={cat0?.image || "/full-sleeve.png"}
-              alt={cat0?.name || ""}
-              fill
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat0?.name?.toUpperCase() || "FULL SLEEVE"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat1?.id}`)}
-          >
-            <Image
-              src={cat1?.image || "/oversize.png"}
-              alt={cat1?.name || ""}
-              fill
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat1?.name?.toUpperCase() || "OVERSIZE TEE"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
+          <CollectionCard
+            category={jeans.category}
+            fallbackImage={jeans.fallbackImage}
+            fallbackLabel={jeans.fallbackLabel}
+            onClick={() => goTo(jeans.category)}
+          />
+          <CollectionCard
+            category={linenPant.category}
+            fallbackImage={linenPant.fallbackImage}
+            fallbackLabel={linenPant.fallbackLabel}
+            onClick={() => goTo(linenPant.category)}
+          />
         </div>
 
         <div
@@ -213,44 +237,18 @@ const Collections = () => {
         </div>
 
         <div className={styles.mobileRow}>
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat2?.id}`)}
-          >
-            <Image
-              src={cat2?.image || "/half-sleeve.png"}
-              alt={cat2?.name || ""}
-              fill
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat2?.name?.toUpperCase() || "HALF SLEEVE"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
-          <div
-            className={styles.card}
-            onClick={() => router.push(`/products?categoryId=${cat3?.id}`)}
-          >
-            <Image
-              src={cat3?.image || "/shirts.png"}
-              alt={cat3?.name || ""}
-              fill
-              className={styles.img}
-            />
-            <div className={styles.overlay}>
-              <span className={styles.cardTitle}>
-                {cat3?.name?.toUpperCase() || "SHIRTS"}
-              </span>
-              <button className={styles.exploreBtn}>
-                EXPLORE <span className={styles.arrow}>→</span>
-              </button>
-            </div>
-          </div>
+          <CollectionCard
+            category={halfSleeve.category}
+            fallbackImage={halfSleeve.fallbackImage}
+            fallbackLabel={halfSleeve.fallbackLabel}
+            onClick={() => goTo(halfSleeve.category)}
+          />
+          <CollectionCard
+            category={shirts.category}
+            fallbackImage={shirts.fallbackImage}
+            fallbackLabel={shirts.fallbackLabel}
+            onClick={() => goTo(shirts.category)}
+          />
         </div>
       </div>
 

@@ -50,7 +50,7 @@ export default function ThreeCanvas() {
           // Reduce memory on mobile by limiting pixel budget
           failIfMajorPerformanceCaveat: false,
         }}
-        shadows={false}        // shadows disabled — biggest GPU saving
+        shadows={true}        // shadows disabled — biggest GPU saving
         camera={{ position: [0, 0, 2.5], fov: 25 }}
         style={{ width: "100%", height: "100%" }}
         performance={{ min: 0.5 }} // drop to 0.5× DPR when GPU is stressed

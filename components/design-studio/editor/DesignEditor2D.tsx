@@ -2,13 +2,21 @@
 
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
 import { Rnd } from "react-rnd";
-import { TextLayer, ImageLayer, LineLayer } from "@/types/design-studio";
-import { useRef, useEffect, useCallback } from "react";
+import { TextLayer, ImageLayer, LineLayer, Layer } from "@/types/design-studio";
+import React, { useRef, useEffect, useCallback } from "react";
 import { getPrintBounds500 } from "@/utils/printBounds";
 import styles from "./DesignEditor2D.module.css";
 
 const CANVAS_W = 500;
 const CANVAS_H = 600;
+
+// CSS dimensions of .printArea (must match page.module.css → .printArea)
+// The canvas is stretched to fill this box, so we need scale factors to
+// align the Rnd selection handles with the actual canvas-drawn visuals.
+const DISPLAY_W = 500;
+const DISPLAY_H = 600;
+const SCALE_X   = DISPLAY_W / CANVAS_W;  // 1.0
+const SCALE_Y   = DISPLAY_H / CANVAS_H;  // 1.0
 
 // ─── Image cache ──────────────────────────────────────────────────────────────
 // Keyed by src string. loadImage returns instantly on cache hit.
@@ -26,13 +34,47 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.src = src;
   });
 }
+// ─── Guide template calibration ───────────────────────────────────────────────
+// Each garment can define a visual guide overlay for the 2D editor.
+// These are ONLY visual aids — they have NO effect on UV mapping, texture
+// painting, layer coordinates, print bounds, or 3D rendering.
+//
+// To calibrate:
+//   scale   — 1.0 = fit-to-canvas. Lower = smaller. Higher = bigger.
+//   offsetX — canvas px. Positive = shift right,  negative = shift left.
+//   offsetY — canvas px. Positive = shift down,   negative = shift up.
+interface GuideCalibration {
+  src:     string;   // path relative to public/
+  scale:   number;   // multiplier on top of fit-to-canvas scale
+  offsetX: number;   // horizontal nudge in canvas pixels
+  offsetY: number;   // vertical nudge in canvas pixels
+}
 
-// ─── Offscreen compositing ────────────────────────────────────────────────────
-// Draws GLB snapshot → print-zone guide → design layers onto an OffscreenCanvas,
-// then atomically blits the result to avoid any flicker.
-async function composite(
+const GUIDE_CALIBRATIONS: Record<string, GuideCalibration> = {
+  hoodie: {
+    src:     "/templates/hoodie-template.png",
+    scale:   0.76,   // ← adjust to shrink/grow the guide
+    offsetX: 45,     // ← adjust to move guide left (−) / right (+)
+    offsetY: 0,      // ← adjust to move guide up (−) / down (+)
+  },
+  // Future garments: add entries here (e.g. "polo", "longsleeve", etc.)
+};
+
+/** Resolve a categoryId to its guide calibration, if one exists. */
+function getGuideCalibration(categoryId: string): GuideCalibration | null {
+  const n = categoryId.toLowerCase();
+  for (const [key, cal] of Object.entries(GUIDE_CALIBRATIONS)) {
+    if (n.includes(key)) return cal;
+  }
+  return null;
+}
+
+// ─── Offscreen compositing (background only) ──────────────────────────────────
+// Draws GLB snapshot → print-zone guide onto an OffscreenCanvas.
+// Design layers are now rendered as DOM elements inside each Rnd handle,
+// so the canvas is purely a background visual (garment + dashed print zone).
+async function compositeBackground(
   bgSnapshot: string | null,
-  layers: ReturnType<typeof useDesignStore.getState>["project"]["designs"]["front"],
   cancelled: { v: boolean },
   categoryId: string,
   view: "front" | "back",
@@ -44,8 +86,26 @@ async function composite(
   ctx.fillStyle = "#f8f8f8";
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // ── 2. GLB snapshot background ────────────────────────────────────────────
-  if (bgSnapshot) {
+  // ── 2. Background: calibrated guide template OR GLB snapshot ─────────────
+  const guide = getGuideCalibration(categoryId);
+  if (guide) {
+    try {
+      const tmpl = await loadImage(guide.src);
+      if (cancelled.v) return null;
+
+      const fitScale  = Math.min(CANVAS_W / tmpl.naturalWidth, CANVAS_H / tmpl.naturalHeight);
+      const scale     = fitScale * guide.scale;
+      const drawW     = tmpl.naturalWidth  * scale * 1.5;
+      const drawH     = tmpl.naturalHeight * scale * 1.5;
+      const x         = (CANVAS_W - drawW) / 2 + guide.offsetX;
+      const y         = (CANVAS_H - drawH) / 2 + guide.offsetY;
+
+      ctx.drawImage(tmpl, x, y, drawW, drawH);
+    } catch (e) {
+      console.warn(`[2D Editor] guide template load failed (${categoryId}):`, e);
+    }
+
+  } else if (bgSnapshot) {
     try {
       const bgImg = await loadImage(bgSnapshot);
       if (cancelled.v) return null;
@@ -70,72 +130,66 @@ async function composite(
     ctx.restore();
   }
 
-  // ── 4. Design layers at pixel-exact positions ─────────────────────────────
-  for (const layer of layers) {
-    if (!layer.isVisible) continue;
-    if (cancelled.v) return null;
+  return offscreen.transferToImageBitmap();
+}
 
-    ctx.save();
-    ctx.globalAlpha = layer.opacity ?? 1;
-
-    // Translate to layer centre so rotation pivots correctly
-    const cx = layer.x + layer.width  / 2;
-    const cy = layer.y + layer.height / 2;
-    ctx.translate(cx, cy);
-    if (layer.rotation) ctx.rotate((layer.rotation * Math.PI) / 180);
-
-    if (layer.type === "image") {
-      const imageLayer = layer as ImageLayer;
-      try {
-        const img = await loadImage(imageLayer.asset.originalUrl);
-        if (cancelled.v) return null;
-        // Fill exact layer bounds → canvas visual matches Rnd selection border 1:1
-        ctx.drawImage(img, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
-      } catch (e) {
-        // Draw a placeholder rectangle so the user sees something even if image fails
-        ctx.fillStyle = "rgba(200,200,200,0.7)";
-        ctx.fillRect(-layer.width / 2, -layer.height / 2, layer.width, layer.height);
-        ctx.strokeStyle = "#aaa";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(-layer.width / 2, -layer.height / 2, layer.width, layer.height);
-      }
-
-    } else if (layer.type === "text") {
-      const textLayer = layer as TextLayer;
-      ctx.fillStyle  = textLayer.colorHex || "#000";
-      ctx.font       = `${textLayer.fontWeight ?? 700} ${textLayer.fontSize}px "${textLayer.fontFamily || "Inter"}", sans-serif`;
-      ctx.textBaseline = "middle";
-      ctx.textAlign    = (textLayer.textAlign as CanvasTextAlign) || "center";
-
-      if (textLayer.letterSpacing && textLayer.letterSpacing !== 0) {
-        const chars    = [...(textLayer.text || "")];
-        const spacing  = textLayer.letterSpacing;
-        const totalW   = chars.reduce((a, ch) => a + ctx.measureText(ch).width + spacing, 0);
-        let startX = -(totalW / 2);
-        if (textLayer.textAlign === "left")  startX = -layer.width / 2;
-        if (textLayer.textAlign === "right") startX =  layer.width / 2 - totalW;
-        for (const ch of chars) {
-          ctx.fillText(ch, startX, 0);
-          startX += ctx.measureText(ch).width + spacing;
-        }
-      } else {
-        let xOff = 0;
-        if (textLayer.textAlign === "left")  xOff = -layer.width / 2;
-        if (textLayer.textAlign === "right") xOff =  layer.width / 2;
-        ctx.fillText(textLayer.text || "", xOff, 0);
-      }
-
-    } else if (layer.type === "line") {
-      const lineLayer = layer as LineLayer;
-      ctx.fillStyle = lineLayer.colorHex || "#000";
-      const half = lineLayer.thickness / 2;
-      ctx.fillRect(-layer.width / 2, -half, layer.width, lineLayer.thickness);
-    }
-
-    ctx.restore();
+// ─── DOM layer content renderer ───────────────────────────────────────────────
+// Renders the visual for each layer type as a real DOM element so it lives
+// physically inside the Rnd boundary box. This guarantees the content is
+// always perfectly aligned with the selection/resize handles.
+function LayerContent({ layer }: { layer: Layer }) {
+  if (layer.type === "image") {
+    const imageLayer = layer as ImageLayer;
+    return (
+      <img
+        src={imageLayer.asset.originalUrl}
+        alt=""
+        className={styles.imageContent}
+        draggable={false}
+      />
+    );
   }
 
-  return offscreen.transferToImageBitmap();
+  if (layer.type === "text") {
+    const textLayer = layer as TextLayer;
+    const justifyContent =
+      textLayer.textAlign === "left"  ? "flex-start" :
+      textLayer.textAlign === "right" ? "flex-end"   : "center";
+
+    return (
+      <div
+        className={styles.textContent}
+        style={{
+          justifyContent,
+          fontFamily:    `"${textLayer.fontFamily || "Inter"}", sans-serif`,
+          fontSize:      `${textLayer.fontSize * SCALE_X}px`,
+          fontWeight:    textLayer.fontWeight ?? 700,
+          color:         textLayer.colorHex || "#000",
+          letterSpacing: textLayer.letterSpacing ? `${textLayer.letterSpacing}px` : undefined,
+          textAlign:     (textLayer.textAlign as React.CSSProperties["textAlign"]) || "center",
+        }}
+      >
+        {textLayer.text}
+      </div>
+    );
+  }
+
+  if (layer.type === "line") {
+    const lineLayer = layer as LineLayer;
+    return (
+      <div className={styles.lineContent}>
+        <div
+          style={{
+            width:      "100%",
+            height:     `${lineLayer.thickness * SCALE_Y}px`,
+            background: lineLayer.colorHex || "#000",
+          }}
+        />
+      </div>
+    );
+  }
+
+  return null;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -153,13 +207,13 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
   const categoryId = (project.apparelConfig.categoryId || "").toString();
   const canvasRef  = useRef<HTMLCanvasElement>(null);
 
-  // ─── Canvas redraw ─────────────────────────────────────────────────────────
+  // ─── Canvas redraw (background only) ──────────────────────────────────────
   const redraw = useCallback(async (cancelled: { v: boolean }) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const bitmap = await composite(
-      bgSnapshot, layers, cancelled, categoryId, activeView as "front" | "back",
+    const bitmap = await compositeBackground(
+      bgSnapshot, cancelled, categoryId, activeView as "front" | "back",
     );
     if (cancelled.v || !bitmap) return;
 
@@ -168,7 +222,7 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
-  }, [bgSnapshot, layers, categoryId, activeView]);
+  }, [bgSnapshot, categoryId, activeView]);
 
   useEffect(() => {
     const cancelled = { v: false };
@@ -179,26 +233,34 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
   }, [redraw]);
 
   // ─── Drag / resize handlers ────────────────────────────────────────────────
+  // Rnd positions/sizes are in CSS display space (DISPLAY_W × DISPLAY_H).
+  // We divide by SCALE_X/SCALE_Y before storing so that layer coordinates
+  // stay in canvas pixel space — preserving all UV mapping / 3D placement.
   const handleDrag = (id: string, d: { x: number; y: number }) => {
-    updateLayer(id, { x: Math.round(d.x), y: Math.round(d.y) });
+    updateLayer(id, {
+      x: Math.round(d.x / SCALE_X),
+      y: Math.round(d.y / SCALE_Y),
+    });
   };
 
   const handleDragStop = (id: string, d: { x: number; y: number }) => {
-    updateLayer(id, { x: Math.round(d.x), y: Math.round(d.y) });
+    updateLayer(id, {
+      x: Math.round(d.x / SCALE_X),
+      y: Math.round(d.y / SCALE_Y),
+    });
   };
 
-  // Live resize: update layer dimensions in the store on every move so the
-  // canvas visual tracks the handle in real-time.
+  // Live resize: convert CSS handle dimensions back to canvas coordinates.
   const handleResize = (
     id: string,
     ref: HTMLElement,
     position: { x: number; y: number },
   ) => {
     updateLayer(id, {
-      width:  parseInt(ref.style.width,  10) || 1,
-      height: parseInt(ref.style.height, 10) || 1,
-      x: Math.round(position.x),
-      y: Math.round(position.y),
+      width:  Math.max(1, Math.round(parseInt(ref.style.width,  10) / SCALE_X)),
+      height: Math.max(1, Math.round(parseInt(ref.style.height, 10) / SCALE_Y)),
+      x: Math.round(position.x / SCALE_X),
+      y: Math.round(position.y / SCALE_Y),
     });
   };
 
@@ -220,7 +282,7 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
           data-print-area="true"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ── Canvas: GLB snapshot + print guide + design layers ─────────── */}
+          {/* ── Canvas: garment background + print zone guide only ─────────── */}
           <canvas
             ref={canvasRef}
             width={CANVAS_W}
@@ -235,7 +297,9 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
             </div>
           )}
 
-          {/* ── Rnd interaction handles (transparent — only for drag/resize) ── */}
+          {/* ── Rnd handles: contain the actual layer content as DOM ─────────
+               Each Rnd renders the image / text / line visually inside itself,
+               so the content is always inside the blue boundary box.          */}
           {layers.map((layer) => {
             if (!layer.isVisible) return null;
             const isSelected = selectedLayerId === layer.id;
@@ -243,8 +307,15 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
             return (
               <Rnd
                 key={layer.id}
-                size={{ width: layer.width, height: layer.height }}
-                position={{ x: layer.x, y: layer.y }}
+                // ── Display in CSS space (scaled up from canvas coordinates) ──
+                size={{
+                  width:  layer.width  * SCALE_X,
+                  height: layer.height * SCALE_Y,
+                }}
+                position={{
+                  x: layer.x * SCALE_X,
+                  y: layer.y * SCALE_Y,
+                }}
                 onDrag={(_e, d) => handleDrag(layer.id, d)}
                 onDragStop={(_e, d) => handleDragStop(layer.id, d)}
                 // Live resize: update store while dragging handle for real-time canvas tracking
@@ -272,7 +343,19 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
                 className={`${styles.layerHandle} ${isSelected ? styles.selected : ""}`}
                 style={{ zIndex: (layer.zIndex ?? 1) + 10 }}
                 onMouseDown={() => handleLayerSelect(layer.id)}
-              />
+              >
+                {/* Layer content lives inside the Rnd box — always in sync with the boundary */}
+                <div
+                  className={styles.layerContent}
+                  style={{
+                    opacity:         layer.opacity ?? 1,
+                    transform:       layer.rotation ? `rotate(${layer.rotation}deg)` : undefined,
+                    transformOrigin: "center center",
+                  }}
+                >
+                  <LayerContent layer={layer} />
+                </div>
+              </Rnd>
             );
           })}
         </div>

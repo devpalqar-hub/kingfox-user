@@ -23,8 +23,8 @@ import { createPortal } from "react-dom";
 import { useDesignStore } from "@/stores/design-studio/useDesignStore";
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const CANVAS_W = 500;
-const CANVAS_H = 600;
+const CANVAS_W = 1200;
+const CANVAS_H = 1500;
 // Same 5:6 ratio — GLB snapshot is 800×960
 const TO_GLB_X = 800 / CANVAS_W;  // 1.6
 const TO_GLB_Y = 960 / CANVAS_H;  // 1.6

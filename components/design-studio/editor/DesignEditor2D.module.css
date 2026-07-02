@@ -10,7 +10,8 @@
   justify-content: center;
   background-color: transparent;
   overflow: hidden;
-  pointer-events: none; /* pass clicks through where there are no handles */
+  pointer-events: none;
+  /* pass clicks through where there are no handles */
 }
 
 .printAreaWrapper {
@@ -23,8 +24,8 @@
 
 /* Fixed 500×600 canvas — same 5:6 ratio as the 800×960 GLB snapshot */
 .printArea {
-  width: 500px;
-  height: 600px;
+  width: 900px;
+  height: 760px;
   position: relative;
   overflow: hidden;
   border-radius: 8px;
@@ -67,19 +68,26 @@
 }
 
 @keyframes snapshotPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
 }
 
-/* ── Transparent drag/resize handles ────────────────────────────────────── */
-/* No background, no content — just a click/drag surface.                   */
-/* The compositeCanvas below provides all the visuals.                       */
+/* ── Drag/resize handles with DOM content inside ────────────────────────── */
+/* The content (image/text/line) is rendered as a DOM child of each handle   */
+/* so it is always physically inside the blue boundary box.                  */
 .layerHandle {
   border: 1.5px solid transparent;
   cursor: grab;
   background: transparent !important;
-  /* Smooth position animation — only active when NOT actively dragging     */
   transition: border-color 0.12s ease;
+  overflow: visible;
 }
 
 .layerHandle:active {
@@ -99,6 +107,53 @@
   inset: -6px;
   border: 1px solid rgba(0, 112, 243, 0.18);
   border-radius: 2px;
+  pointer-events: none;
+}
+
+/* ── Layer content wrapper (inside Rnd) ─────────────────────────────────── */
+/* Fills the entire Rnd boundary box and applies opacity + rotation.         */
+.layerContent {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Image layers: stretch to exactly fill the boundary box */
+.imageContent {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Text layers: vertically centred, horizontally per textAlign prop */
+.textContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 2px;
+  box-sizing: border-box;
+}
+
+/* Line layers: vertically centred within the boundary box */
+.lineContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
   pointer-events: none;
 }
 
