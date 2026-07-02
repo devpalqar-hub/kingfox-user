@@ -31,7 +31,7 @@ const SLOTS = [
   },
   {
     key: "shirts",
-    keywords: ["shirt", "shirts"],
+    keywords: ["shirts"],
     fallbackImage: "/shirts.png",
     fallbackLabel: "SHIRTS",
   },
