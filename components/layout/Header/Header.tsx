@@ -310,6 +310,9 @@ const Header = () => {
             )}
           </li>
           <li>
+            <Link href="/design-studio/select">CUSTOMIZE</Link>
+          </li>
+          <li>
             <Link href="/new-arrivals">NEW ARRIVALS</Link>
           </li>
           {oversizedCategory && (
@@ -600,6 +603,13 @@ const Header = () => {
                 </Link>
               </div>
             ))}
+          </div>
+
+          {/* 3d custom */}
+          <div className={styles.drawerNavItem}>
+            <Link href="/design-studio/select" onClick={closeDrawer}>
+              CUSTOMIZE
+            </Link>
           </div>
 
           {/* NEW ARRIVALS */}

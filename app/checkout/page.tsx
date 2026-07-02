@@ -18,7 +18,7 @@ import { getCartAPI, updateCartItemAPI } from "@/services/cart.service";
 import { checkoutAPI, previewOrderAPI } from "@/services/order.service";
 import { getProfileAPI } from "@/services/profile.service";
 import { clearGuestCart, getGuestCart, updateGuestCart } from "@/lib/cart";
-import { CartItem } from "@/types/cart";
+import { CartItem, CustomDesignCartItem } from "@/types/cart";
 import { OrderPreviewResponse } from "@/types/order";
 import { ProfileResponse } from "@/types/profile";
 
@@ -69,6 +69,7 @@ export default function CheckoutPage() {
     "RAZORPAY",
   );
   const [items, setItems] = useState<CartItem[]>([]);
+  const [customItems, setCustomItems] = useState<CustomDesignCartItem[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<number | undefined>();
   const [couponCode, setCouponCode] = useState("");
@@ -94,12 +95,18 @@ export default function CheckoutPage() {
   };
 
   const localSubtotal = useMemo(
-    () =>
-      items.reduce(
+    () => {
+      const normalTotal = items.reduce(
         (total, item) => total + Number(item.price) * item.quantity,
         0,
-      ),
-    [items],
+      );
+      const customTotal = customItems.reduce(
+        (total, item) => total + Number(item.price) * item.quantity,
+        0,
+      );
+      return normalTotal + customTotal;
+    },
+    [items, customItems],
   );
 
   const summarySubtotal = preview?.subtotal ?? localSubtotal;
@@ -112,6 +119,7 @@ export default function CheckoutPage() {
         if (token) {
           const data = await getCartAPI();
           setItems(data.items);
+          setCustomItems(data.customDesignItems || []);
           return;
         }
 
@@ -126,7 +134,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const loadPreview = async () => {
-      if (items.length === 0) {
+      if (items.length === 0 && customItems.length === 0) {
         setPreview(null);
         return;
       }
@@ -165,7 +173,7 @@ export default function CheckoutPage() {
     };
 
     loadPreview();
-  }, [items, paymentMethod, token]);
+  }, [items, customItems, paymentMethod, token]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -247,7 +255,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplyCoupon = async () => {
-    if (items.length === 0) return;
+    if (items.length === 0 && customItems.length === 0) return;
 
     try {
       const res = token
@@ -302,7 +310,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (items.length === 0) {
+    if (items.length === 0 && customItems.length === 0) {
       showToast("Your cart is empty", "error");
       return;
     }
@@ -374,6 +382,7 @@ export default function CheckoutPage() {
       if (!token) {
         clearGuestCart();
         setItems([]);
+        setCustomItems([]);
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
@@ -584,6 +593,36 @@ export default function CheckoutPage() {
                     >
                       +
                     </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {customItems.map((item, idx) => (
+            <div key={item.cartItemId || `custom-${idx}`} className={styles.productRow}>
+              <div className={styles.productImg}>
+                <img
+                  src={getImageSrc(item.frontImageUrl)}
+                  alt={`${item.shirtType} Custom Design`}
+                />
+              </div>
+
+              <div className={styles.productDetails}>
+                <h4>{item.shirtType} (Custom)</h4>
+                <p>
+                  SIZE: {item.size} | COLOR: {item.color}
+                </p>
+                {item.stickerText && (
+                  <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+                    Text: {item.stickerText}
+                  </p>
+                )}
+
+                <div className={styles.priceRow}>
+                  <span className={styles.price}>₹{item.price}</span>
+                  <div className={styles.quantity}>
+                    <span style={{ margin: '0 8px' }}>Qty: {item.quantity}</span>
                   </div>
                 </div>
               </div>

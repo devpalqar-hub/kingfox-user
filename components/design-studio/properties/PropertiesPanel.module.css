@@ -1,0 +1,134 @@
+.propertiesPanel {
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #333;
+  overflow: hidden;
+  flex: 1;
+}
+
+.header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #333;
+  background-color: #111;
+}
+
+.title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.emptyState {
+  padding: 30px 20px;
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  border: 1px dashed #333;
+}
+
+.content {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.controlGroup label {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.input, .select {
+  width: 100%;
+  background: #000;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.input:focus, .select:focus {
+  border-color: #3b82f6;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.colorPickerWrapper {
+  display: flex;
+  align-items: center;
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 4px;
+  gap: 8px;
+}
+
+.colorInput {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+}
+
+.colorHex {
+  font-size: 0.85rem;
+  color: #ddd;
+  font-family: monospace;
+}
+
+.propertiesPanel input[type="range"] {
+  width: 100%;
+  accent-color: #3b82f6;
+}
+
+.separator {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 4px 0;
+}
+
+.imagePreviewWrapper {
+  width: 100%;
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.imagePreview {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+}

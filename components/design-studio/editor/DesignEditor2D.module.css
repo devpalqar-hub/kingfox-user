@@ -1,0 +1,165 @@
+/* ── Editor root ─────────────────────────────────────────────────────────── */
+.editorContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  overflow: hidden;
+  pointer-events: none;
+  /* pass clicks through where there are no handles */
+}
+
+.printAreaWrapper {
+  pointer-events: auto;
+  filter: drop-shadow(0 20px 48px rgba(0, 0, 0, 0.22));
+  border-radius: 8px;
+  transform: scale(1);
+  transform-origin: center center;
+}
+
+/* Fixed 500×600 canvas — same 5:6 ratio as the 800×960 GLB snapshot */
+.printArea {
+  width: 900px;
+  height: 760px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+/* ── Composited canvas (bottom visual layer) ─────────────────────────────── */
+/* Draws GLB snapshot → then each design element at its exact pixel position. */
+/* All visuals live here; Rnd handles above are transparent click zones.      */
+.compositeCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: block;
+  border-radius: 8px;
+  /* Smooth fade when the snapshot swaps (color/model change) */
+  transition: opacity 0.25s ease;
+}
+
+/* ── Loading shimmer ─────────────────────────────────────────────────────── */
+.snapshotLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+  background: rgba(245, 245, 245, 0.6);
+  border-radius: 8px;
+}
+
+.snapshotLoading span {
+  font-size: 13px;
+  color: #888;
+  letter-spacing: 0.4px;
+  animation: snapshotPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes snapshotPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ── Drag/resize handles with DOM content inside ────────────────────────── */
+/* The content (image/text/line) is rendered as a DOM child of each handle   */
+/* so it is always physically inside the blue boundary box.                  */
+.layerHandle {
+  border: 1.5px solid transparent;
+  cursor: grab;
+  background: transparent !important;
+  transition: border-color 0.12s ease;
+  overflow: visible;
+}
+
+.layerHandle:active {
+  cursor: grabbing;
+}
+
+/* Selected: thin dashed blue outline + faint fill so users see what's active */
+.layerHandle.selected {
+  border: 1.5px dashed #0070f3;
+  background: rgba(0, 112, 243, 0.05) !important;
+}
+
+/* Outer glow ring on selected */
+.layerHandle.selected::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgba(0, 112, 243, 0.18);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* ── Layer content wrapper (inside Rnd) ─────────────────────────────────── */
+/* Fills the entire Rnd boundary box and applies opacity + rotation.         */
+.layerContent {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Image layers: stretch to exactly fill the boundary box */
+.imageContent {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Text layers: vertically centred, horizontally per textAlign prop */
+.textContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 2px;
+  box-sizing: border-box;
+}
+
+/* Line layers: vertically centred within the boundary box */
+.lineContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* ── Responsive scale ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .printAreaWrapper {
+    transform: scale(0.7);
+  }
+}
