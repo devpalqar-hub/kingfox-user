@@ -243,10 +243,16 @@ async function buildGarmentCanvas(
   // 1. Base layer: original baked texture tinted with garment colour,
   //    or a solid colour fill if the model has no base texture.
   if (baseTexture?.image) {
-    ctx.drawImage(baseTexture.image as HTMLImageElement, 0, 0, TEX_RES, TEX_RES);
-    ctx.globalCompositeOperation = "multiply";
+    // Fill with the garment colour first (clean base)
     ctx.fillStyle = colorHex;
     ctx.fillRect(0, 0, TEX_RES, TEX_RES);
+    // Blend the baked texture on top at reduced opacity so shading detail
+    // is preserved but baked-in shadows don't cause unwanted darkening on
+    // the opposite panel when the model is rotated.
+    ctx.globalAlpha = 0.18;
+    ctx.globalCompositeOperation = "multiply";
+    ctx.drawImage(baseTexture.image as HTMLImageElement, 0, 0, TEX_RES, TEX_RES);
+    ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
   } else {
     ctx.fillStyle = colorHex;

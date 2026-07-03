@@ -50,16 +50,17 @@ export default function ThreeCanvas() {
           // Reduce memory on mobile by limiting pixel budget
           failIfMajorPerformanceCaveat: false,
         }}
-        shadows={true}        // shadows disabled — biggest GPU saving
+        shadows={false}       // no shadow casting needed
         camera={{ position: [0, 0, 2.5], fov: 25 }}
         style={{ width: "100%", height: "100%" }}
         performance={{ min: 0.5 }} // drop to 0.5× DPR when GPU is stressed
       >
-        {/* Lights — no castShadow; saves ~30% GPU on mobile */}
-        <ambientLight intensity={0.7} />
-        <directionalLight position={[2, 4, 4]}   intensity={1.4} />
-        <directionalLight position={[-3, 1, 2]}  intensity={0.5} />
-        <directionalLight position={[0, -2, -3]} intensity={0.25} />
+        {/* Lights — evenly lit front AND back so neither side has shadow banding */}
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[2,  4,  5]}  intensity={1.0} />
+        <directionalLight position={[-2, 4,  5]}  intensity={0.6} />
+        <directionalLight position={[2,  4, -5]}  intensity={1.0} />
+        <directionalLight position={[-2, 4, -5]}  intensity={0.6} />
 
         {/* AdaptiveDpr drops render resolution when frame budget is tight */}
         <AdaptiveDpr pixelated />

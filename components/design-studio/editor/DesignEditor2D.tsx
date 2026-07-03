@@ -57,6 +57,12 @@ const GUIDE_CALIBRATIONS: Record<string, GuideCalibration> = {
     offsetX: 45,     // ← adjust to move guide left (−) / right (+)
     offsetY: 0,      // ← adjust to move guide up (−) / down (+)
   },
+  oversize: {
+    src:     "/templates/oversized-template.png",
+    scale:   0.82,   // ← adjust to shrink/grow the guide
+    offsetX: 0,      // ← adjust to move guide left (−) / right (+)
+    offsetY: 0,      // ← adjust to move guide up (−) / down (+)
+  },
   // Future garments: add entries here (e.g. "polo", "longsleeve", etc.)
 };
 
