@@ -9,7 +9,7 @@ import ShirtModel from "./ShirtModel";
 const GLB_URLS = [
   "/models/shirt_baked.glb",
   "/models/polo-Tshirt.glb",
-  "/models/Hoodie.glb",
+  "/models/hoodie.glb",
   "/models/LongSleeveTShirt.glb",
   "/models/oversized-tee.glb",
 ];

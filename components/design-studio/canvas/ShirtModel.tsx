@@ -311,7 +311,7 @@ export default function ShirtModel({ ...props }: any) {
     const n = (project.apparelConfig.categoryId || "").toString().toLowerCase();
     if (n.includes("polo")) return "/models/polo-Tshirt.glb";
     if (n.includes("hoodie") || n === "classic-hoodie")
-      return "/models/Hoodie.glb";
+      return "/models/hoodie.glb";
     if (n.includes("long") || n.includes("full") || n.includes("sleeve"))
       return "/models/LongSleeveTShirt.glb";
     if (n.includes("oversize")) return "/models/oversized-tee.glb";

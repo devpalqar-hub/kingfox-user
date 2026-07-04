@@ -49,5 +49,5 @@ function analyzeGLB(filePath) {
 }
 
 analyzeGLB('./public/models/shirt_baked.glb');
-analyzeGLB('./public/models/Hoodie.glb');
+analyzeGLB('./public/models/hoodie.glb');
 analyzeGLB('./public/models/LongSleeveTshirt.glb');
