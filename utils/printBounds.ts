@@ -30,7 +30,7 @@ export const PRINT_BOUNDS_800: Record<string, ModelPrintBounds> = {
     back:  { x: 131, y: 210, w: 490, h: 555 },
   },
   hoodie: {
-    front: { x: 58,  y: 210, w: 699, h: 635 },
+    front: { x: 90,  y: 210, w: 619, h: 535 },
     back:  { x: 262, y: 408, w: 250, h: 309 },
   },
   polo: {
