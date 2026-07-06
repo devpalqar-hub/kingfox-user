@@ -61,12 +61,33 @@ const GUIDE_CALIBRATIONS: Record<string, GuideCalibration> = {
     offsetY: 0, // ← adjust to move guide up (−) / down (+)
   },
   oversize: {
-    src: "/templates/oversized-template.png",
+    src: "/templates/hoodie-template.png",
     scale: 0.82, // ← adjust to shrink/grow the guide
     offsetX: 0, // ← adjust to move guide left (−) / right (+)
-    offsetY: 0, // ← adjust to move guide up (−) / down (+)
+    offsetY: -80, // ← adjust to move guide up (−) / down (+)
   },
   // Future garments: add entries here (e.g. "polo", "longsleeve", etc.)
+};
+const PREVIEW_OFFSETS = {
+  oversize: {
+    front: {
+      x: -10,
+      y: -210,
+    },
+
+    back: {
+      x: 0,
+      y: 90,
+    },
+  },
+  crewneck: {
+    front: { x: 0, y: -190 },
+    back: { x: 0, y: -190 },
+  },
+  long: {
+    front: { x: 130, y: 10 },
+    back: { x: 130, y: 10 },
+  },
 };
 
 /** Resolve a categoryId to its guide calibration, if one exists. */
@@ -76,6 +97,24 @@ function getGuideCalibration(categoryId: string): GuideCalibration | null {
     if (n.includes(key)) return cal;
   }
   return null;
+}
+
+function getPreviewOffset(categoryId: string, view: "front" | "back") {
+  const n = categoryId.toLowerCase();
+
+  if (n.includes("oversize")) {
+    return PREVIEW_OFFSETS.oversize[view];
+  }
+
+  if (n.includes("crewneck")) {
+    return PREVIEW_OFFSETS.crewneck[view];
+  }
+
+  if (n.includes("long")) {
+    return PREVIEW_OFFSETS.long[view];
+  }
+
+  return { x: 0, y: 0 };
 }
 
 // ─── Offscreen compositing (background only) ──────────────────────────────────
@@ -97,11 +136,39 @@ async function compositeBackground(
 
   // ── 2. Background: hoodie front/back PNGs, calibrated guide template, OR GLB snapshot ─────────────
   const normalizedCategory = categoryId.toLowerCase();
-  if (normalizedCategory.includes("hoodie")) {
+  if (
+    normalizedCategory.includes("hoodie") ||
+    normalizedCategory.includes("oversize") ||
+    normalizedCategory.includes("crewneck") ||
+    normalizedCategory.includes("half") ||
+    normalizedCategory.includes("long")
+  ) {
     try {
       const hoodieImage = await loadImage(`/templates/hoodie-${view}.png`);
       if (cancelled.v) return null;
-      ctx.drawImage(hoodieImage, 0, 0, CANVAS_W, CANVAS_H);
+
+      if (
+        normalizedCategory.includes("oversize") ||
+        normalizedCategory.includes("crewneck") ||
+        normalizedCategory.includes("half") ||
+        normalizedCategory.includes("long")
+      ) {
+        const pb = getPrintBounds500(categoryId, view);
+        const previewOffset = getPreviewOffset(categoryId, view);
+        if (pb) {
+          ctx.drawImage(
+            hoodieImage,
+            pb.x + previewOffset.x,
+            pb.y + previewOffset.y,
+            pb.w,
+            pb.h,
+          );
+        } else {
+          ctx.drawImage(hoodieImage, 0, 0, CANVAS_W, CANVAS_H);
+        }
+      } else {
+        ctx.drawImage(hoodieImage, 0, 0, CANVAS_W, CANVAS_H);
+      }
     } catch (e) {
       console.warn(
         `[2D Editor] hoodie preview image load failed (${categoryId} / ${view}):`,
@@ -145,19 +212,25 @@ async function compositeBackground(
 
   // ── 3. Printable zone guide (dashed rectangle, drawn under design layers) ─
   const pb = getPrintBounds500(categoryId, view);
+  const previewOffset = getPreviewOffset(categoryId, view);
   if (pb) {
     ctx.save();
     ctx.strokeStyle = "rgba(59, 130, 246, 0.65)";
     ctx.lineWidth = 1.5;
     ctx.setLineDash([6, 3]);
-    ctx.strokeRect(pb.x + 0.75, pb.y + 0.75, pb.w - 1.5, pb.h - 1.5);
+    ctx.strokeRect(
+      pb.x + previewOffset.x + 0.75,
+      pb.y + previewOffset.y + 0.75,
+      pb.w - 1.5,
+      pb.h - 1.5,
+    );
     ctx.setLineDash([]);
     ctx.fillStyle = "rgba(59, 130, 246, 0.85)";
     [
-      [pb.x, pb.y],
-      [pb.x + pb.w, pb.y],
-      [pb.x, pb.y + pb.h],
-      [pb.x + pb.w, pb.y + pb.h],
+      [pb.x + previewOffset.x, pb.y + previewOffset.y],
+      [pb.x + pb.w + previewOffset.x, pb.y + previewOffset.y],
+      [pb.x + previewOffset.x, pb.y + pb.h + previewOffset.y],
+      [pb.x + pb.w + previewOffset.x, pb.y + pb.h + previewOffset.y],
     ].forEach(([cx, cy]) => ctx.fillRect(cx - 4, cy - 4, 8, 8));
     ctx.restore();
   }
@@ -250,6 +323,7 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
   const bgSnapshot =
     activeView === "back" ? glbSnapshots.back : glbSnapshots.front;
   const categoryId = (project.apparelConfig.categoryId || "").toString();
+  console.log("CATEGORY ID:", categoryId);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // ─── Canvas redraw (background only) ──────────────────────────────────────
@@ -290,17 +364,22 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
   // Rnd positions/sizes are in CSS display space (DISPLAY_W × DISPLAY_H).
   // We divide by SCALE_X/SCALE_Y before storing so that layer coordinates
   // stay in canvas pixel space — preserving all UV mapping / 3D placement.
+  const previewOffset = getPreviewOffset(
+    categoryId,
+    activeView as "front" | "back",
+  );
+
   const handleDrag = (id: string, d: { x: number; y: number }) => {
     updateLayer(id, {
-      x: Math.round(d.x / SCALE_X),
-      y: Math.round(d.y / SCALE_Y),
+      x: Math.round((d.x - previewOffset.x) / SCALE_X),
+      y: Math.round((d.y - previewOffset.y) / SCALE_Y),
     });
   };
 
   const handleDragStop = (id: string, d: { x: number; y: number }) => {
     updateLayer(id, {
-      x: Math.round(d.x / SCALE_X),
-      y: Math.round(d.y / SCALE_Y),
+      x: Math.round((d.x - previewOffset.x) / SCALE_X),
+      y: Math.round((d.y - previewOffset.y) / SCALE_Y),
     });
   };
 
@@ -313,8 +392,8 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
     updateLayer(id, {
       width: Math.max(1, Math.round(parseInt(ref.style.width, 10) / SCALE_X)),
       height: Math.max(1, Math.round(parseInt(ref.style.height, 10) / SCALE_Y)),
-      x: Math.round(position.x / SCALE_X),
-      y: Math.round(position.y / SCALE_Y),
+      x: Math.round((position.x - previewOffset.x) / SCALE_X),
+      y: Math.round((position.y - previewOffset.y) / SCALE_Y),
     });
   };
 
@@ -357,7 +436,10 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
           {layers.map((layer) => {
             if (!layer.isVisible) return null;
             const isSelected = selectedLayerId === layer.id;
-
+            const previewOffset = getPreviewOffset(
+              categoryId,
+              activeView as "front" | "back",
+            );
             return (
               <Rnd
                 key={layer.id}
@@ -367,8 +449,8 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
                   height: layer.height * SCALE_Y,
                 }}
                 position={{
-                  x: layer.x * SCALE_X,
-                  y: layer.y * SCALE_Y,
+                  x: layer.x * SCALE_X + previewOffset.x,
+                  y: layer.y * SCALE_Y + previewOffset.y,
                 }}
                 onDrag={(_e, d) => handleDrag(layer.id, d)}
                 onDragStop={(_e, d) => handleDragStop(layer.id, d)}

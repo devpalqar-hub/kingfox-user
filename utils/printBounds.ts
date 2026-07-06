@@ -26,24 +26,29 @@ export interface ModelPrintBounds {
 // ─── Calibrated values (800×960 GLB snapshot coordinate space) ───────────────
 export const PRINT_BOUNDS_800: Record<string, ModelPrintBounds> = {
   shirt: {
-    front: { x: 166, y: 210, w: 475, h: 542 },
-    back:  { x: 131, y: 210, w: 490, h: 555 },
+    front: { x: 5, y: 449, w: 784, h: 667 },
+    back: { x: 5, y: 449, w: 784, h: 667 },
   },
   hoodie: {
-    front: { x: 90,  y: 210, w: 619, h: 535 },
-    back:  { x: 262, y: 408, w: 250, h: 309 },
+    front: { x: 90, y: 210, w: 619, h: 535 },
+    back: { x: 262, y: 408, w: 250, h: 309 },
   },
   polo: {
     front: { x: 210, y: 190, w: 380, h: 370 },
-    back:  { x: 210, y: 190, w: 380, h: 370 },
+    back: { x: 210, y: 190, w: 380, h: 370 },
   },
   long: {
-    front: { x: 205, y: 185, w: 390, h: 390 },
-    back:  { x: 205, y: 185, w: 390, h: 390 },
+    front: { x: 17, y: 22, w: 377, h: 900 },
+    back: { x: 17, y: 22, w: 377, h: 900 },
   },
   oversize: {
-    front: { x: 195, y: 185, w: 410, h: 390 },
-    back:  { x: 195, y: 185, w: 410, h: 390 },
+    front: { x: 36, y: 455, w: 763, h: 708 },
+    back: {
+      x: 2,
+      y: 11,
+      w: 798,
+      h: 610,
+    }, // keep existing until calibrated
   },
 };
 
@@ -51,10 +56,11 @@ export const PRINT_BOUNDS_800: Record<string, ModelPrintBounds> = {
 
 export function getModelKey(categoryId: string): string {
   const n = (categoryId || "").toLowerCase();
-  if (n.includes("hoodie"))                                         return "hoodie";
-  if (n.includes("polo"))                                           return "polo";
-  if (n.includes("long") || n.includes("sleeve") || n.includes("full")) return "long";
-  if (n.includes("oversize"))                                       return "oversize";
+  if (n.includes("hoodie")) return "hoodie";
+  if (n.includes("polo")) return "polo";
+  if (n.includes("long") || n.includes("sleeve") || n.includes("full"))
+    return "long";
+  if (n.includes("oversize")) return "oversize";
   return "shirt";
 }
 
@@ -78,7 +84,9 @@ const SY = 600 / 960; // 0.625
  * Convert a 800×960 rect to the 500×600 DesignEditor2D canvas space.
  * Returns undefined if the input rect is falsy (safe guard for early renders).
  */
-export function toPrintBounds500(r: PrintBoundsRect | undefined): PrintBoundsRect | undefined {
+export function toPrintBounds500(
+  r: PrintBoundsRect | undefined,
+): PrintBoundsRect | undefined {
   if (!r) return undefined;
   return {
     x: Math.round(r.x * SX),

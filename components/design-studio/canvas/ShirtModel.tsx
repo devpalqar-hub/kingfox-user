@@ -382,6 +382,22 @@ export default function ShirtModel({ ...props }: any) {
           v1: 0.46,
         },
       };
+    } else if (modelKey === "long") {
+      uvRegions.current = {
+        front: {
+          u0: 0.0,
+          v0: 0.5,
+          u1: 1.0,
+          v1: 1.0,
+        },
+
+        back: {
+          u0: 0.0,
+          v0: 0.0,
+          u1: 1.0,
+          v1: 0.5,
+        },
+      };
     } else {
       const { left, right } = detectUvRegions(mesh);
 
