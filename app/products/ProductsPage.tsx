@@ -668,7 +668,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                     id={product.id}
                     slug={product.slug}
                     name= {
-                      product.onlineName.trim()
+                      product.onlineName?.trim()
                       ? product.onlineName
                       : product.name
                     }
