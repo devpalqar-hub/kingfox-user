@@ -24,8 +24,10 @@
 
 /* Fixed 500×600 canvas — same 5:6 ratio as the 800×960 GLB snapshot */
 .printArea {
-  width: 900px;
-  height: 760px;
+  width: 500px;
+  height: 600px;
+  max-width: 100%;
+  max-height: 100%;
   position: relative;
   overflow: hidden;
   border-radius: 8px;
@@ -68,7 +70,6 @@
 }
 
 @keyframes snapshotPulse {
-
   0%,
   100% {
     opacity: 1;

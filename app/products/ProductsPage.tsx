@@ -667,7 +667,11 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                   <ProductCard
                     id={product.id}
                     slug={product.slug}
-                    name={product.name}
+                    name= {
+                      product.onlineName.trim()
+                      ? product.onlineName
+                      : product.name
+                    }
                     price={String(product.priceRange?.min || 0)}
                     rating={reviewMap[product.id]?.rating ?? 0}
                     reviews={reviewMap[product.id]?.total ?? 0}

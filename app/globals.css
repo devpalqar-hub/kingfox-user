@@ -20,7 +20,10 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  padding-top: 55px;
+}
+
+body {
+  padding-top: var(--site-header-offset, 80px);
 }
 
 @media (prefers-color-scheme: dark) {

@@ -15,8 +15,8 @@ const CANVAS_H = 600;
 // align the Rnd selection handles with the actual canvas-drawn visuals.
 const DISPLAY_W = 500;
 const DISPLAY_H = 600;
-const SCALE_X   = DISPLAY_W / CANVAS_W;  // 1.0
-const SCALE_Y   = DISPLAY_H / CANVAS_H;  // 1.0
+const SCALE_X = DISPLAY_W / CANVAS_W; // 1.0
+const SCALE_Y = DISPLAY_H / CANVAS_H; // 1.0
 
 // ─── Image cache ──────────────────────────────────────────────────────────────
 // Keyed by src string. loadImage returns instantly on cache hit.
@@ -29,7 +29,10 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     // NOTE: do NOT set crossOrigin for data: URLs — browsers reject it and the
     // image load silently fails, causing the canvas to show nothing.
     if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
-    img.onload  = () => { imgCache.set(src, img); resolve(img); };
+    img.onload = () => {
+      imgCache.set(src, img);
+      resolve(img);
+    };
     img.onerror = reject;
     img.src = src;
   });
@@ -44,20 +47,47 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 //   offsetX — canvas px. Positive = shift right,  negative = shift left.
 //   offsetY — canvas px. Positive = shift down,   negative = shift up.
 interface GuideCalibration {
-  src:     string;   // path relative to public/
-  scale:   number;   // multiplier on top of fit-to-canvas scale
-  offsetX: number;   // horizontal nudge in canvas pixels
-  offsetY: number;   // vertical nudge in canvas pixels
+  src: string; // path relative to public/
+  scale: number; // multiplier on top of fit-to-canvas scale
+  offsetX: number; // horizontal nudge in canvas pixels
+  offsetY: number; // vertical nudge in canvas pixels
 }
 
 const GUIDE_CALIBRATIONS: Record<string, GuideCalibration> = {
   hoodie: {
-    src:     "/templates/hoodie-template.png",
-    scale:   0.76,   // ← adjust to shrink/grow the guide
-    offsetX: 45,     // ← adjust to move guide left (−) / right (+)
-    offsetY: 0,      // ← adjust to move guide up (−) / down (+)
+    src: "/templates/hoodie-template.png",
+    scale: 0.76, // ← adjust to shrink/grow the guide
+    offsetX: 45, // ← adjust to move guide left (−) / right (+)
+    offsetY: 0, // ← adjust to move guide up (−) / down (+)
+  },
+  oversize: {
+    src: "/templates/hoodie-template.png",
+    scale: 0.82, // ← adjust to shrink/grow the guide
+    offsetX: 0, // ← adjust to move guide left (−) / right (+)
+    offsetY: -80, // ← adjust to move guide up (−) / down (+)
   },
   // Future garments: add entries here (e.g. "polo", "longsleeve", etc.)
+};
+const PREVIEW_OFFSETS = {
+  oversize: {
+    front: {
+      x: -10,
+      y: -210,
+    },
+
+    back: {
+      x: 0,
+      y: 90,
+    },
+  },
+  crewneck: {
+    front: { x: 0, y: -190 },
+    back: { x: 0, y: -190 },
+  },
+  long: {
+    front: { x: 130, y: 10 },
+    back: { x: 130, y: 10 },
+  },
 };
 
 /** Resolve a categoryId to its guide calibration, if one exists. */
@@ -67,6 +97,24 @@ function getGuideCalibration(categoryId: string): GuideCalibration | null {
     if (n.includes(key)) return cal;
   }
   return null;
+}
+
+function getPreviewOffset(categoryId: string, view: "front" | "back") {
+  const n = categoryId.toLowerCase();
+
+  if (n.includes("oversize")) {
+    return PREVIEW_OFFSETS.oversize[view];
+  }
+
+  if (n.includes("crewneck")) {
+    return PREVIEW_OFFSETS.crewneck[view];
+  }
+
+  if (n.includes("long")) {
+    return PREVIEW_OFFSETS.long[view];
+  }
+
+  return { x: 0, y: 0 };
 }
 
 // ─── Offscreen compositing (background only) ──────────────────────────────────
@@ -86,47 +134,104 @@ async function compositeBackground(
   ctx.fillStyle = "#f8f8f8";
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // ── 2. Background: calibrated guide template OR GLB snapshot ─────────────
-  const guide = getGuideCalibration(categoryId);
-  if (guide) {
+  // ── 2. Background: hoodie front/back PNGs, calibrated guide template, OR GLB snapshot ─────────────
+  const normalizedCategory = categoryId.toLowerCase();
+  if (
+    normalizedCategory.includes("hoodie") ||
+    normalizedCategory.includes("oversize") ||
+    normalizedCategory.includes("crewneck") ||
+    normalizedCategory.includes("half") ||
+    normalizedCategory.includes("long")
+  ) {
     try {
-      const tmpl = await loadImage(guide.src);
+      const hoodieImage = await loadImage(`/templates/hoodie-${view}.png`);
       if (cancelled.v) return null;
 
-      const fitScale  = Math.min(CANVAS_W / tmpl.naturalWidth, CANVAS_H / tmpl.naturalHeight);
-      const scale     = fitScale * guide.scale;
-      const drawW     = tmpl.naturalWidth  * scale * 1.5;
-      const drawH     = tmpl.naturalHeight * scale * 1.5;
-      const x         = (CANVAS_W - drawW) / 2 + guide.offsetX;
-      const y         = (CANVAS_H - drawH) / 2 + guide.offsetY;
-
-      ctx.drawImage(tmpl, x, y, drawW, drawH);
+      if (
+        normalizedCategory.includes("oversize") ||
+        normalizedCategory.includes("crewneck") ||
+        normalizedCategory.includes("half") ||
+        normalizedCategory.includes("long")
+      ) {
+        const pb = getPrintBounds500(categoryId, view);
+        const previewOffset = getPreviewOffset(categoryId, view);
+        if (pb) {
+          ctx.drawImage(
+            hoodieImage,
+            pb.x + previewOffset.x,
+            pb.y + previewOffset.y,
+            pb.w,
+            pb.h,
+          );
+        } else {
+          ctx.drawImage(hoodieImage, 0, 0, CANVAS_W, CANVAS_H);
+        }
+      } else {
+        ctx.drawImage(hoodieImage, 0, 0, CANVAS_W, CANVAS_H);
+      }
     } catch (e) {
-      console.warn(`[2D Editor] guide template load failed (${categoryId}):`, e);
+      console.warn(
+        `[2D Editor] hoodie preview image load failed (${categoryId} / ${view}):`,
+        e,
+      );
     }
+  } else {
+    const guide = getGuideCalibration(categoryId);
+    if (guide) {
+      try {
+        const tmpl = await loadImage(guide.src);
+        if (cancelled.v) return null;
 
-  } else if (bgSnapshot) {
-    try {
-      const bgImg = await loadImage(bgSnapshot);
-      if (cancelled.v) return null;
-      ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
-    } catch (e) {
-      console.warn("[2D Editor] snapshot load failed:", e);
+        const fitScale = Math.min(
+          CANVAS_W / tmpl.naturalWidth,
+          CANVAS_H / tmpl.naturalHeight,
+        );
+        const scale = fitScale * guide.scale;
+        const drawW = tmpl.naturalWidth * scale;
+        const drawH = tmpl.naturalHeight * scale;
+        const x = (CANVAS_W - drawW) / 2 + guide.offsetX;
+        const y = (CANVAS_H - drawH) / 2 + guide.offsetY;
+
+        ctx.drawImage(tmpl, x, y, drawW, drawH);
+      } catch (e) {
+        console.warn(
+          `[2D Editor] guide template load failed (${categoryId}):`,
+          e,
+        );
+      }
+    } else if (bgSnapshot) {
+      try {
+        const bgImg = await loadImage(bgSnapshot);
+        if (cancelled.v) return null;
+        ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
+      } catch (e) {
+        console.warn("[2D Editor] snapshot load failed:", e);
+      }
     }
   }
 
   // ── 3. Printable zone guide (dashed rectangle, drawn under design layers) ─
   const pb = getPrintBounds500(categoryId, view);
+  const previewOffset = getPreviewOffset(categoryId, view);
   if (pb) {
     ctx.save();
     ctx.strokeStyle = "rgba(59, 130, 246, 0.65)";
     ctx.lineWidth = 1.5;
     ctx.setLineDash([6, 3]);
-    ctx.strokeRect(pb.x + 0.75, pb.y + 0.75, pb.w - 1.5, pb.h - 1.5);
+    ctx.strokeRect(
+      pb.x + previewOffset.x + 0.75,
+      pb.y + previewOffset.y + 0.75,
+      pb.w - 1.5,
+      pb.h - 1.5,
+    );
     ctx.setLineDash([]);
     ctx.fillStyle = "rgba(59, 130, 246, 0.85)";
-    [[pb.x, pb.y], [pb.x + pb.w, pb.y], [pb.x, pb.y + pb.h], [pb.x + pb.w, pb.y + pb.h]]
-      .forEach(([cx, cy]) => ctx.fillRect(cx - 4, cy - 4, 8, 8));
+    [
+      [pb.x + previewOffset.x, pb.y + previewOffset.y],
+      [pb.x + pb.w + previewOffset.x, pb.y + previewOffset.y],
+      [pb.x + previewOffset.x, pb.y + pb.h + previewOffset.y],
+      [pb.x + pb.w + previewOffset.x, pb.y + pb.h + previewOffset.y],
+    ].forEach(([cx, cy]) => ctx.fillRect(cx - 4, cy - 4, 8, 8));
     ctx.restore();
   }
 
@@ -153,20 +258,27 @@ function LayerContent({ layer }: { layer: Layer }) {
   if (layer.type === "text") {
     const textLayer = layer as TextLayer;
     const justifyContent =
-      textLayer.textAlign === "left"  ? "flex-start" :
-      textLayer.textAlign === "right" ? "flex-end"   : "center";
+      textLayer.textAlign === "left"
+        ? "flex-start"
+        : textLayer.textAlign === "right"
+          ? "flex-end"
+          : "center";
 
     return (
       <div
         className={styles.textContent}
         style={{
           justifyContent,
-          fontFamily:    `"${textLayer.fontFamily || "Inter"}", sans-serif`,
-          fontSize:      `${textLayer.fontSize * SCALE_X}px`,
-          fontWeight:    textLayer.fontWeight ?? 700,
-          color:         textLayer.colorHex || "#000",
-          letterSpacing: textLayer.letterSpacing ? `${textLayer.letterSpacing}px` : undefined,
-          textAlign:     (textLayer.textAlign as React.CSSProperties["textAlign"]) || "center",
+          fontFamily: `"${textLayer.fontFamily || "Inter"}", sans-serif`,
+          fontSize: `${textLayer.fontSize * SCALE_X}px`,
+          fontWeight: textLayer.fontWeight ?? 700,
+          color: textLayer.colorHex || "#000",
+          letterSpacing: textLayer.letterSpacing
+            ? `${textLayer.letterSpacing}px`
+            : undefined,
+          textAlign:
+            (textLayer.textAlign as React.CSSProperties["textAlign"]) ||
+            "center",
         }}
       >
         {textLayer.text}
@@ -180,8 +292,8 @@ function LayerContent({ layer }: { layer: Layer }) {
       <div className={styles.lineContent}>
         <div
           style={{
-            width:      "100%",
-            height:     `${lineLayer.thickness * SCALE_Y}px`,
+            width: "100%",
+            height: `${lineLayer.thickness * SCALE_Y}px`,
             background: lineLayer.colorHex || "#000",
           }}
         />
@@ -199,54 +311,74 @@ interface Props {
 
 export default function DesignEditor2D({ onLayerSelect }: Props) {
   const {
-    project, activeView, selectedLayerId, selectLayer, updateLayer, glbSnapshots,
+    project,
+    activeView,
+    selectedLayerId,
+    selectLayer,
+    updateLayer,
+    glbSnapshots,
   } = useDesignStore();
 
-  const layers     = project.designs[activeView] || [];
-  const bgSnapshot = activeView === "back" ? glbSnapshots.back : glbSnapshots.front;
+  const layers = project.designs[activeView] || [];
+  const bgSnapshot =
+    activeView === "back" ? glbSnapshots.back : glbSnapshots.front;
   const categoryId = (project.apparelConfig.categoryId || "").toString();
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // ─── Canvas redraw (background only) ──────────────────────────────────────
-  const redraw = useCallback(async (cancelled: { v: boolean }) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const redraw = useCallback(
+    async (cancelled: { v: boolean }) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const bitmap = await compositeBackground(
-      bgSnapshot, cancelled, categoryId, activeView as "front" | "back",
-    );
-    if (cancelled.v || !bitmap) return;
+      const bitmap = await compositeBackground(
+        bgSnapshot,
+        cancelled,
+        categoryId,
+        activeView as "front" | "back",
+      );
+      if (cancelled.v || !bitmap) return;
 
-    // Atomic blit — no partial-draw flicker
-    const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.drawImage(bitmap, 0, 0);
-    bitmap.close();
-  }, [bgSnapshot, categoryId, activeView]);
+      // Atomic blit — no partial-draw flicker
+      const ctx = canvas.getContext("2d")!;
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.drawImage(bitmap, 0, 0);
+      bitmap.close();
+    },
+    [bgSnapshot, categoryId, activeView],
+  );
 
   useEffect(() => {
     const cancelled = { v: false };
     const id = requestAnimationFrame(() => {
       redraw(cancelled).catch(console.error);
     });
-    return () => { cancelled.v = true; cancelAnimationFrame(id); };
+    return () => {
+      cancelled.v = true;
+      cancelAnimationFrame(id);
+    };
   }, [redraw]);
 
   // ─── Drag / resize handlers ────────────────────────────────────────────────
   // Rnd positions/sizes are in CSS display space (DISPLAY_W × DISPLAY_H).
   // We divide by SCALE_X/SCALE_Y before storing so that layer coordinates
   // stay in canvas pixel space — preserving all UV mapping / 3D placement.
+  const previewOffset = getPreviewOffset(
+    categoryId,
+    activeView as "front" | "back",
+  );
+
   const handleDrag = (id: string, d: { x: number; y: number }) => {
     updateLayer(id, {
-      x: Math.round(d.x / SCALE_X),
-      y: Math.round(d.y / SCALE_Y),
+      x: Math.round((d.x - previewOffset.x) / SCALE_X),
+      y: Math.round((d.y - previewOffset.y) / SCALE_Y),
     });
   };
 
   const handleDragStop = (id: string, d: { x: number; y: number }) => {
     updateLayer(id, {
-      x: Math.round(d.x / SCALE_X),
-      y: Math.round(d.y / SCALE_Y),
+      x: Math.round((d.x - previewOffset.x) / SCALE_X),
+      y: Math.round((d.y - previewOffset.y) / SCALE_Y),
     });
   };
 
@@ -257,10 +389,10 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
     position: { x: number; y: number },
   ) => {
     updateLayer(id, {
-      width:  Math.max(1, Math.round(parseInt(ref.style.width,  10) / SCALE_X)),
+      width: Math.max(1, Math.round(parseInt(ref.style.width, 10) / SCALE_X)),
       height: Math.max(1, Math.round(parseInt(ref.style.height, 10) / SCALE_Y)),
-      x: Math.round(position.x / SCALE_X),
-      y: Math.round(position.y / SCALE_Y),
+      x: Math.round((position.x - previewOffset.x) / SCALE_X),
+      y: Math.round((position.y - previewOffset.y) / SCALE_Y),
     });
   };
 
@@ -303,40 +435,95 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
           {layers.map((layer) => {
             if (!layer.isVisible) return null;
             const isSelected = selectedLayerId === layer.id;
-
+            const previewOffset = getPreviewOffset(
+              categoryId,
+              activeView as "front" | "back",
+            );
             return (
               <Rnd
                 key={layer.id}
                 // ── Display in CSS space (scaled up from canvas coordinates) ──
                 size={{
-                  width:  layer.width  * SCALE_X,
+                  width: layer.width * SCALE_X,
                   height: layer.height * SCALE_Y,
                 }}
                 position={{
-                  x: layer.x * SCALE_X,
-                  y: layer.y * SCALE_Y,
+                  x: layer.x * SCALE_X + previewOffset.x,
+                  y: layer.y * SCALE_Y + previewOffset.y,
                 }}
                 onDrag={(_e, d) => handleDrag(layer.id, d)}
                 onDragStop={(_e, d) => handleDragStop(layer.id, d)}
                 // Live resize: update store while dragging handle for real-time canvas tracking
-                onResize={(_e, _dir, ref, _delta, pos) => handleResize(layer.id, ref, pos)}
-                onResizeStop={(_e, _dir, ref, _delta, pos) => handleResize(layer.id, ref, pos)}
+                onResize={(_e, _dir, ref, _delta, pos) =>
+                  handleResize(layer.id, ref, pos)
+                }
+                onResizeStop={(_e, _dir, ref, _delta, pos) =>
+                  handleResize(layer.id, ref, pos)
+                }
                 disableDragging={layer.isLocked}
                 enableResizing={
                   !layer.isLocked
                     ? {
-                        top: false, right: true, bottom: true, left: false,
-                        topRight: true, bottomRight: true, bottomLeft: true, topLeft: true,
+                        top: false,
+                        right: true,
+                        bottom: true,
+                        left: false,
+                        topRight: true,
+                        bottomRight: true,
+                        bottomLeft: true,
+                        topLeft: true,
                       }
                     : false
                 }
                 resizeHandleStyles={{
-                  topRight:    { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", right: -5, top: -5 },
-                  bottomRight: { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", right: -5, bottom: -5 },
-                  bottomLeft:  { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", left: -5, bottom: -5 },
-                  topLeft:     { width: 10, height: 10, background: "#0070f3", borderRadius: "50%", left: -5, top: -5 },
-                  right:  { width: 6, height: 24, background: "#0070f3", borderRadius: 3, right: -3, top: "calc(50% - 12px)" },
-                  bottom: { width: 24, height: 6, background: "#0070f3", borderRadius: 3, bottom: -3, left: "calc(50% - 12px)" },
+                  topRight: {
+                    width: 10,
+                    height: 10,
+                    background: "#0070f3",
+                    borderRadius: "50%",
+                    right: -5,
+                    top: -5,
+                  },
+                  bottomRight: {
+                    width: 10,
+                    height: 10,
+                    background: "#0070f3",
+                    borderRadius: "50%",
+                    right: -5,
+                    bottom: -5,
+                  },
+                  bottomLeft: {
+                    width: 10,
+                    height: 10,
+                    background: "#0070f3",
+                    borderRadius: "50%",
+                    left: -5,
+                    bottom: -5,
+                  },
+                  topLeft: {
+                    width: 10,
+                    height: 10,
+                    background: "#0070f3",
+                    borderRadius: "50%",
+                    left: -5,
+                    top: -5,
+                  },
+                  right: {
+                    width: 6,
+                    height: 24,
+                    background: "#0070f3",
+                    borderRadius: 3,
+                    right: -3,
+                    top: "calc(50% - 12px)",
+                  },
+                  bottom: {
+                    width: 24,
+                    height: 6,
+                    background: "#0070f3",
+                    borderRadius: 3,
+                    bottom: -3,
+                    left: "calc(50% - 12px)",
+                  },
                 }}
                 bounds="parent"
                 dragGrid={[1, 1]}
@@ -348,8 +535,10 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
                 <div
                   className={styles.layerContent}
                   style={{
-                    opacity:         layer.opacity ?? 1,
-                    transform:       layer.rotation ? `rotate(${layer.rotation}deg)` : undefined,
+                    opacity: layer.opacity ?? 1,
+                    transform: layer.rotation
+                      ? `rotate(${layer.rotation}deg)`
+                      : undefined,
                     transformOrigin: "center center",
                   }}
                 >

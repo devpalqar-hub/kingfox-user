@@ -27,7 +27,10 @@ function loadImg(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const img = new Image();
     if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
-    img.onload = () => { IMG_CACHE.set(src, img); res(img); };
+    img.onload = () => {
+      IMG_CACHE.set(src, img);
+      res(img);
+    };
     img.onerror = rej;
     img.src = src;
   });
@@ -68,27 +71,42 @@ function detectUvRegions(mesh: THREE.Mesh): {
     };
   }
 
-  let lU0 = 1, lV0 = 1, lU1 = 0, lV1 = 0;
-  let rU0 = 1, rV0 = 1, rU1 = 0, rV1 = 0;
-  let hasLeft = false, hasRight = false;
+  let lU0 = 1,
+    lV0 = 1,
+    lU1 = 0,
+    lV1 = 0;
+  let rU0 = 1,
+    rV0 = 1,
+    rU1 = 0,
+    rV1 = 0;
+  let hasLeft = false,
+    hasRight = false;
 
   for (let i = 0; i < uv.count; i++) {
     const u = uv.getX(i);
     const v = uv.getY(i);
     if (u < 0.5) {
-      lU0 = Math.min(lU0, u); lV0 = Math.min(lV0, v);
-      lU1 = Math.max(lU1, u); lV1 = Math.max(lV1, v);
+      lU0 = Math.min(lU0, u);
+      lV0 = Math.min(lV0, v);
+      lU1 = Math.max(lU1, u);
+      lV1 = Math.max(lV1, v);
       hasLeft = true;
     } else {
-      rU0 = Math.min(rU0, u); rV0 = Math.min(rV0, v);
-      rU1 = Math.max(rU1, u); rV1 = Math.max(rV1, v);
+      rU0 = Math.min(rU0, u);
+      rV0 = Math.min(rV0, v);
+      rU1 = Math.max(rU1, u);
+      rV1 = Math.max(rV1, v);
       hasRight = true;
     }
   }
 
   return {
-    left: hasLeft ? { u0: lU0, v0: lV0, u1: lU1, v1: lV1 } : { u0: 0, v0: 0, u1: 0.5, v1: 1 },
-    right: hasRight ? { u0: rU0, v0: rV0, u1: rU1, v1: rV1 } : { u0: 0.5, v0: 0, u1: 1, v1: 1 },
+    left: hasLeft
+      ? { u0: lU0, v0: lV0, u1: lU1, v1: lV1 }
+      : { u0: 0, v0: 0, u1: 0.5, v1: 1 },
+    right: hasRight
+      ? { u0: rU0, v0: rV0, u1: rU1, v1: rV1 }
+      : { u0: 0.5, v0: 0, u1: 1, v1: 1 },
   };
 }
 
@@ -97,18 +115,19 @@ function detectUvRegions(mesh: THREE.Mesh): {
 // Set false → right UV half (u ≥ 0.5) is the FRONT panel
 // Flip this per-model if the design shows on the wrong side.
 const UV_FRONT_IS_LEFT: Record<string, boolean> = {
-  shirt: true,   // shirt_baked.glb   — left UV = front
-  polo: true,   // t-shirt-polo.glb  — left UV = front
-  hoodie: true,   // hoodie.glb        — left UV = front
-  long: true,   // LongSleeveTShirt.glb
-  oversize: false,  // oversized-tee.glb — right UV = front (flipped UV layout)
+  shirt: true, // shirt_baked.glb   — left UV = front
+  polo: true, // t-shirt-polo.glb  — left UV = front
+  hoodie: true, // hoodie.glb        — left UV = front
+  long: true, // LongSleeveTShirt.glb
+  oversize: false, // oversized-tee.glb — right UV = front (flipped UV layout)
 };
 
 function getModelKey(categoryId: string): string {
   const n = (categoryId || "").toLowerCase();
   if (n.includes("hoodie")) return "hoodie";
   if (n.includes("polo")) return "polo";
-  if (n.includes("long") || n.includes("sleeve") || n.includes("full")) return "long";
+  if (n.includes("long") || n.includes("sleeve") || n.includes("full"))
+    return "long";
   if (n.includes("oversize")) return "oversize";
   return "shirt";
 }
@@ -141,7 +160,7 @@ async function paintLayers(
   pb800: { x: number; y: number; w: number; h: number },
   uvRegion: { u0: number; v0: number; u1: number; v1: number },
 ) {
-  const visible = layers.filter(l => l.isVisible !== false);
+  const visible = layers.filter((l) => l.isVisible !== false);
   if (!visible.length) return;
 
   // ── Convert print-bounds from 800×960 snapshot space → 500×600 editor space ──
@@ -243,10 +262,22 @@ async function buildGarmentCanvas(
   // 1. Base layer: original baked texture tinted with garment colour,
   //    or a solid colour fill if the model has no base texture.
   if (baseTexture?.image) {
-    ctx.drawImage(baseTexture.image as HTMLImageElement, 0, 0, TEX_RES, TEX_RES);
-    ctx.globalCompositeOperation = "multiply";
+    // Fill with the garment colour first (clean base)
     ctx.fillStyle = colorHex;
     ctx.fillRect(0, 0, TEX_RES, TEX_RES);
+    // Blend the baked texture on top at reduced opacity so shading detail
+    // is preserved but baked-in shadows don't cause unwanted darkening on
+    // the opposite panel when the model is rotated.
+    ctx.globalAlpha = 0.18;
+    ctx.globalCompositeOperation = "multiply";
+    ctx.drawImage(
+      baseTexture.image as HTMLImageElement,
+      0,
+      0,
+      TEX_RES,
+      TEX_RES,
+    );
+    ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
   } else {
     ctx.fillStyle = colorHex;
@@ -279,8 +310,10 @@ export default function ShirtModel({ ...props }: any) {
   const modelUrl = useMemo(() => {
     const n = (project.apparelConfig.categoryId || "").toString().toLowerCase();
     if (n.includes("polo")) return "/models/polo-Tshirt.glb";
-    if (n.includes("hoodie") || n === "classic-hoodie") return "/models/Hoodie.glb";
-    if (n.includes("long") || n.includes("full") || n.includes("sleeve")) return "/models/LongSleeveTShirt.glb";
+    if (n.includes("hoodie") || n === "classic-hoodie")
+      return "/models/hoodie.glb";
+    if (n.includes("long") || n.includes("full") || n.includes("sleeve"))
+      return "/models/LongSleeveTShirt.glb";
     if (n.includes("oversize")) return "/models/oversized-tee.glb";
     return "/models/shirt_baked.glb";
   }, [project.apparelConfig.categoryId]);
@@ -318,26 +351,77 @@ export default function ShirtModel({ ...props }: any) {
 
     clonedScene.updateMatrixWorld(true);
     const bb = new THREE.Box3().setFromObject(clonedScene);
+    const size = bb.getSize(new THREE.Vector3());
+
+    console.log("Model Size", {
+      x: size.x,
+      y: size.y,
+      z: size.z,
+    });
     const center = bb.getCenter(new THREE.Vector3());
     clonedScene.position.sub(center);
     clonedScene.updateMatrixWorld(true);
 
     const mesh = findMainMesh(clonedScene);
-    if (!mesh) { console.error("[ShirtModel] No mesh found"); return; }
+    if (!mesh) {
+      console.error("[ShirtModel] No mesh found");
+      return;
+    }
 
     meshRef.current = mesh;
     baseTexRef.current = getBaseTexture(mesh);
 
     // Detect UV left/right halves, then assign front/back per model config
-    const { left, right } = detectUvRegions(mesh);
     const frontIsLeft = UV_FRONT_IS_LEFT[modelKey] ?? true;
 
-    uvRegions.current = {
-      front: frontIsLeft ? left : right,
-      back: frontIsLeft ? right : left,
-    };
+    if (modelKey === "hoodie") {
+      uvRegions.current = {
+        front: {
+          u0: 0.04,
+          v0: 0.34,
+          u1: 0.39,
+          v1: 0.82,
+        },
+        back: {
+          u0: 0.04,
+          v0: 0.02,
+          u1: 0.39,
+          v1: 0.46,
+        },
+      };
+    } else if (modelKey === "long") {
+      uvRegions.current = {
+        front: {
+          u0: 0.15,
+          v0: 0.55,
+          u1: 0.55,
+          v1: 0.95,
+        },
 
-    console.log("[ShirtModel] UV regions:", uvRegions.current, "| modelKey:", modelKey, "| frontIsLeft:", frontIsLeft);
+        back: {
+          u0: 0.15,
+          v0: 0.05,
+          u1: 0.55,
+          v1: 0.45,
+        },
+      };
+    } else {
+      const { left, right } = detectUvRegions(mesh);
+
+      uvRegions.current = {
+        front: frontIsLeft ? left : right,
+        back: frontIsLeft ? right : left,
+      };
+    }
+
+    console.log(
+      "[ShirtModel] UV regions:",
+      uvRegions.current,
+      "| modelKey:",
+      modelKey,
+      "| frontIsLeft:",
+      frontIsLeft,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clonedScene, modelKey]);
 
@@ -379,8 +463,12 @@ export default function ShirtModel({ ...props }: any) {
       console.log("[ShirtModel] Texture rebuilt and applied");
     };
 
-    rebuild().catch(e => console.error("[ShirtModel] Texture build error:", e));
-    return () => { cancelled = true; };
+    rebuild().catch((e) =>
+      console.error("[ShirtModel] Texture build error:", e),
+    );
+    return () => {
+      cancelled = true;
+    };
   }, [
     clonedScene,
     project.apparelConfig.colorHex,

@@ -1,14 +1,8 @@
 import "./globals.css";
 import React from "react";
-import { AuthProvider } from "@/context/AuthContext";
-import Header from "@/components/layout/Header/Header";
-import Footer from "@/components/layout/Footer/Footer";
-
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
-import { ToastProvider } from "@/context/ToastContext";
-import { ConfirmProvider } from "@/context/ConfirmContext";
-import BottomNav from "@/components/BottomNav";
 import { Bebas_Neue, Inter } from "next/font/google";
+import AppShell from "@/components/layout/AppShell";
 
 export const viewport = {
   width: "device-width",
@@ -50,18 +44,7 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${space.variable} ${bebas.variable} ${inter.variable}`}
       >
-        {/* ✅ FIX: Wrap with AuthProvider */}
-
-        <ToastProvider>
-          <ConfirmProvider>
-            <AuthProvider>
-              <Header />
-              {children}
-              <Footer />
-              <BottomNav />
-            </AuthProvider>
-          </ConfirmProvider>
-        </ToastProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
