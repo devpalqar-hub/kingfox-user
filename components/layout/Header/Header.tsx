@@ -26,6 +26,7 @@ import { Campaign, getCampaignsAPI } from "@/services/campaign.service";
 type Category = {
   id: number;
   name: string;
+  isOnline?: boolean;
 };
 
 const Header = () => {
@@ -122,7 +123,9 @@ const Header = () => {
     loadCategories();
   }, []);
 
-  const oversizedCategory = categories.find((cat) =>
+  const visibleCategories = categories.filter((cat) => cat.isOnline === true);
+
+  const oversizedCategory = visibleCategories.find((cat) =>
     cat.name.toLowerCase().includes("over"),
   );
 
@@ -142,17 +145,32 @@ const Header = () => {
 
   useEffect(() => {
     const syncHeaderOffset = () => {
-      const headerHeight = headerRef.current?.offsetHeight ?? 60;
-      document.documentElement.style.setProperty(
-        "--site-header-offset",
-        `${headerHeight}px`,
+      console.log("headerHeight", headerRef.current?.offsetHeight);
+
+      console.log(
+        "cssVar",
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--site-header-offset",
+        ),
       );
+      requestAnimationFrame(() => {
+        const headerHeight = headerRef.current?.offsetHeight ?? 80;
+
+        document.documentElement.style.setProperty(
+          "--site-header-offset",
+          `${headerHeight}px`,
+        );
+      });
     };
 
     syncHeaderOffset();
+
+    const timeout = setTimeout(syncHeaderOffset, 500);
+
     window.addEventListener("resize", syncHeaderOffset);
 
     return () => {
+      clearTimeout(timeout);
       window.removeEventListener("resize", syncHeaderOffset);
     };
   }, [campaign, campaignLoading, menuOpen, showSearch, showCategoryDropdown]);
@@ -295,9 +313,9 @@ const Header = () => {
               PRODUCTS
             </Link>
 
-            {showCategoryDropdown && categories.length > 0 && (
+            {showCategoryDropdown && visibleCategories.length > 0 && (
               <div className={styles.dropdownMenu}>
-                {categories.map((cat) => (
+                {visibleCategories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/products?categoryId=${cat.id}`}

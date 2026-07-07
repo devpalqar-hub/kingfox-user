@@ -351,6 +351,13 @@ export default function ShirtModel({ ...props }: any) {
 
     clonedScene.updateMatrixWorld(true);
     const bb = new THREE.Box3().setFromObject(clonedScene);
+    const size = bb.getSize(new THREE.Vector3());
+
+    console.log("Model Size", {
+      x: size.x,
+      y: size.y,
+      z: size.z,
+    });
     const center = bb.getCenter(new THREE.Vector3());
     clonedScene.position.sub(center);
     clonedScene.updateMatrixWorld(true);
@@ -385,17 +392,17 @@ export default function ShirtModel({ ...props }: any) {
     } else if (modelKey === "long") {
       uvRegions.current = {
         front: {
-          u0: 0.0,
-          v0: 0.5,
-          u1: 1.0,
-          v1: 1.0,
+          u0: 0.15,
+          v0: 0.55,
+          u1: 0.55,
+          v1: 0.95,
         },
 
         back: {
-          u0: 0.0,
-          v0: 0.0,
-          u1: 1.0,
-          v1: 0.5,
+          u0: 0.15,
+          v0: 0.05,
+          u1: 0.55,
+          v1: 0.45,
         },
       };
     } else {

@@ -1,5 +1,4 @@
 export interface Brand {
-
   id: number;
   name: string;
 }
@@ -7,6 +6,7 @@ export interface Brand {
 export interface Category {
   id: number;
   name: string;
+  isOnline?: boolean;
 }
 
 export interface Tag {
@@ -42,6 +42,7 @@ export interface ProductDetail {
   id: number;
   slug?: string | null;
   name: string;
+  onlineName: string | null;
   description: string;
   images: string[];
   brand: Brand | null;
@@ -64,12 +65,11 @@ export interface PriceRange {
   max: number;
 }
 
-
-
 export interface Product {
   id: number;
   slug?: string | null;
   name: string;
+  onlineName: string | null;
   description: string;
   images: string[];
   brand: Brand | null;

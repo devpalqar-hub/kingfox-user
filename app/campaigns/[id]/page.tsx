@@ -209,7 +209,12 @@ export default function CampaignPage() {
           {/* ── Left Column ── */}
           <section className={styles.missionCard}>
             <h2 className={styles.sectionTitle}>MISSION BRIEF</h2>
-            <p className={styles.description}>{campaign.description}</p>
+            <div
+              className={styles.richText}
+              dangerouslySetInnerHTML={{
+                __html: campaign.description || "",
+              }}
+            />
 
             {filterLabel && (
               <div className={styles.filterBadge}>

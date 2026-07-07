@@ -90,7 +90,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     colorCode?: string | null,
   ) => {
     const normalizedColorCode = colorCode?.trim();
-    if (normalizedColorCode && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)) {
+    if (
+      normalizedColorCode &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)
+    ) {
       return normalizedColorCode;
     }
 
@@ -388,7 +391,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           sku: selectedVariant.sku,
           size: selectedVariant.size,
           color: selectedVariant.color,
-          productName: product.name,
+          productName: productDisplayName,
           productImage:
             selectedVariant.image ||
             product.images[0] ||
@@ -435,7 +438,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           sku: selectedVariant.sku,
           size: selectedVariant.size,
           color: selectedVariant.color,
-          productName: product.name,
+          productName: productDisplayName,
           productImage:
             selectedVariant.image ||
             product.images[0] ||
@@ -491,6 +494,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   if (!product) {
     return <div>Loading...</div>;
   }
+  const productDisplayName =
+    product?.onlineName && product.onlineName.trim().length > 0
+      ? product.onlineName
+      : product?.name;
 
   return (
     <>
@@ -511,7 +518,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             ))}
           </div>
           <div className={styles.mainImage}>
-            <img src={activeImg || productImages[0]} alt={product.name} />
+            <img src={activeImg || productImages[0]} alt={productDisplayName} />
 
             {/* ❤️ Wishlist */}
             <button
@@ -522,7 +529,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
               {isWishlisted ? (
                 <FaHeart size={20} color="black" />
               ) : (
-                <FiHeart size={20} color="#999" /> 
+                <FiHeart size={20} color="#999" />
               )}
             </button>
           </div>
@@ -530,7 +537,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
         {/* RIGHT: Product Info */}
         <div className={styles.details}>
-          <h1 className={styles.title}>{product?.name}</h1>
+          <h1 className={styles.title}>{productDisplayName}</h1>
 
           <div className={styles.priceRow}>
             <span className={styles.priceWrapper}>
@@ -651,11 +658,14 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   onClick={() => {
                     const variantForSelectedSize = product?.variants.find(
                       (v) =>
-                        v.color.toLowerCase() === colorOption.name.toLowerCase() &&
+                        v.color.toLowerCase() ===
+                          colorOption.name.toLowerCase() &&
                         v.size === selectedSize,
                     );
                     const fallbackVariant = product?.variants.find(
-                      (v) => v.color.toLowerCase() === colorOption.name.toLowerCase(),
+                      (v) =>
+                        v.color.toLowerCase() ===
+                        colorOption.name.toLowerCase(),
                     );
                     const nextVariant =
                       variantForSelectedSize || fallbackVariant;

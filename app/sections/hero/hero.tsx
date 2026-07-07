@@ -14,6 +14,7 @@ import {
   Shirt,
   Layers,
   Tag,
+  Link,
 } from "lucide-react";
 
 /* ── Bottom scrolling features bar ── */
@@ -96,12 +97,13 @@ const Hero = () => {
             >
               SHOP NOW &nbsp;&rarr;
             </button>
-            <button
+            <a
+              href="/design-studio/select"
               className={styles.customizeBtn}
-              onClick={handleCustomizeClick}
+              // onClick={handleCustomizeClick}
             >
               CUSTOMIZE YOUR TEE
-            </button>
+            </a>
           </div>
 
           {/* Inline feature icons */}

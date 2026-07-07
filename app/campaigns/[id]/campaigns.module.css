@@ -1,6 +1,52 @@
 /* ═══════════════════════════════════════════════
    CAMPAIGNS — all styles
    ═══════════════════════════════════════════════ */
+.richText h1,
+.richText h2,
+.richText h3 {
+  margin-bottom: 12px;
+}
+
+.richText p {
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+.richText ul,
+.richText ol {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.richText img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.richText ul {
+  list-style-type: disc;
+  padding-left: 24px;
+  margin: 16px 0;
+}
+
+.richText ol {
+  list-style-type: decimal;
+  padding-left: 24px;
+  margin: 16px 0;
+}
+
+.richText li {
+  display: list-item;
+  margin-bottom: 8px;
+}
+
+.richText ul ul {
+  list-style-type: circle;
+}
+
+.richText ol ol {
+  list-style-type: lower-alpha;
+}
 
 .wrapper {
   background-color: #f3f4f6;

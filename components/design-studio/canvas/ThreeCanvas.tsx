@@ -56,7 +56,7 @@ export default function ThreeCanvas() {
           failIfMajorPerformanceCaveat: false,
         }}
         shadows={false} // no shadow casting needed
-        camera={{ position: [0, 0, 2.5], fov: 25 }}
+        camera={{ position: [0, 0, 20], fov: 35 }}
         style={{ width: "100%", height: "100%" }}
         performance={{ min: 0.5 }} // drop to 0.5× DPR when GPU is stressed
       >

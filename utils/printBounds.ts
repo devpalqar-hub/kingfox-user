@@ -38,8 +38,8 @@ export const PRINT_BOUNDS_800: Record<string, ModelPrintBounds> = {
     back: { x: 210, y: 190, w: 380, h: 370 },
   },
   long: {
-    front: { x: 17, y: 22, w: 377, h: 900 },
-    back: { x: 17, y: 22, w: 377, h: 900 },
+    front: { x: -200, y: -10, w: 777, h: 952 },
+    back: { x: -200, y: -10, w: 777, h: 952 },
   },
   oversize: {
     front: { x: 36, y: 455, w: 763, h: 708 },

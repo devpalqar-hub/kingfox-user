@@ -323,7 +323,6 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
   const bgSnapshot =
     activeView === "back" ? glbSnapshots.back : glbSnapshots.front;
   const categoryId = (project.apparelConfig.categoryId || "").toString();
-  console.log("CATEGORY ID:", categoryId);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // ─── Canvas redraw (background only) ──────────────────────────────────────
