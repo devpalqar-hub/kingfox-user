@@ -42,20 +42,20 @@ const Designing = () => {
         ))}
       </div>
 
-      <div
+      <Link
         className={styles.ctaButton}
-        onClick={() => {
-          const phoneNumber = "918129882245"; 
-          const message = encodeURIComponent(
-            "Hi, I want to design my own tee 👕",
-          );
+        // onClick={() => {
+        //   const phoneNumber = "918129882245"; 
+        //   const message = encodeURIComponent(
+        //     "Hi, I want to design my own tee 👕",
+        //   );
 
-          window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-        }}
-        // href="/design-studio/select"
+        //   window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+        // }}
+        href="/design-studio/select"
       >
         START DESIGNING NOW
-      </div>
+      </Link>
     </section>
   );
 };
