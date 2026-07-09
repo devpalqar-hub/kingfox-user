@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://example.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Kingfox";
 
 export function getSiteUrl() {
