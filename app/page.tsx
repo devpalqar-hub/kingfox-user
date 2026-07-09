@@ -11,7 +11,7 @@ import BreadcrumbJsonLd from "@/lib/BreadcrumbJsonLd";
 
 export async function generateMetadata() {
   return createMetadata({
-    title: "Kingfox",
+    title: "KingfoxClothing",
     description:
       "Discover Kingfox's collection of custom apparel and streetwear. Customize your designs, browse new arrivals, and shop exclusive drops.",
     pathname: "/",
