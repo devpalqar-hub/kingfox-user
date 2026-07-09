@@ -611,7 +611,7 @@ const Header = () => {
           <div
             className={`${styles.drawerSubMenu} ${drawerProductsOpen ? styles.subMenuOpen : ""}`}
           >
-            {categories.map((cat) => (
+            {visibleCategories.map((cat) => (
               <div key={cat.id} className={styles.drawerSubMenuItem}>
                 <Link
                   href={`/products?categoryId=${cat.id}`}

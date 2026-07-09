@@ -5,6 +5,7 @@ import { Rnd } from "react-rnd";
 import { TextLayer, ImageLayer, LineLayer, Layer } from "@/types/design-studio";
 import React, { useRef, useEffect, useCallback } from "react";
 import { getPrintBounds500 } from "@/utils/printBounds";
+import { useLayoutEffect, useState } from "react";
 import styles from "./DesignEditor2D.module.css";
 
 const CANVAS_W = 500;
@@ -13,10 +14,10 @@ const CANVAS_H = 600;
 // CSS dimensions of .printArea (must match page.module.css → .printArea)
 // The canvas is stretched to fill this box, so we need scale factors to
 // align the Rnd selection handles with the actual canvas-drawn visuals.
-const DISPLAY_W = 500;
-const DISPLAY_H = 600;
-const SCALE_X = DISPLAY_W / CANVAS_W; // 1.0
-const SCALE_Y = DISPLAY_H / CANVAS_H; // 1.0
+// const DISPLAY_W = 500;
+// const DISPLAY_H = 600;
+// const SCALE_X = DISPLAY_W / CANVAS_W; // 1.0
+// const SCALE_Y = DISPLAY_H / CANVAS_H; // 1.0
 
 // ─── Image cache ──────────────────────────────────────────────────────────────
 // Keyed by src string. loadImage returns instantly on cache hit.
@@ -213,6 +214,9 @@ async function compositeBackground(
   // ── 3. Printable zone guide (dashed rectangle, drawn under design layers) ─
   const pb = getPrintBounds500(categoryId, view);
   const previewOffset = getPreviewOffset(categoryId, view);
+  // Printable zone guide (dashed rectangle) — commented out for production.
+  // Keep this block commented for future calibration; re-enable when needed.
+  /*
   if (pb) {
     ctx.save();
     ctx.strokeStyle = "rgba(59, 130, 246, 0.65)";
@@ -234,6 +238,7 @@ async function compositeBackground(
     ].forEach(([cx, cy]) => ctx.fillRect(cx - 4, cy - 4, 8, 8));
     ctx.restore();
   }
+  */
 
   return offscreen.transferToImageBitmap();
 }
@@ -270,7 +275,7 @@ function LayerContent({ layer }: { layer: Layer }) {
         style={{
           justifyContent,
           fontFamily: `"${textLayer.fontFamily || "Inter"}", sans-serif`,
-          fontSize: `${textLayer.fontSize * SCALE_X}px`,
+          fontSize: `${textLayer.fontSize}px`,
           fontWeight: textLayer.fontWeight ?? 700,
           color: textLayer.colorHex || "#000",
           letterSpacing: textLayer.letterSpacing
@@ -293,7 +298,7 @@ function LayerContent({ layer }: { layer: Layer }) {
         <div
           style={{
             width: "100%",
-            height: `${lineLayer.thickness * SCALE_Y}px`,
+            height: `${lineLayer.thickness}px`,
             background: lineLayer.colorHex || "#000",
           }}
         />
@@ -318,6 +323,35 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
     updateLayer,
     glbSnapshots,
   } = useDesignStore();
+  const printAreaRef = useRef<HTMLDivElement>(null);
+
+  const [displaySize, setDisplaySize] = useState({
+    width: 500,
+    height: 600,
+  });
+
+  useLayoutEffect(() => {
+    if (!printAreaRef.current) return;
+
+    const update = () => {
+      const rect = printAreaRef.current!.getBoundingClientRect();
+
+      setDisplaySize({
+        width: rect.width,
+        height: rect.height,
+      });
+    };
+
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(printAreaRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const SCALE_X = displaySize.width / CANVAS_W;
+  const SCALE_Y = displaySize.height / CANVAS_H;
 
   const layers = project.designs[activeView] || [];
   const bgSnapshot =
@@ -370,15 +404,15 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
 
   const handleDrag = (id: string, d: { x: number; y: number }) => {
     updateLayer(id, {
-      x: Math.round((d.x - previewOffset.x) / SCALE_X),
-      y: Math.round((d.y - previewOffset.y) / SCALE_Y),
+      x: Math.round((d.x - previewOffset.x * SCALE_X) / SCALE_X),
+      y: Math.round((d.y - previewOffset.y * SCALE_Y) / SCALE_Y),
     });
   };
 
   const handleDragStop = (id: string, d: { x: number; y: number }) => {
     updateLayer(id, {
-      x: Math.round((d.x - previewOffset.x) / SCALE_X),
-      y: Math.round((d.y - previewOffset.y) / SCALE_Y),
+      x: Math.round((d.x - previewOffset.x * SCALE_X) / SCALE_X),
+      y: Math.round((d.y - previewOffset.y * SCALE_Y) / SCALE_Y),
     });
   };
 
@@ -410,6 +444,7 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
     <div className={styles.editorContainer} onClick={handleDeselect}>
       <div className={styles.printAreaWrapper}>
         <div
+          ref={printAreaRef}
           className={styles.printArea}
           data-print-area="true"
           onClick={(e) => e.stopPropagation()}
@@ -448,8 +483,8 @@ export default function DesignEditor2D({ onLayerSelect }: Props) {
                   height: layer.height * SCALE_Y,
                 }}
                 position={{
-                  x: layer.x * SCALE_X + previewOffset.x,
-                  y: layer.y * SCALE_Y + previewOffset.y,
+                  x: layer.x * SCALE_X + previewOffset.x * SCALE_X,
+                  y: layer.y * SCALE_Y + previewOffset.y * SCALE_Y,
                 }}
                 onDrag={(_e, d) => handleDrag(layer.id, d)}
                 onDragStop={(_e, d) => handleDragStop(layer.id, d)}

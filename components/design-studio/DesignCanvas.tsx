@@ -5,6 +5,7 @@ import { useDesignStore } from "@/stores/design-studio/useDesignStore";
 import { getPrintBounds800 } from "@/utils/printBounds";
 
 // Enable this only when calibrating new garments
+// Keep disabled in production — used to draw the blue dashed calibration box.
 const SHOW_CALIBRATION = false;
 
 export function DesignCanvas() {

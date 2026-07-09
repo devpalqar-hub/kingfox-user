@@ -96,12 +96,14 @@
 }
 
 /* Selected: thin dashed blue outline + faint fill so users see what's active */
+/*
 .layerHandle.selected {
+  Commented out visual selection for production; re-enable for debugging
   border: 1.5px dashed #0070f3;
   background: rgba(0, 112, 243, 0.05) !important;
 }
 
-/* Outer glow ring on selected */
+Outer glow ring on selected
 .layerHandle.selected::before {
   content: "";
   position: absolute;
@@ -109,6 +111,14 @@
   border: 1px solid rgba(0, 112, 243, 0.18);
   border-radius: 2px;
   pointer-events: none;
+}
+*/
+
+/* Outer glow ring on selected */
+.layerHandle.selected::before {
+  /* intentionally left empty to satisfy linters; selection visuals are
+     disabled in the large commented block above. */
+  display: none;
 }
 
 /* ── Layer content wrapper (inside Rnd) ─────────────────────────────────── */

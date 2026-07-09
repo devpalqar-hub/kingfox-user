@@ -25,18 +25,23 @@ import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmMod
 import { GLBSnapshotProvider } from "@/components/design-studio/GLBSnapshotProvider";
 import { DesignCanvas } from "@/components/design-studio/DesignCanvas";
 import styles from "./page.module.css";
-import { getCustomDesignTypesAPI, uploadImagesAPI, addToCustomCartAPI } from "@/services/custom-design.service";
+import {
+  getCustomDesignTypesAPI,
+  uploadImagesAPI,
+  addToCustomCartAPI,
+} from "@/services/custom-design.service";
 import { useToast } from "@/context/ToastContext";
 import { ArrowLeft } from "lucide-react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { PrintAreaMeasurer } from "@/components/design-studio/dev/PrintAreaMeasurer";
 import { getPrintBounds500 } from "@/utils/printBounds";
 
 const categoryToShirtType: Record<string, string> = {
-  'oversized-tee': 'OVERSIZED',
-  'classic-hoodie': 'HOODIE',
-  'crewneck-sweatshirt': 'HALF_SLEEVE',
-  'long-sleeve-tee': 'FULL_SLEEVE',
-  'polo-Tshirt': 'POLO'
+  "oversized-tee": "OVERSIZED",
+  "classic-hoodie": "HOODIE",
+  "crewneck-sweatshirt": "HALF_SLEEVE",
+  "long-sleeve-tee": "FULL_SLEEVE",
+  "polo-Tshirt": "POLO",
 };
 
 export default function Workspace({ params }: { params: { id: string } }) {
@@ -77,7 +82,9 @@ export default function Workspace({ params }: { params: { id: string } }) {
   const [activeMobileTab, setActiveMobileTab] = useState<
     "size" | "color" | "elements" | "layers"
   >("size");
-  const [rightPropsLayerId, setRightPropsLayerId] = useState<string | null>(null);
+  const [rightPropsLayerId, setRightPropsLayerId] = useState<string | null>(
+    null,
+  );
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const currentLayers = project.designs[activeView] || [];
@@ -86,7 +93,8 @@ export default function Workspace({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchVariants = async () => {
       try {
-        const shirtType = categoryToShirtType[project.apparelConfig.categoryId] || 'HOODIE';
+        const shirtType =
+          categoryToShirtType[project.apparelConfig.categoryId] || "HOODIE";
         const data = await getCustomDesignTypesAPI(shirtType);
         if (data[shirtType]) {
           setAvailableVariants(data[shirtType]);
@@ -98,8 +106,10 @@ export default function Workspace({ params }: { params: { id: string } }) {
     fetchVariants();
   }, [project.apparelConfig.categoryId]);
 
-  const uniqueSizes = Array.from(new Set(availableVariants.map(v => v.size)));
-  const availableColorsForSize = availableVariants.filter(v => v.size === project.apparelConfig.size);
+  const uniqueSizes = Array.from(new Set(availableVariants.map((v) => v.size)));
+  const availableColorsForSize = availableVariants.filter(
+    (v) => v.size === project.apparelConfig.size,
+  );
 
   // ─── Layer Handlers ───────────────────────────────────────────────────────
 
@@ -128,7 +138,19 @@ export default function Workspace({ params }: { params: { id: string } }) {
     addLayer(newTextLayer);
   };
 
-  const handleBack = () => {
+  const { confirm } = useConfirm();
+
+  const handleBack = async () => {
+    const confirmed = await confirm({
+      title: "Discard changes?",
+      message:
+        "Going back will discard your current design changes. Do you want to continue?",
+      confirmText: "Yes, discard",
+      cancelText: "Cancel",
+    });
+
+    if (!confirmed) return;
+
     useDesignStore.getState().clearAll();
     router.push("/design-studio/select");
   };
@@ -144,13 +166,17 @@ export default function Workspace({ params }: { params: { id: string } }) {
         // printable zone (80% of the zone's dimensions), centered inside it.
         const tempImg = new window.Image();
         tempImg.onload = () => {
-          const categoryId = (project.apparelConfig.categoryId || "").toString();
-          const pb = getPrintBounds500(categoryId, activeView as "front" | "back") ??
-            { x: 100, y: 150, w: 300, h: 300 };
+          const categoryId = (
+            project.apparelConfig.categoryId || ""
+          ).toString();
+          const pb = getPrintBounds500(
+            categoryId,
+            activeView as "front" | "back",
+          ) ?? { x: 100, y: 150, w: 300, h: 300 };
 
           const MAX_W = Math.round(pb.w * 0.8);
           const MAX_H = Math.round(pb.h * 0.8);
-          const iw = tempImg.naturalWidth  || tempImg.width;
+          const iw = tempImg.naturalWidth || tempImg.width;
           const ih = tempImg.naturalHeight || tempImg.height;
           const scale = Math.min(MAX_W / iw, MAX_H / ih, 1);
           const fw = Math.round(iw * scale);
@@ -214,11 +240,11 @@ export default function Workspace({ params }: { params: { id: string } }) {
   const captureScreenshot = (): Promise<string> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const canvas = document.querySelector('canvas');
+        const canvas = document.querySelector("canvas");
         if (canvas) {
-          resolve(canvas.toDataURL('image/png'));
+          resolve(canvas.toDataURL("image/png"));
         } else {
-          resolve('');
+          resolve("");
         }
       }, 500); // give time for threejs to render
     });
@@ -229,7 +255,8 @@ export default function Workspace({ params }: { params: { id: string } }) {
       setIsCheckingOut(true);
 
       // 0. Check authentication
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
       if (!token) {
         showToast("Please log in before checking out.", "error");
         setIsCheckingOut(false);
@@ -262,9 +289,9 @@ export default function Workspace({ params }: { params: { id: string } }) {
 
       // Convert data URL to File
       const dataURLtoFile = (dataurl: string, filename: string) => {
-        const arr = dataurl.split(',');
+        const arr = dataurl.split(",");
         const mimeMatch = arr[0].match(/:(.*?);/);
-        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const mime = mimeMatch ? mimeMatch[1] : "image/png";
         const bstr = atob(arr[1]);
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
@@ -274,27 +301,33 @@ export default function Workspace({ params }: { params: { id: string } }) {
         return new File([u8arr], filename, { type: mime });
       };
 
-      const frontFile = dataURLtoFile(frontDataUrl, 'front.png');
-      const backFile = dataURLtoFile(backDataUrl, 'back.png');
+      const frontFile = dataURLtoFile(frontDataUrl, "front.png");
+      const backFile = dataURLtoFile(backDataUrl, "back.png");
 
       const allImageLayers = [
-        ...project.designs.front.filter(l => l.type === 'image'),
-        ...project.designs.back.filter(l => l.type === 'image'),
-        ...(project.designs.sleeve ? project.designs.sleeve.filter(l => l.type === 'image') : [])
+        ...project.designs.front.filter((l) => l.type === "image"),
+        ...project.designs.back.filter((l) => l.type === "image"),
+        ...(project.designs.sleeve
+          ? project.designs.sleeve.filter((l) => l.type === "image")
+          : []),
       ] as ImageLayer[];
 
       const allTextLayers = [
-        ...project.designs.front.filter(l => l.type === 'text'),
-        ...project.designs.back.filter(l => l.type === 'text'),
-        ...(project.designs.sleeve ? project.designs.sleeve.filter(l => l.type === 'text') : [])
+        ...project.designs.front.filter((l) => l.type === "text"),
+        ...project.designs.back.filter((l) => l.type === "text"),
+        ...(project.designs.sleeve
+          ? project.designs.sleeve.filter((l) => l.type === "text")
+          : []),
       ] as TextLayer[];
 
-      const stickerText = allTextLayers.map(l => l.text).join(' | ');
+      const stickerText = allTextLayers.map((l) => l.text).join(" | ");
 
       const filesToUpload: File[] = [frontFile, backFile];
       allImageLayers.forEach((layer, idx) => {
-        if (layer.asset?.originalUrl?.startsWith('data:image')) {
-          filesToUpload.push(dataURLtoFile(layer.asset.originalUrl, `asset_${idx}.png`));
+        if (layer.asset?.originalUrl?.startsWith("data:image")) {
+          filesToUpload.push(
+            dataURLtoFile(layer.asset.originalUrl, `asset_${idx}.png`),
+          );
         }
       });
 
@@ -333,7 +366,8 @@ export default function Workspace({ params }: { params: { id: string } }) {
           frontImageUrl: uploadedFrontUrl,
           backImageUrl: uploadedBackUrl,
           stickerText: stickerText || undefined,
-          assetImageUrls: assetImageUrls.length > 0 ? assetImageUrls : undefined,
+          assetImageUrls:
+            assetImageUrls.length > 0 ? assetImageUrls : undefined,
         });
       } catch (cartErr: any) {
         console.error("Add to cart failed:", cartErr);
@@ -374,9 +408,22 @@ export default function Workspace({ params }: { params: { id: string } }) {
       </p>
 
       <div style={{ marginBottom: "16px" }}>
-        <span style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 600, color: "#888" }}>SIZE</span>
+        <span
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "#888",
+          }}
+        >
+          SIZE
+        </span>
         <div className={styles.sizeGrid}>
-          {(uniqueSizes.length > 0 ? uniqueSizes : ["XS", "S", "M", "L", "XL", "XXL"]).map((s) => (
+          {(uniqueSizes.length > 0
+            ? uniqueSizes
+            : ["XS", "S", "M", "L", "XL", "XXL"]
+          ).map((s) => (
             <button
               key={s}
               className={`${styles.sizeBtn} ${project.apparelConfig.size === s ? styles.active : ""}`}
@@ -389,20 +436,59 @@ export default function Workspace({ params }: { params: { id: string } }) {
       </div>
 
       <div>
-        <span style={{ display: "block", marginBottom: "8px", fontSize: "12px", fontWeight: 600, color: "#888" }}>QUANTITY</span>
+        <span
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "#888",
+          }}
+        >
+          QUANTITY
+        </span>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button
-            style={{ width: "36px", height: "36px", border: "1px solid #333", background: "transparent", color: "#030303ff", borderRadius: "4px", cursor: "pointer" }}
-            onClick={() => setApparelQuantity(Math.max(1, (project.apparelConfig.quantity || 1) - 1))}
+            style={{
+              width: "36px",
+              height: "36px",
+              border: "1px solid #333",
+              background: "transparent",
+              color: "#030303ff",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              setApparelQuantity(
+                Math.max(1, (project.apparelConfig.quantity || 1) - 1),
+              )
+            }
           >
             -
           </button>
-          <span style={{ color: "#000000ff", width: "24px", textAlign: "center", fontWeight: "bold" }}>
+          <span
+            style={{
+              color: "#000000ff",
+              width: "24px",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
             {project.apparelConfig.quantity || 1}
           </span>
           <button
-            style={{ width: "36px", height: "36px", border: "1px solid #333", background: "transparent", color: "#0c0c0cff", borderRadius: "4px", cursor: "pointer" }}
-            onClick={() => setApparelQuantity((project.apparelConfig.quantity || 1) + 1)}
+            style={{
+              width: "36px",
+              height: "36px",
+              border: "1px solid #333",
+              background: "transparent",
+              color: "#0c0c0cff",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              setApparelQuantity((project.apparelConfig.quantity || 1) + 1)
+            }
           >
             +
           </button>
@@ -432,11 +518,18 @@ export default function Workspace({ params }: { params: { id: string } }) {
               if (!variant.outOfStock) {
                 changeApparelColor(variant.colorCode, variant.color);
               } else {
-                showToast("This color is out of stock in the selected size.", "error");
+                showToast(
+                  "This color is out of stock in the selected size.",
+                  "error",
+                );
               }
             }}
-            style={{ backgroundColor: variant.colorCode, opacity: variant.outOfStock ? 0.3 : 1, cursor: variant.outOfStock ? 'not-allowed' : 'pointer' }}
-            title={`${variant.color} ${variant.outOfStock ? '(Out of Stock)' : ''}`}
+            style={{
+              backgroundColor: variant.colorCode,
+              opacity: variant.outOfStock ? 0.3 : 1,
+              cursor: variant.outOfStock ? "not-allowed" : "pointer",
+            }}
+            title={`${variant.color} ${variant.outOfStock ? "(Out of Stock)" : ""}`}
           />
         ))}
       </div>
@@ -459,7 +552,12 @@ export default function Workspace({ params }: { params: { id: string } }) {
         <label className={styles.elementBtn}>
           <ImageIcon size={18} />
           <span>Upload Image (Decal)</span>
-          <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
         </label>
         <button className={styles.elementBtn} onClick={handleAddText}>
           <Type size={18} />
@@ -483,7 +581,9 @@ export default function Workspace({ params }: { params: { id: string } }) {
         <span className={styles.sectionNumber}>4</span> LAYERS
         <span className={styles.sectionCount}>{currentLayers.length}</span>
       </h3>
-      <p className={styles.sectionDesc}>Manage and arrange your design layers.</p>
+      <p className={styles.sectionDesc}>
+        Manage and arrange your design layers.
+      </p>
       {currentLayers.length === 0 ? (
         <div className={styles.layersEmpty}>
           <Layers size={22} />
@@ -545,7 +645,6 @@ export default function Workspace({ params }: { params: { id: string } }) {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className={styles.workspaceContainer}>
-
       {/* Invisible snapshot generator — triggers GLB render on load/color change */}
       <GLBSnapshotProvider />
       {/* Dev-only: floating 2D print-area calibration tool */}
@@ -558,10 +657,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
        * ══════════════════════════════════════════════════════════════════
        */}
       <div className={styles.mobileTopNav}>
-        <button
-          className={styles.mobileBackButton}
-          onClick={handleBack}
-        >
+        <button className={styles.mobileBackButton} onClick={handleBack}>
           <ArrowLeft size={16} />
         </button>
         {renderViewSwitcher()}
@@ -581,10 +677,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
        */}
       {/* LEFT SIDEBAR */}
       <aside className={styles.leftSidebar}>
-        <button
-          className={styles.backButton}
-          onClick={handleBack}
-        >
+        <button className={styles.backButton} onClick={handleBack}>
           <ArrowLeft size={18} className={styles.backButtonIcon} />
           Back to Apparel Selection
         </button>
@@ -596,7 +689,10 @@ export default function Workspace({ params }: { params: { id: string } }) {
               <span className={styles.leftPropsTitle}>Layer Properties</span>
               <button
                 className={styles.leftPropsClose}
-                onClick={() => { setRightPropsLayerId(null); selectLayer(null); }}
+                onClick={() => {
+                  setRightPropsLayerId(null);
+                  selectLayer(null);
+                }}
                 aria-label="Close properties"
               >
                 ×
@@ -629,22 +725,16 @@ export default function Workspace({ params }: { params: { id: string } }) {
       </div>
 
       {/* RIGHT - 2D PREVIEW */}
-      <div
-        className={styles.rightPanel}
-        onClick={() => selectLayer(null)}
-      >
+      <div className={styles.rightPanel} onClick={() => selectLayer(null)}>
         <div
           className={styles.twoDSection}
           onClick={(e) => e.stopPropagation()}
         >
           <div className={styles.twoDHeader}>
-            <span className={styles.twoDLabel}>
-              Design Preview
-            </span>
+            <span className={styles.twoDLabel}>Design Preview</span>
           </div>
 
           <div className={styles.twoDCanvasArea}>
-
             <button
               className={styles.mobile3dToggle}
               onClick={() => setIsMobile3DOpen(true)}
@@ -721,7 +811,9 @@ export default function Workspace({ params }: { params: { id: string } }) {
               {rightPropsLayerId && (
                 <div className={styles.mobilePropsInline}>
                   <div className={styles.mobilePropsHeader}>
-                    <h4 className={styles.mobilePropsTitle}>Layer Properties</h4>
+                    <h4 className={styles.mobilePropsTitle}>
+                      Layer Properties
+                    </h4>
                     <button
                       className={styles.rightPropsClose}
                       onClick={() => setRightPropsLayerId(null)}
@@ -808,7 +900,9 @@ export default function Workspace({ params }: { params: { id: string } }) {
         <div className={styles.drawerHeader}>
           <div>
             <h3 className={styles.drawerTitle}>3D Preview</h3>
-            <p className={styles.drawerSubtitle}>Drag to rotate and inspect your design.</p>
+            <p className={styles.drawerSubtitle}>
+              Drag to rotate and inspect your design.
+            </p>
           </div>
           <button
             className={styles.drawerCloseBtn}
@@ -823,9 +917,7 @@ export default function Workspace({ params }: { params: { id: string } }) {
           {isMobile3DOpen && <ThreeCanvas />}
         </div>
 
-        <div className={styles.drawerViewSwitcher}>
-          {renderViewSwitcher()}
-        </div>
+        <div className={styles.drawerViewSwitcher}>{renderViewSwitcher()}</div>
       </div>
 
       {/*

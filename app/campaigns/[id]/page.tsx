@@ -215,7 +215,7 @@ export default function CampaignPage() {
                 __html: campaign.description || "",
               }}
             />
-
+{/* 
             {filterLabel && (
               <div className={styles.filterBadge}>
                 {campaign.filterType?.toUpperCase() === "CATEGORY" && (
@@ -231,7 +231,7 @@ export default function CampaignPage() {
                   {campaign.filterType?.toUpperCase()}: {filterLabel}
                 </span>
               </div>
-            )}
+            )} */}
 
             {(campaign.minPurchaseAmount || campaign.maxPurchaseAmount) && (
               <div className={styles.purchaseLimits}>
@@ -387,7 +387,7 @@ export default function CampaignPage() {
         </div>
 
         {/* ── Timeline ── */}
-        <section className={styles.timelineCard}>
+        {/* <section className={styles.timelineCard}>
           <h3 className={styles.timelineTitle}>CAMPAIGN TIMELINE</h3>
           <div className={styles.timelineRow}>
             <div className={styles.timePoint}>
@@ -418,7 +418,7 @@ export default function CampaignPage() {
               <p>{formatDateFull(campaign.endDate)}</p>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
 
       {/* ── Subscribe Section ── */}
