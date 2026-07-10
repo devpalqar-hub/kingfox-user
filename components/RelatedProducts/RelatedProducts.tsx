@@ -13,10 +13,7 @@ type Props = {
   currentProductId: number;
 };
 
-const RelatedProducts = ({
-  categoryId,
-  currentProductId,
-}: Props) => {
+const RelatedProducts = ({ categoryId, currentProductId }: Props) => {
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
@@ -75,9 +72,7 @@ const RelatedProducts = ({
   return (
     <section className={styles.section}>
       <div className={styles.header}>
-        <h2 className={styles.title}>
-          RELATED PRODUCTS
-        </h2>
+        <h2 className={styles.title}>RELATED PRODUCTS</h2>
       </div>
 
       <div className={styles.grid}>
@@ -86,7 +81,7 @@ const RelatedProducts = ({
             key={product.id}
             id={product.id}
             slug={product.slug}
-            name={product.name}
+            name={product.onlineName || product.name}
             price={String(product.priceRange?.min || 0)}
             rating={4}
             image={product.images?.[0]}
@@ -97,9 +92,7 @@ const RelatedProducts = ({
 
       <button
         className={styles.viewAll}
-        onClick={() =>
-          router.push(`/products?categoryId=${categoryId}`)
-        }
+        onClick={() => router.push(`/products?categoryId=${categoryId}`)}
       >
         VIEW ALL PRODUCTS
       </button>
