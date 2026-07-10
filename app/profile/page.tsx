@@ -311,7 +311,9 @@ const ProfilePage = () => {
             <div key={o.id} className={styles.row}>
               <span>{o.orderNumber}</span>
               <span>{new Date(o.createdAt).toDateString()}</span>
-              <span>{o.items.length} ITEMS</span>
+              <span>
+                {o.items.length + (o.customDesignItems?.length || 0)} ITEMS
+              </span>
               <span>₹{o.finalAmount}</span>
               <span className={styles.status}>{formatStatus(o.status)}</span>
             </div>

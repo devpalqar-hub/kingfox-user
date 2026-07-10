@@ -24,8 +24,6 @@ export interface OrderDetailsItem {
   } | null; // ✅ VERY IMPORTANT
 }
 
-
-
 export interface Shipment {
   id: number;
   providerName: string | null;
@@ -49,6 +47,7 @@ export interface OrderDetailsResponse {
   updatedAt: string;
 
   items: OrderDetailsItem[];
+  customDesignItems?: OrderDetailsCustomItem[];
   fulfillmentType: string;
 
   shipments: Shipment[];

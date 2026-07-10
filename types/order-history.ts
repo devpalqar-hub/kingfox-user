@@ -9,12 +9,18 @@ export interface OrderHistoryItem {
   items: {
     id: number;
     quantity: number;
-    variant: {
-      image: string;
-      product: {
-        name: string;
+    variant?: {
+      image?: string;
+      product?: {
+        name?: string;
       };
     };
+  }[];
+  customDesignItems?: {
+    id: number;
+    quantity: number;
+    price: string;
+    shirtType: string;
   }[];
 }
 

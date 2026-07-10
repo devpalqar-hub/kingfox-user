@@ -23,6 +23,20 @@ type StoredCheckoutItem = {
   price: number | string;
 };
 
+type StoredCheckoutCustomItem = {
+  customDesignVariantId?: number;
+  cartItemId?: number;
+  shirtType: string;
+  size: string;
+  color: string;
+  quantity: number;
+  price: number | string;
+  frontImageUrl: string;
+  backImageUrl?: string;
+  stickerText?: string;
+  assetImageUrls?: string[];
+};
+
 type FallbackOrderItem = {
   id?: number;
   variantId?: number;
@@ -53,6 +67,7 @@ type FallbackOrder = {
     address?: string;
   } | null;
   items: FallbackOrderItem[];
+  customDesignItems?: StoredCheckoutCustomItem[];
 };
 
 const formatCurrency = (value?: number | string | null) => {
@@ -65,6 +80,7 @@ const buildStoredOrder = (orderId?: string | null): FallbackOrder | null => {
 
   const rawOrder = localStorage.getItem("lastOrderData");
   const rawItems = localStorage.getItem("lastCheckoutItems");
+  const rawCustomItems = localStorage.getItem("lastCheckoutCustomItems");
 
   if (!rawOrder) return null;
 
@@ -72,6 +88,9 @@ const buildStoredOrder = (orderId?: string | null): FallbackOrder | null => {
     const parsedOrder = JSON.parse(rawOrder) as FallbackOrder;
     const parsedItems = rawItems
       ? (JSON.parse(rawItems) as StoredCheckoutItem[])
+      : [];
+    const parsedCustomItems = rawCustomItems
+      ? (JSON.parse(rawCustomItems) as StoredCheckoutCustomItem[])
       : [];
 
     if (
@@ -103,6 +122,7 @@ const buildStoredOrder = (orderId?: string | null): FallbackOrder | null => {
     return {
       ...parsedOrder,
       items,
+      customDesignItems: parsedCustomItems,
       fulfillmentType:
         parsedOrder.fulfillmentType ||
         (parsedOrder.pickupBranch ? "PICKUP" : "DELIVERY"),
@@ -130,6 +150,7 @@ export default function OrderConfirmation({
 
     clearGuestCart();
     localStorage.removeItem("lastCheckoutItems");
+    localStorage.removeItem("lastCheckoutCustomItems");
   }, [token]);
 
   useEffect(() => {
@@ -224,6 +245,29 @@ export default function OrderConfirmation({
         </div>
       ))}
 
+      {order.customDesignItems?.map((item, index) => (
+        <div key={`custom-${item.id}-${index}`} className={styles.itemRow}>
+          <img
+            src={item.frontImageUrl || "/placeholder-product.png"}
+            alt={`${item.shirtType} Custom Design`}
+            className={styles.productImg}
+          />
+
+          <div className={styles.itemInfo}>
+            <span className={styles.itemName}>{item.shirtType} (Custom)</span>
+
+            <span className={styles.itemMeta}>
+              {item.color || "-"}, {item.size || "-"} | Qty: {item.quantity}
+            </span>
+            {item.stickerText && (
+              <span className={styles.itemMeta}>Text: {item.stickerText}</span>
+            )}
+          </div>
+
+          <div className={styles.price}>{formatCurrency(item.price)}</div>
+        </div>
+      ))}
+
       <div className={styles.summaryRow}>
         <span>Subtotal</span>
         <span>{formatCurrency(order.subtotal)}</span>
@@ -259,8 +303,8 @@ export default function OrderConfirmation({
               <div>
                 <span className={styles.cardLabel}>ESTIMATED DELIVERY</span>
                 <p className={styles.cardContent}>
-                  <MdLocalShipping className={styles.deliveryIcon} />
-                  3 - 5 Business Days
+                  <MdLocalShipping className={styles.deliveryIcon} />3 - 5
+                  Business Days
                 </p>
               </div>
             </>
@@ -270,8 +314,7 @@ export default function OrderConfirmation({
 
               <div className={styles.branchDetails}>
                 <p className={styles.branchName}>
-                  {order.pickupBranch?.name ||
-                    "Selected store pickup branch"}
+                  {order.pickupBranch?.name || "Selected store pickup branch"}
                 </p>
 
                 <p className={styles.branchAddress}>
@@ -308,10 +351,7 @@ export default function OrderConfirmation({
         </Link>
       </div>
 
-      <button
-        className={styles.continueBtn}
-        onClick={() => router.push("/")}
-      >
+      <button className={styles.continueBtn} onClick={() => router.push("/")}>
         CONTINUE SHOPPING
       </button>
     </div>

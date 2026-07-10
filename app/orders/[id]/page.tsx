@@ -261,7 +261,10 @@ const OrderDetailsPage = () => {
           {/* ITEMS */}
           <div className={styles.itemsSection}>
             <div className={styles.itemsHeader}>
-              <h3>ORDERED ITEMS (1)</h3>
+              <h3>
+                ORDERED ITEMS (
+                {order.items.length + (order.customDesignItems?.length || 0)})
+              </h3>
             </div>
 
             {order.items.map((item) => (
@@ -341,6 +344,47 @@ const OrderDetailsPage = () => {
                         Review available after product delivered
                       </p>
                     )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {order.customDesignItems?.map((item) => (
+              <div key={`custom-${item.id}`} className={styles.itemCard}>
+                <div className={styles.imageBox}>
+                  <img src={item.frontImageUrl} />
+                </div>
+
+                <div className={styles.itemDetails}>
+                  <div className={styles.topRow}>
+                    <h2>{item.shirtType} (Custom)</h2>
+                    <span className={styles.price}>₹{item.price}</span>
+                  </div>
+
+                  <div className={styles.meta}>
+                    <div>
+                      <span className={styles.label}>COLOUR</span>
+                      <div className={styles.value}>
+                        {item.color.toUpperCase()}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className={styles.label}>SIZE</span>
+                      <div className={styles.value}>{item.size}</div>
+                    </div>
+
+                    <div>
+                      <span className={styles.label}>QTY</span>
+                      <div className={styles.value}>{item.quantity}</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.divider}></div>
+
+                  <div className={styles.subtotalRow}>
+                    <span>ITEM SUBTOTAL</span>
+                    <span className={styles.subtotal}>₹{item.subtotal}</span>
                   </div>
                 </div>
               </div>

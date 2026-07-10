@@ -94,24 +94,22 @@ export default function CheckoutPage() {
     return `${baseUrl}${image}`;
   };
 
-  const localSubtotal = useMemo(
-    () => {
-      const normalTotal = items.reduce(
-        (total, item) => total + Number(item.price) * item.quantity,
-        0,
-      );
-      const customTotal = customItems.reduce(
-        (total, item) => total + Number(item.price) * item.quantity,
-        0,
-      );
-      return normalTotal + customTotal;
-    },
-    [items, customItems],
-  );
+  const localSubtotal = useMemo(() => {
+    const normalTotal = items.reduce(
+      (total, item) => total + Number(item.price) * item.quantity,
+      0,
+    );
+    const customTotal = customItems.reduce(
+      (total, item) => total + Number(item.price) * item.quantity,
+      0,
+    );
+    return normalTotal + customTotal;
+  }, [items, customItems]);
 
   const summarySubtotal = preview?.subtotal ?? localSubtotal;
   const summaryShipping = preview?.shippingCharge ?? 0;
   const summaryTotal = preview?.finalAmount ?? localSubtotal;
+  const hasCustomOrders = customItems.length > 0;
 
   useEffect(() => {
     const loadCart = async () => {
@@ -131,6 +129,12 @@ export default function CheckoutPage() {
 
     loadCart();
   }, [token]);
+
+  useEffect(() => {
+    if (hasCustomOrders && paymentMethod !== "RAZORPAY") {
+      setPaymentMethod("RAZORPAY");
+    }
+  }, [hasCustomOrders, paymentMethod]);
 
   useEffect(() => {
     const loadPreview = async () => {
@@ -305,7 +309,7 @@ export default function CheckoutPage() {
     //   return;
     // }
 
-    if (paymentMethod === "COD" && !selectedBranch) {
+    if (paymentMethod === "COD" && !hasCustomOrders && !selectedBranch) {
       showToast("Please select a pickup branch", "error");
       return;
     }
@@ -364,6 +368,10 @@ export default function CheckoutPage() {
         localStorage.setItem("lastOrderId", response.order.id.toString());
         localStorage.setItem("lastOrderData", JSON.stringify(response.order));
         localStorage.setItem("lastCheckoutItems", JSON.stringify(items));
+        localStorage.setItem(
+          "lastCheckoutCustomItems",
+          JSON.stringify(customItems),
+        );
       }
 
       if (paymentMethod === "RAZORPAY") {
@@ -512,22 +520,24 @@ export default function CheckoutPage() {
               <MdCreditCard /> <MdAccountBalance />
             </div>
           </div>
-          <div
-            className={styles.paymentCardActive}
-            onClick={() => setPaymentMethod("COD")}
-          >
-            <input
-              type="radio"
-              checked={paymentMethod === "COD"}
-              onChange={() => setPaymentMethod("COD")}
-            />
-            <div className={styles.paymentInfo}>
-              <strong>STORE PICKUP (PAY AT STORE)</strong>
-              <p>SELECT A BRANCH AND PAY WHEN YOU PICK UP</p>
+          {!hasCustomOrders && (
+            <div
+              className={styles.paymentCardActive}
+              onClick={() => setPaymentMethod("COD")}
+            >
+              <input
+                type="radio"
+                checked={paymentMethod === "COD"}
+                onChange={() => setPaymentMethod("COD")}
+              />
+              <div className={styles.paymentInfo}>
+                <strong>STORE PICKUP (PAY AT STORE)</strong>
+                <p>SELECT A BRANCH AND PAY WHEN YOU PICK UP</p>
+              </div>
+              <MdPayments />
             </div>
-            <MdPayments />
-          </div>
-          {paymentMethod === "COD" && (
+          )}
+          {paymentMethod === "COD" && !hasCustomOrders && (
             <div className={styles.inputGroup}>
               <label>SELECT PICKUP BRANCH</label>
               <select
@@ -600,7 +610,10 @@ export default function CheckoutPage() {
           ))}
 
           {customItems.map((item, idx) => (
-            <div key={item.cartItemId || `custom-${idx}`} className={styles.productRow}>
+            <div
+              key={item.cartItemId || `custom-${idx}`}
+              className={styles.productRow}
+            >
               <div className={styles.productImg}>
                 <img
                   src={getImageSrc(item.frontImageUrl)}
@@ -614,7 +627,13 @@ export default function CheckoutPage() {
                   SIZE: {item.size} | COLOR: {item.color}
                 </p>
                 {item.stickerText && (
-                  <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+                  <p
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#666",
+                      marginTop: "4px",
+                    }}
+                  >
                     Text: {item.stickerText}
                   </p>
                 )}
@@ -622,7 +641,9 @@ export default function CheckoutPage() {
                 <div className={styles.priceRow}>
                   <span className={styles.price}>₹{item.price}</span>
                   <div className={styles.quantity}>
-                    <span style={{ margin: '0 8px' }}>Qty: {item.quantity}</span>
+                    <span style={{ margin: "0 8px" }}>
+                      Qty: {item.quantity}
+                    </span>
                   </div>
                 </div>
               </div>
