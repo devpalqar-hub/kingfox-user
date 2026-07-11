@@ -48,7 +48,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 //   offsetX — canvas px. Positive = shift right,  negative = shift left.
 //   offsetY — canvas px. Positive = shift down,   negative = shift up.
 interface GuideCalibration {
-  src: string; // path relative to public/
+  src?: string; // path relative to public/
+  srcFront?: string;
+  srcBack?: string;
   scale: number; // multiplier on top of fit-to-canvas scale
   offsetX: number; // horizontal nudge in canvas pixels
   offsetY: number; // vertical nudge in canvas pixels
@@ -56,13 +58,15 @@ interface GuideCalibration {
 
 const GUIDE_CALIBRATIONS: Record<string, GuideCalibration> = {
   hoodie: {
-    src: "/templates/hoodie-template.png",
+    srcFront: "/templates/hoodie-front.png",
+    srcBack: "/templates/hoodie-back.png",
     scale: 0.76, // ← adjust to shrink/grow the guide
     offsetX: 45, // ← adjust to move guide left (−) / right (+)
     offsetY: 0, // ← adjust to move guide up (−) / down (+)
   },
   oversize: {
-    src: "/templates/hoodie-template.png",
+    srcFront: "/templates/hoodie-front.png",
+    srcBack: "/templates/hoodie-back.png",
     scale: 0.82, // ← adjust to shrink/grow the guide
     offsetX: 0, // ← adjust to move guide left (−) / right (+)
     offsetY: -80, // ← adjust to move guide up (−) / down (+)
@@ -180,20 +184,26 @@ async function compositeBackground(
     const guide = getGuideCalibration(categoryId);
     if (guide) {
       try {
-        const tmpl = await loadImage(guide.src);
-        if (cancelled.v) return null;
+        const src =
+          view === "front"
+            ? guide.srcFront || guide.src
+            : guide.srcBack || guide.src;
+        if (src) {
+          const tmpl = await loadImage(src);
+          if (cancelled.v) return null;
 
-        const fitScale = Math.min(
-          CANVAS_W / tmpl.naturalWidth,
-          CANVAS_H / tmpl.naturalHeight,
-        );
-        const scale = fitScale * guide.scale;
-        const drawW = tmpl.naturalWidth * scale;
-        const drawH = tmpl.naturalHeight * scale;
-        const x = (CANVAS_W - drawW) / 2 + guide.offsetX;
-        const y = (CANVAS_H - drawH) / 2 + guide.offsetY;
+          const fitScale = Math.min(
+            CANVAS_W / tmpl.naturalWidth,
+            CANVAS_H / tmpl.naturalHeight,
+          );
+          const scale = fitScale * guide.scale;
+          const drawW = tmpl.naturalWidth * scale;
+          const drawH = tmpl.naturalHeight * scale;
+          const x = (CANVAS_W - drawW) / 2 + guide.offsetX;
+          const y = (CANVAS_H - drawH) / 2 + guide.offsetY;
 
-        ctx.drawImage(tmpl, x, y, drawW, drawH);
+          ctx.drawImage(tmpl, x, y, drawW, drawH);
+        }
       } catch (e) {
         console.warn(
           `[2D Editor] guide template load failed (${categoryId}):`,

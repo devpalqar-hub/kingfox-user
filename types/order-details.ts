@@ -1,3 +1,17 @@
+export interface OrderDetailsCustomItem {
+  id: number;
+  quantity: number;
+  price: string;
+  subtotal: string;
+  shirtType: string;
+  size: string;
+  color: string;
+  frontImageUrl: string;
+  backImageUrl?: string;
+  stickerText?: string;
+  assetImageUrls?: string[];
+}
+
 export interface OrderDetailsItem {
   id: number;
   quantity: number;

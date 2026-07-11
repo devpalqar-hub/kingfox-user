@@ -246,7 +246,10 @@ export default function OrderConfirmation({
       ))}
 
       {order.customDesignItems?.map((item, index) => (
-        <div key={`custom-${item.id}-${index}`} className={styles.itemRow}>
+        <div
+          key={`custom-${item.shirtType}-${index}`}
+          className={styles.itemRow}
+        >
           <img
             src={item.frontImageUrl || "/placeholder-product.png"}
             alt={`${item.shirtType} Custom Design`}
