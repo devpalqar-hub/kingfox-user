@@ -19,10 +19,11 @@ const Footer = () => {
       try {
         const data = await getAllCategories();
 
-        // ✅ TAKE FIRST 4 DIRECTLY
-        const firstFour = data.slice(0, 4);
+        const visibleCategories = (data || []).filter(
+          (cat: { isOnline?: boolean }) => cat.isOnline === true,
+        );
 
-        setCategories(firstFour);
+        setCategories(visibleCategories);
       } catch (err) {
         console.error(err);
       }
