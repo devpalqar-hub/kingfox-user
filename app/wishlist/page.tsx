@@ -23,16 +23,37 @@ import { useConfirm } from "@/context/ConfirmContext";
 import { addToCartAPI } from "@/services/cart.service";
 import { moveAllWishlistToCartAPI } from "@/services/cart.service";
 import { getProductPath } from "@/lib/product-path";
+import { Product } from "@/types/product";
 
 type WishlistProductLike = {
-  id?: number;
-  variantId?: number;
-  onlineName?: string | null;
-  name?: string | null;
-  product?: {
+  id: number;
+  variantId: number;
+  createdAt?: string;
+
+  product: {
+    id: number;
+    name: string;
     onlineName?: string | null;
-    name?: string | null;
-  } | null;
+    slug?: string;
+
+    images: string[];
+
+    category?: string;
+
+    brand?: {
+      id?: number;
+      name?: string;
+    } | null;
+  };
+
+  variant: {
+    id: number;
+    price: number;
+    image: string;
+    size: string;
+    color: string;
+    colorCode: string;
+  };
 };
 
 export default function WishlistPage() {
@@ -41,7 +62,7 @@ export default function WishlistPage() {
   const router = useRouter();
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const [wishlist, setWishlist] = useState<WishlistProductLike[]>([]);
-  const [newArrivals, setNewArrivals] = useState<WishlistProductLike[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
 
   const normalizeWishlistItems = (
     items:
@@ -69,6 +90,7 @@ export default function WishlistPage() {
     const fetchWishlist = async () => {
       try {
         const data = await getWishList();
+        console.log(data);
         setWishlist(normalizeWishlistItems(data));
       } catch (err) {
         console.error(err);
@@ -81,9 +103,16 @@ export default function WishlistPage() {
   const showControls = newArrivals.length > 4;
   const scrollAmount = 300;
 
-  const getDisplayName = (product: WishlistProductLike | null | undefined) => {
-    if (product?.onlineName?.trim()) {
-      return product.onlineName;
+  const getDisplayName = (
+    product:
+      | { name?: string | null; onlineName?: string | null }
+      | null
+      | undefined,
+  ) => {
+    const onlineName = product?.onlineName?.trim();
+
+    if (onlineName) {
+      return onlineName;
     }
 
     return product?.name || "";
@@ -376,7 +405,7 @@ export default function WishlistPage() {
             {newArrivals.map((item) => (
               <div key={item.id} className={styles.card}>
                 <div className={styles.imageWrapper}>
-                  <img src={item.images?.[0]} alt={item.name} />
+                  <img src={item.images?.[0]} alt={getDisplayName(item)} />
 
                   <div
                     className={styles.quickViewIcon}

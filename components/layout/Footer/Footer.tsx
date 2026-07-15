@@ -35,7 +35,9 @@ const Footer = () => {
   const isWorkspace = pathname.startsWith("/design-studio/workspace");
 
   return (
-    <footer className={`${styles.footer} ${isWorkspace ? styles.hideOnMobileWorkspace : ""}`}>
+    <footer
+      className={`${styles.footer} ${isWorkspace ? styles.hideOnMobileWorkspace : ""}`}
+    >
       <div className={styles.container}>
         <div className={styles.grid}>
           {/* Company */}
