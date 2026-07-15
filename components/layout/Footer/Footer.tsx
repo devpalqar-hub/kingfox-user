@@ -111,7 +111,7 @@ const Footer = () => {
               ))}
 
               <li>
-                <Link href="/custom" className={styles.link}>
+                <Link href="/design-studio/select" className={styles.link}>
                   Custom Designer
                 </Link>
               </li>

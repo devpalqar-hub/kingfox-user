@@ -48,8 +48,23 @@ const CartPage = () => {
     0,
   );
 
+  const getDisplayName = (item: any) => {
+    if (item?.onlineName?.trim()) {
+      return item.onlineName;
+    }
+
+    if (item?.name?.trim()) {
+      return item.name;
+    }
+
+    return item?.productName || "";
+  };
+
   const isCartEmpty = token
-    ? !cartData || (cartData.items.length === 0 && (!cartData.customDesignItems || cartData.customDesignItems.length === 0))
+    ? !cartData ||
+      (cartData.items.length === 0 &&
+        (!cartData.customDesignItems ||
+          cartData.customDesignItems.length === 0))
     : guestCart.length === 0;
 
   const loadPreview = async (guest?: CartItem[]) => {
@@ -70,7 +85,7 @@ const CartPage = () => {
           },
           {
             headers: {
-              "Skip-Auth-Error": true, 
+              "Skip-Auth-Error": true,
             },
           },
         );
@@ -129,12 +144,12 @@ const CartPage = () => {
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder-product.png";
                       }}
-                      alt={item.productName}
+                      alt={getDisplayName(item)}
                     />
                   </div>
 
                   <div className={styles.itemDetails}>
-                    <h3>{item.productName}</h3>
+                    <h3>{getDisplayName(item)}</h3>
                     <p>₹{item.price}</p>
                     <p>
                       {item.size} / {item.color}
@@ -205,65 +220,96 @@ const CartPage = () => {
           )}
 
           {/* Customized Orders */}
-          {token && cartData?.customDesignItems && cartData.customDesignItems.length > 0 && (
-            <>
-              <h2 className={styles.sectionHeading} style={{ marginTop: '24px' }}>Customized Orders</h2>
-              {cartData.customDesignItems.map((customItem, idx) => (
-                <div key={customItem.cartItemId || idx} className={styles.cartItem}>
-                  <div className={styles.imageWrapper} style={{ display: 'flex', gap: '8px' }}>
-                    <img
-                      src={getImageSrc(customItem.frontImageUrl)}
-                      onError={(e) => { e.currentTarget.src = "/placeholder-product.png"; }}
-                      alt={`Front design ${customItem.shirtType}`}
-                      style={{ width: '50%' }}
-                    />
-                    {customItem.backImageUrl && (
+          {token &&
+            cartData?.customDesignItems &&
+            cartData.customDesignItems.length > 0 && (
+              <>
+                <h2
+                  className={styles.sectionHeading}
+                  style={{ marginTop: "24px" }}
+                >
+                  Customized Orders
+                </h2>
+                {cartData.customDesignItems.map((customItem, idx) => (
+                  <div
+                    key={customItem.cartItemId || idx}
+                    className={styles.cartItem}
+                  >
+                    <div
+                      className={styles.imageWrapper}
+                      style={{ display: "flex", gap: "8px" }}
+                    >
                       <img
-                        src={getImageSrc(customItem.backImageUrl)}
-                        onError={(e) => { e.currentTarget.src = "/placeholder-product.png"; }}
-                        alt={`Back design ${customItem.shirtType}`}
-                        style={{ width: '50%' }}
+                        src={getImageSrc(customItem.frontImageUrl)}
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder-product.png";
+                        }}
+                        alt={`Front design ${customItem.shirtType}`}
+                        style={{ width: "50%" }}
                       />
-                    )}
-                  </div>
-
-                  <div className={styles.itemDetails}>
-                    <h3>{customItem.shirtType} (Custom)</h3>
-                    <p>₹{customItem.price}</p>
-                    <p>
-                      {customItem.size} / {customItem.color}
-                    </p>
-                    {customItem.stickerText && <p>Text: {customItem.stickerText}</p>}
-
-                    <div className={styles.quantity}>
-                      <span>Qty: {customItem.quantity}</span>
+                      {customItem.backImageUrl && (
+                        <img
+                          src={getImageSrc(customItem.backImageUrl)}
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder-product.png";
+                          }}
+                          alt={`Back design ${customItem.shirtType}`}
+                          style={{ width: "50%" }}
+                        />
+                      )}
                     </div>
 
-                    <button
-                      className={styles.removeBtn}
-                      onClick={async () => {
-                        // Assuming custom items can be removed via same endpoint using cartItemId or variantId. Adjust backend as needed.
-                        if (customItem.cartItemId || customItem.customDesignVariantId) {
-                          try {
-                            await removeCartItemAPI(customItem.customDesignVariantId || customItem.cartItemId!);
-                            showToast("Custom item removed from cart", "info");
-                            window.dispatchEvent(new Event("cartUpdated"));
-                            const data = await getCartAPI();
-                            setCartData(data);
-                            await loadPreview();
-                          } catch (err) {
-                            showToast("Failed to remove custom item", "error");
+                    <div className={styles.itemDetails}>
+                      <h3>{customItem.shirtType} (Custom)</h3>
+                      <p>₹{customItem.price}</p>
+                      <p>
+                        {customItem.size} / {customItem.color}
+                      </p>
+                      {customItem.stickerText && (
+                        <p>Text: {customItem.stickerText}</p>
+                      )}
+
+                      <div className={styles.quantity}>
+                        <span>Qty: {customItem.quantity}</span>
+                      </div>
+
+                      <button
+                        className={styles.removeBtn}
+                        onClick={async () => {
+                          // Assuming custom items can be removed via same endpoint using cartItemId or variantId. Adjust backend as needed.
+                          if (
+                            customItem.cartItemId ||
+                            customItem.customDesignVariantId
+                          ) {
+                            try {
+                              await removeCartItemAPI(
+                                customItem.customDesignVariantId ||
+                                  customItem.cartItemId!,
+                              );
+                              showToast(
+                                "Custom item removed from cart",
+                                "info",
+                              );
+                              window.dispatchEvent(new Event("cartUpdated"));
+                              const data = await getCartAPI();
+                              setCartData(data);
+                              await loadPreview();
+                            } catch (err) {
+                              showToast(
+                                "Failed to remove custom item",
+                                "error",
+                              );
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                        }}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </>
-          )}
+                ))}
+              </>
+            )}
 
           {/* Guest cart items */}
           {!token &&

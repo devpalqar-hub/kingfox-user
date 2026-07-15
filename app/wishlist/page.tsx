@@ -3,7 +3,6 @@ import styles from "./wishlist.module.css";
 import {
   Heart,
   ShoppingCart,
-  Bell,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -25,19 +24,52 @@ import { addToCartAPI } from "@/services/cart.service";
 import { moveAllWishlistToCartAPI } from "@/services/cart.service";
 import { getProductPath } from "@/lib/product-path";
 
+type WishlistProductLike = {
+  id?: number;
+  variantId?: number;
+  onlineName?: string | null;
+  name?: string | null;
+  product?: {
+    onlineName?: string | null;
+    name?: string | null;
+  } | null;
+};
+
 export default function WishlistPage() {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const router = useRouter();
   const sliderRef = useRef<HTMLDivElement | null>(null);
-  const [wishlist, setWishlist] = useState<any[]>([]);
-  const [newArrivals, setNewArrivals] = useState<any[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistProductLike[]>([]);
+  const [newArrivals, setNewArrivals] = useState<WishlistProductLike[]>([]);
+
+  const normalizeWishlistItems = (
+    items:
+      | WishlistProductLike[]
+      | { items?: WishlistProductLike[]; data?: WishlistProductLike[] }
+      | null
+      | undefined,
+  ): WishlistProductLike[] => {
+    if (Array.isArray(items)) {
+      return items;
+    }
+
+    if (Array.isArray(items?.items)) {
+      return items.items;
+    }
+
+    if (Array.isArray(items?.data)) {
+      return items.data;
+    }
+
+    return [];
+  };
+
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
         const data = await getWishList();
-        console.log("here", data);
-        setWishlist(data);
+        setWishlist(normalizeWishlistItems(data));
       } catch (err) {
         console.error(err);
       }
@@ -48,6 +80,14 @@ export default function WishlistPage() {
 
   const showControls = newArrivals.length > 4;
   const scrollAmount = 300;
+
+  const getDisplayName = (product: WishlistProductLike | null | undefined) => {
+    if (product?.onlineName?.trim()) {
+      return product.onlineName;
+    }
+
+    return product?.name || "";
+  };
 
   const scrollLeft = () => {
     if (!sliderRef.current || newArrivals.length <= 4) return;
@@ -116,7 +156,7 @@ export default function WishlistPage() {
     }
   };
 
-  const handleMoveToCart = async (item: any) => {
+  const handleMoveToCart = async (item: WishlistProductLike) => {
     try {
       const variantId = item.variantId;
 
@@ -165,25 +205,35 @@ export default function WishlistPage() {
 
     if (!confirmed) return;
 
+    const previousWishlist = [...wishlist];
+    setWishlist([]);
+    window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("wishlistUpdated"));
+
     try {
       const res = await moveAllWishlistToCartAPI();
+      const payload = res?.data ?? res;
+      const addedCount = payload?.addedCount ?? payload?.data?.addedCount ?? 0;
+      const skippedCount =
+        payload?.skippedCount ?? payload?.data?.skippedCount ?? 0;
 
-      const data = res.data;
-
-      if (data.addedCount > 0) {
-        showToast(`${data.addedCount} items moved to cart`, "success");
+      if (addedCount > 0) {
+        showToast(`${addedCount} items moved to cart`, "success");
       }
 
-      if (data.skippedCount > 0) {
-        showToast(`${data.skippedCount} items already in cart`, "info");
+      if (skippedCount > 0) {
+        showToast(`${skippedCount} items already in cart`, "info");
       }
 
       const updatedWishlist = await getWishList();
-      setWishlist(updatedWishlist);
+      setWishlist(normalizeWishlistItems(updatedWishlist));
 
       window.dispatchEvent(new Event("cartUpdated"));
       window.dispatchEvent(new Event("wishlistUpdated"));
     } catch (err) {
+      setWishlist(previousWishlist);
+      window.dispatchEvent(new Event("cartUpdated"));
+      window.dispatchEvent(new Event("wishlistUpdated"));
       console.error(err);
       showToast("Failed to move items", "error");
     }
@@ -196,7 +246,12 @@ export default function WishlistPage() {
           <div className={styles.titleArea}>
             <h1>Your Wishlist</h1>
             <span className={styles.itemCount}>({wishlist.length} ITEMS)</span>
-            <button onClick={() => router.push("/")} className={styles.continueShopping}>Continue Shopping</button>
+            <button
+              onClick={() => router.push("/")}
+              className={styles.continueShopping}
+            >
+              Continue Shopping
+            </button>
           </div>
 
           <div className={styles.headerButtons}>
@@ -231,7 +286,7 @@ export default function WishlistPage() {
                       item.product?.images?.[0] ||
                       "/placeholder-product.png"
                     }
-                    alt={item.product?.name}
+                    alt={getDisplayName(item.product)}
                   />
                   <div
                     className={styles.wishlistIcon}
@@ -256,13 +311,15 @@ export default function WishlistPage() {
                 </div>
 
                 <div className={styles.productInfo}>
-                  <h3>{product.name}</h3>
+                  <h3>{getDisplayName(product)}</h3>
 
                   {/* ✅ Variant Info */}
                   <div className={styles.variantInfo}>
                     <span
                       className={styles.colorDot}
-                      style={{ backgroundColor: item.variant?.color?.toLowerCase() }}
+                      style={{
+                        backgroundColor: item.variant?.color?.toLowerCase(),
+                      }}
                     />
                     <span className={styles.variantText}>
                       {item.variant?.color}
@@ -333,7 +390,7 @@ export default function WishlistPage() {
                 </div>
 
                 <div className={styles.productInfo}>
-                  <h3>{item.name}</h3>
+                  <h3>{getDisplayName(item)}</h3>
                   <span className={styles.price}>
                     ₹{item.priceRange?.min || 0}
                   </span>
