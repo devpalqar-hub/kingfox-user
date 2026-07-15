@@ -1,6 +1,6 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import styles from './New-Arrivals.module.css';
+"use client";
+import React, { useState, useEffect } from "react";
+import styles from "./New-Arrivals.module.css";
 import { LuLayers, LuShieldCheck, LuRuler } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
@@ -39,7 +39,7 @@ const NewArrivals = () => {
 
   const [availableColors, setAvailableColors] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; isOnline?: boolean }[]
   >([]);
 
   const [filterOpen, setFilterOpen] = useState(false);
@@ -53,7 +53,10 @@ const NewArrivals = () => {
     const fetchCategories = async () => {
       try {
         const data = await getAllCategories();
-        setAvailableCategories(data);
+        const visibleCategories = (data || []).filter(
+          (cat: { isOnline?: boolean }) => cat.isOnline === true,
+        );
+        setAvailableCategories(visibleCategories);
       } catch (err) {
         console.error(err);
       }
@@ -126,7 +129,7 @@ const NewArrivals = () => {
         } else {
           setProducts((prev) => {
             const newItems = items.filter(
-              (item: any) => !prev.some((p: any) => p.id === item.id)
+              (item: any) => !prev.some((p: any) => p.id === item.id),
             );
             return [...prev, ...newItems];
           });
@@ -154,7 +157,7 @@ const NewArrivals = () => {
           if (res) {
             map[product.id] = { rating: res.averageRating, total: res.total };
           }
-        })
+        }),
       );
       setReviewMap(map);
     };
@@ -222,7 +225,9 @@ const NewArrivals = () => {
       <div className={styles.headerWrapper}>
         <header className={styles.header}>
           <h1 className={styles.title}>
-            NEW ARRIVALS:<br />BEYOND THE STANDARD
+            NEW ARRIVALS:
+            <br />
+            BEYOND THE STANDARD
           </h1>
           <div className={styles.subtextContainer}>
             <span className={styles.greenLine}></span>
@@ -243,7 +248,9 @@ const NewArrivals = () => {
 
         <div className={styles.container}>
           {/* SIDEBAR */}
-          <aside className={`${styles.sidebar} ${filterOpen ? styles.open : ""}`}>
+          <aside
+            className={`${styles.sidebar} ${filterOpen ? styles.open : ""}`}
+          >
             <button
               className={styles.closeBtn}
               onClick={() => setFilterOpen(false)}
@@ -261,7 +268,10 @@ const NewArrivals = () => {
                   setSortBy(
                     value === ""
                       ? null
-                      : (value as "newly_arrived" | "low_to_high" | "high_to_low")
+                      : (value as
+                          | "newly_arrived"
+                          | "low_to_high"
+                          | "high_to_low"),
                   );
                   setPage(1);
                 }}
@@ -382,7 +392,9 @@ const NewArrivals = () => {
                       key={cat.id}
                       className={`${styles.categoryPill} ${categoryId === cat.id ? styles.categoryActive : ""}`}
                       onClick={() => {
-                        setCategoryId((prev) => (prev === cat.id ? null : cat.id));
+                        setCategoryId((prev) =>
+                          prev === cat.id ? null : cat.id,
+                        );
                         setPage(1);
                       }}
                     >
@@ -417,8 +429,16 @@ const NewArrivals = () => {
                     key={product.id}
                     id={product.id}
                     slug={product.slug}
-                    name={product.name}
-                    price={String(product.priceRange?.min || product.variants?.[0]?.sellingPrice || 0)}
+                    name={
+                      product.onlineName?.trim()
+                        ? product.onlineName
+                        : product.name
+                    }
+                    price={String(
+                      product.priceRange?.min ||
+                        product.variants?.[0]?.sellingPrice ||
+                        0,
+                    )}
                     rating={reviewMap[product.id]?.rating ?? 0}
                     reviews={reviewMap[product.id]?.total ?? 0}
                     colors={product.colors}
@@ -439,7 +459,8 @@ const NewArrivals = () => {
             {products.length > 0 && (
               <div className={styles.paginationArea}>
                 <p className={styles.showingText}>
-                  SHOWING {products.length} OF {totalProducts || products.length} PRODUCTS
+                  SHOWING {products.length} OF{" "}
+                  {totalProducts || products.length} PRODUCTS
                 </p>
                 <div className={styles.progressBar}>
                   <div
@@ -466,19 +487,22 @@ const NewArrivals = () => {
 
         {/* OVERLAY */}
         {filterOpen && (
-          <div className={styles.overlay} onClick={() => setFilterOpen(false)} />
+          <div
+            className={styles.overlay}
+            onClick={() => setFilterOpen(false)}
+          />
         )}
       </section>
 
       {/* ───── QUALITY SECTION — UNTOUCHED ───── */}
-      <section className={styles.qualitySection}>
+      {/* <section className={styles.qualitySection}>
         <div className={styles.qualityTextContent}>
           <h2 className={styles.qualityTitle}>STREETWEAR FOR EVERY BODY</h2>
           <p className={styles.qualityDescription}>
             Our premium 240 GSM fabric is engineered for durability and the
             perfect fit for larger silhouettes. We don't just upscale designs;
-            we re-engineer them from the fiber up. No compromises on style,
-            no matter the size.
+            we re-engineer them from the fiber up. No compromises on style, no
+            matter the size.
           </p>
           <div className={styles.featureGrid}>
             <div className={styles.featureCard}>
@@ -499,10 +523,14 @@ const NewArrivals = () => {
           </div>
         </div>
         <div className={styles.qualityImageWrapper}>
-          <img src="/qaulity.png" alt="Fabric Detail" className={styles.qualityImage} />
+          <img
+            src="/qaulity.png"
+            alt="Fabric Detail"
+            className={styles.qualityImage}
+          />
           <div className={styles.qualityBadge}>QUALITY FIRST</div>
         </div>
-      </section>
+      </section> */}
 
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>

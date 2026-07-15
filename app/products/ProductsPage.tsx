@@ -108,7 +108,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
     getPageSizes(initialData.items || []),
   );
   const [availableCategories, setAvailableCategories] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; isOnline?: boolean }[]
   >([]);
   const [sortBy, setSortBy] = useState<SortOption>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -148,35 +148,38 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
     return colorMap[normalizedColorName] || normalizedColorName;
   };
 
-  const getProductColorOptions = useCallback((product: Product): ColorOption[] => {
-    const variantColorOptions =
-      product.variants?.flatMap((variant) => {
-        const name = variant.color?.trim();
-        if (!name) {
-          return [];
-        }
+  const getProductColorOptions = useCallback(
+    (product: Product): ColorOption[] => {
+      const variantColorOptions =
+        product.variants?.flatMap((variant) => {
+          const name = variant.color?.trim();
+          if (!name) {
+            return [];
+          }
 
-        return [
-          {
-            name,
-            colorCode: variant.colorCode,
-          },
-        ];
-      }) || [];
+          return [
+            {
+              name,
+              colorCode: variant.colorCode,
+            },
+          ];
+        }) || [];
 
-    if (variantColorOptions.length > 0) {
-      return Array.from(
-        new Map(
-          variantColorOptions.map((colorOption) => [
-            colorOption.name.toLowerCase(),
-            colorOption,
-          ]),
-        ).values(),
-      );
-    }
+      if (variantColorOptions.length > 0) {
+        return Array.from(
+          new Map(
+            variantColorOptions.map((colorOption) => [
+              colorOption.name.toLowerCase(),
+              colorOption,
+            ]),
+          ).values(),
+        );
+      }
 
-    return (product.colors || []).map((name) => ({ name }));
-  }, []);
+      return (product.colors || []).map((name) => ({ name }));
+    },
+    [],
+  );
 
   const getAvailableColorOptions = useCallback(
     (productList: Product[]) =>
@@ -213,7 +216,10 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
     const fetchCategories = async () => {
       try {
         const data = await getAllCategories();
-        setAvailableCategories(data);
+        const visibleCategories = (data || []).filter(
+          (cat: { isOnline?: boolean }) => cat.isOnline === true,
+        );
+        setAvailableCategories(visibleCategories);
       } catch (err) {
         console.error(err);
       }
@@ -319,8 +325,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
           size: size || undefined,
           color: color || undefined,
           minPrice: minPrice > 0 ? minPrice : undefined,
-          maxPrice:
-            maxPrice < DEFAULT_MAX_PRICE ? maxPrice : undefined,
+          maxPrice: maxPrice < DEFAULT_MAX_PRICE ? maxPrice : undefined,
           categoryId: categoryId || undefined,
           tags: tag ? [tag] : undefined,
           sortBy: sortBy || undefined,
@@ -495,9 +500,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
               onChange={(e) => {
                 const value = e.target.value;
                 setSortBy(
-                  value === ""
-                    ? null
-                    : (value as Exclude<SortOption, null>),
+                  value === "" ? null : (value as Exclude<SortOption, null>),
                 );
               }}
             >
@@ -667,10 +670,10 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                   <ProductCard
                     id={product.id}
                     slug={product.slug}
-                    name= {
+                    name={
                       product.onlineName?.trim()
-                      ? product.onlineName
-                      : product.name
+                        ? product.onlineName
+                        : product.name
                     }
                     price={String(product.priceRange?.min || 0)}
                     rating={reviewMap[product.id]?.rating ?? 0}

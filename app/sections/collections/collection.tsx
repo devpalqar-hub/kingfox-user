@@ -18,10 +18,10 @@ const SLOTS = [
     fallbackLabel: "JEANS",
   },
   {
-    key: "half-sleeve",
-    keywords: ["half sleeve", "half-sleeve", "halfsleeve", "half"],
-    fallbackImage: "/half-sleeve.png",
-    fallbackLabel: "HALF SLEEVE",
+    key: "Oversized Tee",
+    keywords: ["Oversized Tee", "oversized", "tee"],
+    fallbackImage: "/oversized-tee.png",
+    fallbackLabel: "OVERSIZED TEE",
   },
   {
     key: "linen-pant",
