@@ -198,15 +198,6 @@ export default function Banners() {
             );
           })}
 
-          {/* Banner title badge (top-left of image) */}
-          {activeBanner.title && (
-            <div className={styles.bannerTitleBadge}>
-              <span className={styles.bannerTitleText}>
-                {activeBanner.title}
-              </span>
-            </div>
-          )}
-
           {/* Progress bar */}
           {total > 1 && (
             <div

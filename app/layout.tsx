@@ -3,6 +3,7 @@ import React from "react";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { Bebas_Neue, Inter } from "next/font/google";
 import AppShell from "@/components/layout/AppShell";
+import WhatsappButton from "@/components/whatsappButton/whatsappButton";
 
 export const viewport = {
   width: "device-width",
@@ -44,7 +45,10 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${space.variable} ${bebas.variable} ${inter.variable}`}
       >
-        <AppShell>{children}</AppShell>
+        <AppShell>
+          {children}
+          <WhatsappButton />
+        </AppShell>
       </body>
     </html>
   );

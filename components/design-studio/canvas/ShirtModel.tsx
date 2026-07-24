@@ -259,30 +259,10 @@ async function buildGarmentCanvas(
   c.height = TEX_RES;
   const ctx = c.getContext("2d")!;
 
-  // 1. Base layer: original baked texture tinted with garment colour,
-  //    or a solid colour fill if the model has no base texture.
-  if (baseTexture?.image) {
-    // Fill with the garment colour first (clean base)
-    ctx.fillStyle = colorHex;
-    ctx.fillRect(0, 0, TEX_RES, TEX_RES);
-    // Blend the baked texture on top at reduced opacity so shading detail
-    // is preserved but baked-in shadows don't cause unwanted darkening on
-    // the opposite panel when the model is rotated.
-    ctx.globalAlpha = 0.18;
-    ctx.globalCompositeOperation = "multiply";
-    ctx.drawImage(
-      baseTexture.image as HTMLImageElement,
-      0,
-      0,
-      TEX_RES,
-      TEX_RES,
-    );
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "source-over";
-  } else {
-    ctx.fillStyle = colorHex;
-    ctx.fillRect(0, 0, TEX_RES, TEX_RES);
-  }
+  // 1. Base layer: use the selected garment colour directly so the 3D modal
+  //    matches the admin-selected shade exactly across all models.
+  ctx.fillStyle = colorHex;
+  ctx.fillRect(0, 0, TEX_RES, TEX_RES);
 
   // 2. Paint design layers for each panel
   await paintLayers(ctx, frontLayers, frontBounds800, frontUvRegion);
@@ -297,8 +277,30 @@ function applyTexture(mesh: THREE.Mesh, tex: THREE.CanvasTexture) {
   mats.forEach((m: any) => {
     if (m.map !== tex) {
       m.map = tex;
-      m.needsUpdate = true;
     }
+    // Render the generated garment texture without scene-light darkening so
+    // the modal color matches the admin-selected apparel color exactly.
+    if (m.color?.isColor) {
+      m.color.set("#ffffff");
+    }
+    if (m.emissive?.isColor) {
+      m.emissive.set("#ffffff");
+      m.emissiveMap = tex;
+      m.emissiveIntensity = 1;
+    }
+    if (typeof m.roughness === "number") {
+      m.roughness = 1;
+    }
+    if (typeof m.metalness === "number") {
+      m.metalness = 0;
+    }
+    if (typeof m.envMapIntensity === "number") {
+      m.envMapIntensity = 0;
+    }
+    if ("toneMapped" in m) {
+      m.toneMapped = false;
+    }
+    m.needsUpdate = true;
     tex.needsUpdate = true;
   });
 }
@@ -370,6 +372,27 @@ export default function ShirtModel({ ...props }: any) {
 
     meshRef.current = mesh;
     baseTexRef.current = getBaseTexture(mesh);
+    mesh.traverse((obj: any) => {
+      if (!obj.isMesh) return;
+
+      const materials = Array.isArray(obj.material)
+        ? obj.material
+        : [obj.material];
+
+      materials.forEach((mat: any, index: number) => {
+        console.log(`[${modelKey}] ${obj.name} Material ${index}`, {
+          color: mat.color?.getHexString?.(),
+          roughness: mat.roughness,
+          metalness: mat.metalness,
+          map: !!mat.map,
+          aoMap: !!mat.aoMap,
+          normalMap: !!mat.normalMap,
+          lightMap: !!mat.lightMap,
+          emissiveMap: !!mat.emissiveMap,
+          envMapIntensity: mat.envMapIntensity,
+        });
+      });
+    });
 
     // Detect UV left/right halves, then assign front/back per model config
     const frontIsLeft = UV_FRONT_IS_LEFT[modelKey] ?? true;
