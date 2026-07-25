@@ -331,6 +331,9 @@ const Header = () => {
             <Link href="/design-studio/select">CUSTOMIZE</Link>
           </li>
           <li>
+            <Link href="/products?tag=ONAM COLLECTION">ONAM COLLECTIONS</Link>
+          </li>
+          <li>
             <Link href="/new-arrivals">NEW ARRIVALS</Link>
           </li>
           {oversizedCategory && (
