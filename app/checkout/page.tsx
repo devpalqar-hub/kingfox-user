@@ -520,7 +520,8 @@ export default function CheckoutPage() {
               <MdCreditCard /> <MdAccountBalance />
             </div>
           </div>
-          {!hasCustomOrders && (
+          {/* COD / Store Pickup (Pay at store) disabled - Razorpay only */}
+          {/* {!hasCustomOrders && (
             <div
               className={styles.paymentCardActive}
               onClick={() => setPaymentMethod("COD")}
@@ -552,7 +553,7 @@ export default function CheckoutPage() {
                 ))}
               </select>
             </div>
-          )}
+          )} */}
         </section>
       </div>
 

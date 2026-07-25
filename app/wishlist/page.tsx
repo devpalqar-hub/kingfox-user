@@ -225,14 +225,14 @@ export default function WishlistPage() {
       return;
     }
 
-    const confirmed = await confirm({
-      title: "Move All To Cart",
-      message: "Are you sure you want to move all items to cart?",
-      confirmText: "Move All",
-      cancelText: "Cancel",
-    });
+    // const confirmed = await confirm({
+    //   title: "Move All To Cart",
+    //   message: "Are you sure you want to move all items to cart?",
+    //   confirmText: "Move All",
+    //   cancelText: "Cancel",
+    // });
 
-    if (!confirmed) return;
+    // if (!confirmed) return;
 
     const previousWishlist = [...wishlist];
     setWishlist([]);
@@ -284,13 +284,13 @@ export default function WishlistPage() {
           </div>
 
           <div className={styles.headerButtons}>
-            <button
+            {/* <button
               className={styles.moveAllBtn}
               onClick={handleMoveAllToCart}
               disabled={wishlist.length === 0}
             >
               <ShoppingCart size={16} /> Move All To Cart
-            </button>
+            </button> */}
             <button
               className={styles.clearBtn}
               onClick={handleClearWishlist}
