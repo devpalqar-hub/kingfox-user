@@ -12,6 +12,7 @@ import {
 import type { Product } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 const HotDeals = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -105,8 +106,8 @@ const HotDeals = () => {
 
         {/* 🔥 ARROWS */}
         <div className={styles.navButtons}>
-          <button onClick={scrollLeft}>←</button>
-          <button onClick={scrollRight}>→</button>
+          <button onClick={scrollLeft}><FaArrowLeft /></button>
+          <button onClick={scrollRight}><FaArrowRight /></button>
         </div>
       </div>
 
