@@ -33,10 +33,10 @@ export default function HomePage() {
         ]}
       />
       <Hero />
-      <BestSeller />
       <OnamCollections />
       <Banners />
       <Collections />
+      <BestSeller />
       <Cards />
       <HotDeals />
       <LimitedDeals />
