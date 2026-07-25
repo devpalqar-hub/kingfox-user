@@ -117,7 +117,7 @@ const HotDeals = () => {
             <ProductCard
               id={product.id}
               slug={product.slug}
-              name={product.name}
+              name={product.onlineName?.trim() || product.name}
               price={String(product.priceRange?.min || 0)}
               rating={4}
               image={product.images?.[0]}

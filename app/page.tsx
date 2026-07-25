@@ -1,5 +1,6 @@
 import Banners from "./sections/banners/banners";
 import BestSeller from "./sections/bestseller/bestseller";
+import OnamCollections from "./sections/onamcollections/onamcollections";
 import Branding from "./sections/brandingsection/branding";
 import Cards from "./sections/cards/cards";
 import Collections from "./sections/collections/collection";
@@ -33,6 +34,7 @@ export default function HomePage() {
       />
       <Hero />
       <BestSeller />
+      <OnamCollections />
       <Banners />
       <Collections />
       <Cards />
