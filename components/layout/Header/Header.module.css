@@ -15,12 +15,12 @@
   left: 0;
 
   z-index: 1000;
-  background: #fff;
+  background: #F8EEE4;
 }
 
 /* Announcement Bar */
 .announcementBar {
-  background-color: #000;
+  background-color: #1E3A22;
   color: #fff;
   padding: 10px 0;
   text-align: center;
@@ -61,7 +61,7 @@
 
 /* Main Header */
 .mainHeader {
-  background-color: #fff;
+  background-color: #fff1e3;
   padding: 20px 40px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -73,6 +73,7 @@
   display: flex;
   justify-content: flex-start;
 }
+
 .logo img {
   height: 50px;
   width: auto;
@@ -339,6 +340,7 @@
   display: block;
   white-space: nowrap;
 }
+
 .drawerNavItem {
   display: flex;
   align-items: center;
@@ -417,18 +419,23 @@
 .drawerNavItem:nth-child(1) {
   animation-delay: 0.06s;
 }
+
 .drawerNavItem:nth-child(2) {
   animation-delay: 0.1s;
 }
+
 .drawerNavItem:nth-child(3) {
   animation-delay: 0.14s;
 }
+
 .drawerNavItem:nth-child(4) {
   animation-delay: 0.18s;
 }
+
 .drawerNavItem:nth-child(5) {
   animation-delay: 0.22s;
 }
+
 .drawerNavItem:nth-child(6) {
   animation-delay: 0.26s;
 }
@@ -548,6 +555,7 @@
     opacity: 0;
     transform: translateY(-100%);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -574,6 +582,7 @@
   0% {
     transform: translateY(0);
   }
+
   100% {
     transform: translateY(var(--scroll));
   }
@@ -602,6 +611,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -621,6 +631,7 @@
   0% {
     background-position: -400px 0;
   }
+
   100% {
     background-position: 400px 0;
   }
@@ -654,6 +665,7 @@
 .skeletonDigitGroup .skeletonDigit:nth-child(2) {
   animation-delay: 0.15s;
 }
+
 .skeletonDigitGroup .skeletonDigit:nth-child(3) {
   animation-delay: 0.3s;
 }
@@ -712,6 +724,7 @@
   color: #888;
   cursor: pointer;
 }
+
 .closeIcon:hover {
   color: #000;
 }
@@ -774,6 +787,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -784,6 +798,7 @@
     transform: translateY(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -799,6 +814,7 @@
     grid-template-columns: auto auto 1fr auto;
     align-items: center;
   }
+
   .navLinks {
     gap: 30px;
   }
@@ -833,11 +849,13 @@
   .digitWrap {
     height: 22px;
   }
+
   .digitCell {
     height: 22px;
     font-size: 12px;
     padding: 0 6px;
   }
+
   .voucherCount {
     gap: 4px;
     padding: 2px 4px;
@@ -867,7 +885,7 @@
   }
 
   .logoText {
-    display: block; 
+    display: block;
     font-size: 16px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -891,6 +909,7 @@
     gap: 1px;
     padding: 5px 12px;
   }
+
   .hideOnMobile {
     display: none !important;
   }
@@ -901,13 +920,16 @@
     font-size: 10px;
     padding: 6px;
   }
+
   .digit {
     font-size: 12px;
     padding: 1px 5px;
   }
+
   .logo img {
     height: 32px;
   }
+
   .iconActions {
     gap: 12px;
   }

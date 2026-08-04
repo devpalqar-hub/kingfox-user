@@ -290,7 +290,7 @@ const Header = () => {
         {/* LOGO */}
         <div className={styles.logo}>
           <Link href="/" onClick={closeDrawer}>
-            <img src="/logo.png" alt="Logo" className={styles.logoImg} />
+            <img src="/logoImg.webp" alt="Logo" className={styles.logoImg} />
           </Link>
           <span className={styles.logoText}>KINGFOX</span>
         </div>
@@ -578,7 +578,7 @@ const Header = () => {
             className={styles.drawerLogoWrapper}
             onClick={closeDrawer}
           >
-            <img src="/logo.png" alt="KingFox Logo" />
+            <img src="/logoImg.webp" alt="KingFox Logo" />
             <span className={styles.drawerLogoText}>KINGFOX</span>
           </Link>
 
