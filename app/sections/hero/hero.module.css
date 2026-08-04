@@ -200,10 +200,15 @@
   color: #1E3A22;
 }
 
+.collectionText {
+  margin-left: -2.5rem;
+  /* tweak until perfect */
+}
+
 .titleLine2 {
   display: inline-flex;
   align-items: center;
-  flex-wrap: nowrap;
+  gap: 50;
 }
 
 /* ── Special ONAM Branding ── */
@@ -659,6 +664,18 @@
     margin-bottom: 18px;
   }
 
+  .titleLine2 {
+    font-size: 2.7rem;
+    gap: 40px;
+    margin-left: -3px;
+  }
+  .titleLine1 {
+    font-size: 2.7rem;
+  }
+  .titleLine3 {
+    font-size: 2.7rem;
+  }
+
   .titleDivider {
     justify-content: center;
     margin: 0 auto 20px;
@@ -794,5 +811,25 @@
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+.comicWrapper {
+  display: inline-flex;
+  align-items: left;
+}
+
+@media (max-width: 768px) {
+  .comicWrapper {
+    /* transform: scale(0.9); */
+    transform-origin: center left;
+    margin-right: -4.5rem;
+    font-size: 0.12rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .comicWrapper {
+    transform: scale(0.65);
   }
 }

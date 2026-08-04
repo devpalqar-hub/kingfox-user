@@ -2,7 +2,7 @@
 import type { Product } from "@/types/product";
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown,
   Heart,
@@ -31,6 +31,8 @@ type Category = {
 
 const Header = () => {
   const router = useRouter();
+  const pathName = usePathname();
+  const isHomePage = pathName === "/";
   const { user, token, loading } = useAuth();
   const { wishlistCount, cartCount } = useNavCounts();
   const headerRef = useRef<HTMLElement | null>(null);
@@ -277,7 +279,8 @@ const Header = () => {
       )}
 
       {/* NAVBAR */}
-      <nav className={styles.mainHeader}>
+      <nav className={`${styles.mainHeader} ${isHomePage ? styles.homeNav : styles.innerNav
+        }`}>
         {/* HAMBURGER */}
         <div
           className={styles.hamburger}

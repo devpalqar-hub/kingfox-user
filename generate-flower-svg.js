@@ -65,9 +65,37 @@ function genLayer(count, rBase, rTip, halfWidth, fill, stroke, strokeW, offset =
 }
 
 // ── Layers (matching gerbera daisy: full ring of long petals, then shorter inner ones) ──
-const outerPetals = genLayer(36, 13, 48, 4.2, '#FFFFFF',     '#DEDAD3', 0.35, 0);
-const midPetals   = genLayer(36, 11, 40, 3.6, '#F9F7F3',     '#E0DAD0', 0.30, 5);
-const innerPetals = genLayer(24, 10, 30, 3.0, '#F4F0E8',     '#D8D2C5', 0.30, 7.5);
+const outerPetals = genLayer(
+  36,
+  13,
+  48,
+  4.2,
+  "#f2ece3ff",   // darker ivory
+  "#BFB5A5",   // stronger border
+  0.55,        // thicker outline
+  0
+);
+const midPetals = genLayer(
+  36,
+  11,
+  40,
+  3.6,
+  "#ECE5DA",
+  "#B7AB99",
+  0.5,
+  5
+);
+const innerPetals = genLayer(
+  24,
+  10,
+  30,
+  3.0,
+  "#E5DDD0",
+  "#AFA28F",
+  0.45,
+  7.5
+);
+
 
 // ── Stamen dots ring ──
 const stamenRing1 = [];
@@ -87,6 +115,15 @@ for (let i = 0; i < 18; i++) {
 
 const svg = `<svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
+  <filter id="petalShadow" x="-20%" y="-20%" width="140%" height="140%">
+  <feDropShadow
+    dx="0"
+    dy="0.35"
+    stdDeviation="0.5"
+    flood-color="#8F8372"
+    flood-opacity="0.25"
+  />
+</filter>
     <!-- Subtle radial shadow under petals -->
     <radialGradient id="shadowGrad" cx="50%" cy="50%" r="50%">
       <stop offset="55%" stop-color="#1E3A22" stop-opacity="0.10" />
@@ -100,25 +137,24 @@ const svg = `<svg width="120" height="120" viewBox="0 0 100 100" fill="none" xml
     </radialGradient>
     <!-- Subtle petal gloss -->
     <radialGradient id="glossGrad" cx="40%" cy="30%" r="60%">
-      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.7" />
+      <stop offset="0%" stop-color="#FAF8F3" stop-opacity="0.45"/>
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
     </radialGradient>
   </defs>
 
   <!-- Outer petal layer (36 petals) -->
-  <g>
-${outerPetals}
-  </g>
+  <g filter="url(#petalShadow)">
+  ${outerPetals}
+</g>
 
   <!-- Mid petal layer offset (36 petals) -->
-  <g>
-${midPetals}
-  </g>
+ <g filter="url(#petalShadow)">
+  ${midPetals}
+</g>
 
-  <!-- Inner transition petal layer (24 petals) -->
-  <g>
-${innerPetals}
-  </g>
+<g filter="url(#petalShadow)">
+  ${innerPetals}
+</g>
 
   <!-- Soft radial shadow over petal bases -->
   <circle cx="50" cy="50" r="20" fill="url(#shadowGrad)" />

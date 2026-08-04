@@ -13,6 +13,7 @@ import {
   Headphones,
   ArrowRight,
 } from "lucide-react";
+import { ComicText } from "@/components/ui/comic-text"
 
 /* ── Bottom scrolling features bar ── */
 const barFeatures = [
@@ -78,19 +79,10 @@ const Hero = () => {
             <br />
             <span className={styles.titleLine2}>
               <span className={styles.onamBrand}>
-                <span className={styles.jasmineWrapper} aria-hidden="true">
-                  <img
-                    src="/jasmine.svg"
-                    alt=""
-                    className={styles.jasmineImg}
-                  />
+                <span className={styles.comicWrapper}>
+                  <ComicText>ONAM</ComicText>
                 </span>
-                <span className={styles.srOnly}>O</span>
-                <span className={styles.letterN}>N</span>
-                <span className={styles.letterA}>A</span>
-                <span className={styles.letterM}>M</span>
               </span>
-              &nbsp;
               <span className={styles.collectionText}>COLLECTION</span>
             </span>
             <br />
