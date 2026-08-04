@@ -1,13 +1,13 @@
-/* ── TOKENS ──────────────────────────────── */
+/* ── TOKENS & VARIABLES ──────────────────── */
 :root {
-  --h-white: #f2f0ec;
-  --h-dark: #181818;
-  --h-black: #111111;
-  --h-muted: #6b6b6b;
-  --h-divider: #d0cec9;
+  --h-bg: #F8EEE4;
+  --h-green: #1E3A22;
+  --h-green-hover: #284D2D;
+  --h-eyebrow: #234126;
+  --h-text-muted: #4A4A4A;
+  --h-gold: #DCC8AB;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
   --header-height: var(--site-header-offset, 80px);
 }
 
@@ -16,7 +16,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--h-white);
+  background-color: var(--h-bg);
+  overflow: hidden;
 }
 
 /* ── HERO CONTAINER ──────────────────────── */
@@ -24,20 +25,49 @@
   display: flex;
   width: 100%;
   min-height: calc(100vh - var(--header-height));
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
   overflow: hidden;
+  background-color: var(--h-bg);
 }
 
 /* ═══════════════════════════════════════════
-   ENTRANCE KEYFRAMES
+   KEYFRAME ANIMATIONS
    ═══════════════════════════════════════════ */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(24px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(45px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slowFloat {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(0.4deg);
   }
 }
 
@@ -45,87 +75,9 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
-  }
-}
-
-@keyframes slideRight {
-  from {
-    opacity: 0;
-    transform: translateX(-18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes ruleExpand {
-  from {
-    width: 0;
-  }
-  to {
-    width: 60px;
-  }
-}
-
-@keyframes panelReveal {
-  from {
-    clip-path: inset(0 100% 0 0);
-    opacity: 0;
-  }
-  to {
-    clip-path: inset(0 0% 0 0);
-    opacity: 1;
-  }
-}
-
-@keyframes imageFloat {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
-}
-
-@keyframes borderPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(17, 17, 17, 0);
-  }
-  50% {
-    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
-  }
-}
-
-@keyframes dotPulse {
-  0%,
-  100% {
-    opacity: 0.28;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes taglineScroll {
-  0% {
-    transform: rotate(180deg) translateX(0);
-  }
-  100% {
-    transform: rotate(180deg) translateX(-60px);
   }
 }
 
@@ -133,6 +85,7 @@
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
@@ -142,323 +95,317 @@
   0% {
     transform: scale(1);
   }
-  40% {
-    transform: scale(1.18) rotate(-4deg);
+
+  50% {
+    transform: scale(1.15) rotate(-3deg);
   }
-  70% {
-    transform: scale(0.95) rotate(2deg);
-  }
+
   100% {
     transform: scale(1) rotate(0deg);
   }
 }
 
-@keyframes splitRevealLight {
-  from {
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-  to {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-}
-
-@keyframes splitRevealDark {
-  from {
-    transform: scaleX(0);
-    transform-origin: right;
-  }
-  to {
-    transform: scaleX(1);
-    transform-origin: right;
-  }
-}
-
-@keyframes grainMove {
-  0% {
-    transform: translate(0, 0);
-  }
-  20% {
-    transform: translate(-2px, 2px);
-  }
-  40% {
-    transform: translate(2px, -2px);
-  }
-  60% {
-    transform: translate(-1px, 3px);
-  }
-  80% {
-    transform: translate(3px, -1px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
 /* ═══════════════════════════════════════════
-   LEFT PANEL
+   LEFT PANEL (Overlapping higher z-index)
    ═══════════════════════════════════════════ */
 .leftPanel {
-  flex: 0 0 44%;
-  background: var(--h-white);
+  flex: 0 0 46%;
+  max-width: 52%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 72px 56px 72px 7%;
+  padding: 60px 20px 60px 7%;
   position: relative;
-  z-index: 2;
-  /* Subtle grain overlay via pseudo-element */
-}
-
-/* Grain texture overlay */
-.leftPanel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.018;
-  background-size: 200px;
-  animation: grainMove 0.4s steps(1) infinite;
   z-index: 10;
+  /* High z-index so text overrides the image layer */
 }
 
-/* Accent line left edge */
-.leftPanel::after {
+/* ── Small Eyebrow ── */
+.eyebrow {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--h-eyebrow);
+  text-transform: uppercase;
+  line-height: 1.35;
+  margin: 0 0 16px;
+  font-family: var(--font-inter), sans-serif;
+  opacity: 0;
+  animation: fadeUp 0.7s var(--ease) 0.1s forwards;
+}
+
+/* ── Golden Decorative Divider ── */
+.goldenDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  opacity: 0;
+  animation: fadeIn 0.6s var(--ease) 0.25s forwards;
+}
+
+.dividerLine {
+  height: 1.5px;
+  width: 50px;
+  background: var(--h-gold);
+}
+
+.dividerFlower {
+  color: var(--h-gold);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.dividerLineShort {
+  height: 1.5px;
+  width: 20px;
+  background: var(--h-gold);
+}
+
+/* ── Screen Reader Accessibility ── */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Main Heading ── */
+.title {
+  font-family: 'League Spartan', 'Montserrat', var(--font-jakarta), sans-serif;
+  font-size: clamp(56px, 5.6vw, 75px);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  color: var(--h-green);
+  margin: 0 0 24px;
+  width: max-content;
+  max-width: 130%; /* Allows heading to overlap slightly into hero image */
+  position: relative;
+  z-index: 12;
+  opacity: 0;
+  animation: fadeUp 0.85s var(--ease) 0.3s forwards;
+}
+
+.titleLine1,
+.titleLine3,
+.collectionText {
+  color: #1E3A22;
+}
+
+.titleLine2 {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* ── Special ONAM Branding ── */
+.onamBrand {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  margin-right: 0.12em;
+  transition: filter 0.4s var(--ease);
+}
+
+.onamBrand:hover {
+  filter: brightness(1.15);
+}
+
+/* Jasmine Flower SVG replacing letter "O" */
+.jasmineWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 0.9em matches the cap-height of the surrounding uppercase letters */
+  width: 0.9em;
+  height: 0.9em;
+  /* Nudge up slightly to optically align on baseline */
+  transform: translateY(-5%);
+  margin-right: 0.01em;
+  flex-shrink: 0;
+  transform-origin: 50% 55%;
+  animation: jasmineSway 8s ease-in-out infinite;
+  transition: filter 0.4s ease;
+}
+
+.jasmineWrapper:hover {
+  filter: brightness(1.06) drop-shadow(0 2px 6px rgba(30,58,34,0.18));
+}
+
+.jasmineSvg,
+.jasmineImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@keyframes jasmineSway {
+  0%, 100% {
+    transform: translateY(-5%) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-5%) rotate(4deg);
+  }
+}
+
+/* Festive Colors for N A M */
+.letterN {
+  color: #1E3A22; /* Deep Kerala Green */
+}
+
+.letterA {
+  color: #D9A321; /* Kasavu Gold */
+}
+
+.letterM {
+  color: #8B1E3F; /* Deep Kerala Maroon */
+}
+
+/* Soft Shimmer Highlight moving across ONAM every 7s */
+.onamBrand::after {
   content: "";
   position: absolute;
-  left: 0;
-  top: 15%;
-  height: 70%;
-  width: 2.5px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    var(--h-black) 30%,
-    var(--h-black) 70%,
-    transparent 100%
-  );
-  opacity: 0;
-  animation: fadeIn 0.8s var(--ease) 1.4s forwards;
-}
-
-/* ── Eyebrow label ── */
-.eyebrow {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 2.8px;
-  color: var(--h-muted);
-  text-transform: uppercase;
-  margin: 0 0 22px;
-  font-family: var(--font-inter);
-  opacity: 0;
-  animation: slideRight 0.7s var(--ease) 0.2s forwards;
-}
-
-/* ── Mega title ── */
-.title {
-  font-size: clamp(80px, 7vw, 106px);
-  font-family: var(--font-jakarta);
-  font-weight: 900;
-  line-height: 0.93;
-  letter-spacing: -1.5px;
-  text-transform: uppercase;
-  color: var(--h-black);
-  margin: 0 0 26px;
-  opacity: 0;
-  animation: fadeUp 0.9s var(--ease) 0.38s forwards;
-  /* Shimmer on hover */
-  background-clip: text;
-  -webkit-background-clip: text;
-  transition: color 0.4s var(--ease);
-  position: relative;
-}
-
-.title:hover {
+  top: -10%;
+  left: -20%;
+  width: 140%;
+  height: 120%;
   background: linear-gradient(
     90deg,
-    var(--h-black) 0%,
-    #444 40%,
-    var(--h-black) 60%,
-    #222 100%
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
   );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation:
-    fadeUp 0.9s var(--ease) 0.38s forwards,
-    shimmer 1.4s linear infinite;
+  transform: translateX(-100%);
+  animation: softShimmer 7s ease-in-out 2s infinite;
+  pointer-events: none;
+  mix-blend-mode: overlay;
 }
 
-.eyebrow,
-.sub,
-.inlineText,
-.featureText {
-  font-family: var(--font-inter);
+@keyframes softShimmer {
+  0%, 72% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
-/* ── Thin rule ── */
-.rule {
-  width: 0;
-  height: 2px;
-  background: var(--h-black);
-  margin-bottom: 20px;
-  animation: ruleExpand 0.6s var(--ease) 0.8s forwards;
-  position: relative;
-  overflow: visible;
-}
-
-/* Rule shimmer dot */
-.rule::after {
-  content: "";
-  position: absolute;
-  right: -4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--h-black);
+.titleDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
   opacity: 0;
-  animation: fadeIn 0.4s var(--ease) 1.4s forwards;
+  animation: fadeIn 0.6s var(--ease) 0.45s forwards;
 }
 
-/* ── Subtitle ── */
+.titleLine {
+  height: 1.5px;
+  width: 100%;
+  max-width: 280px;
+  background: linear-gradient(90deg,
+      var(--h-gold) 0%,
+      rgba(220, 200, 171, 0.15) 100%);
+}
+
+.titleFlower {
+  color: var(--h-gold);
+  font-size: 13px;
+}
+
+/* ── Supporting Paragraph ── */
 .sub {
-  font-size: 12.5px;
+  font-size: 22px;
   font-weight: 400;
-  letter-spacing: 2.2px;
-  color: var(--h-muted);
-  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--h-text-muted);
   margin: 0 0 40px;
-  line-height: 1.6;
+  max-width: 500px;
+  font-family: var(--font-inter), sans-serif;
   opacity: 0;
-  animation: fadeUp 0.7s var(--ease) 0.95s forwards;
+  animation: fadeUp 0.7s var(--ease) 0.5s forwards;
+  position: relative;
+  z-index: 12;
 }
 
-/* ── Buttons ── */
+/* ── CTA Button Group ── */
 .btnGroup {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 52px;
-  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 48px;
   opacity: 0;
-  animation: fadeUp 0.7s var(--ease) 1.1s forwards;
+  animation: fadeUp 0.7s var(--ease) 0.65s forwards;
+  position: relative;
+  z-index: 12;
 }
 
 .shopBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: var(--h-black);
-  color: #fff;
+  justify-content: center;
+  gap: 10px;
+  background: var(--h-green);
+  color: #FFFFFF;
   border: none;
-  padding: 16px 36px;
+  padding: 18px 40px;
   font-weight: 700;
-  font-size: 11.5px;
+  font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 8px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(30, 58, 34, 0.18);
   transition:
     background 0.35s var(--ease),
     transform 0.35s var(--ease),
     box-shadow 0.35s var(--ease);
-  isolation: isolate;
 }
 
-/* Gloss sweep on shop button */
-.shopBtn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.12) 50%,
-    transparent 70%
-  );
-  transform: translateX(-100%);
-  transition: transform 0s;
-}
-
-.shopBtn:hover::before {
-  transform: translateX(100%);
-  transition: transform 0.5s var(--ease);
+.btnArrow {
+  transition: transform 0.3s var(--ease);
 }
 
 .shopBtn:hover {
-  background: #2a2a2a;
-  transform: translateY(-3px);
-  box-shadow:
-    0 10px 28px rgba(17, 17, 17, 0.22),
-    0 4px 8px rgba(17, 17, 17, 0.14);
+  background: var(--h-green-hover);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 14px 32px rgba(30, 58, 34, 0.26);
+}
+
+.shopBtn:hover .btnArrow {
+  transform: translateX(6px);
 }
 
 .shopBtn:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(17, 17, 17, 0.18);
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 6px 16px rgba(30, 58, 34, 0.2);
 }
 
-.customizeBtn {
-  background: transparent;
-  color: var(--h-black);
-  border: 1.5px solid var(--h-black);
-  padding: 15px 28px;
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
-  transition:
-    background 0.35s var(--ease),
-    color 0.35s var(--ease),
-    transform 0.35s var(--ease),
-    box-shadow 0.35s var(--ease),
-    border-color 0.35s var(--ease);
-  animation: borderPulse 3s ease-in-out 2s infinite;
-}
-
-/* Fill sweep on customize button */
-.customizeBtn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--h-black);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.35s var(--ease);
-  z-index: -1;
-}
-
-.customizeBtn:hover::before {
-  transform: scaleX(1);
-}
-
-.customizeBtn:hover {
-  color: #fff;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.16);
-}
-
-.customizeBtn:active {
-  transform: translateY(-1px);
-}
-
-/* ── Inline feature icons ── */
+/* ── Inline Features (Bottom of left section) ── */
 .inlineFeatures {
   display: flex;
-  gap: 36px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 24px;
+  margin-top: 10px;
   opacity: 0;
-  animation: fadeUp 0.7s var(--ease) 1.3s forwards;
+  animation: fadeUp 0.7s var(--ease) 0.8s forwards;
+  position: relative;
+  z-index: 12;
 }
 
 .inlineFeatureItem {
@@ -470,220 +417,115 @@
 }
 
 .inlineFeatureItem:hover {
-  transform: translateY(-3px);
-}
-
-.inlineIcon {
-  display: flex;
-  align-items: center;
-  color: var(--h-black);
-  flex-shrink: 0;
-  transition: transform 0.35s var(--ease-spring);
+  transform: translateY(-2px);
 }
 
 .inlineFeatureItem:hover .inlineIcon {
   animation: iconPop 0.45s var(--ease-spring) forwards;
 }
 
+.inlineIcon {
+  display: flex;
+  align-items: center;
+  color: var(--h-green);
+  flex-shrink: 0;
+}
+
 .inlineText {
-  font-size: 10.5px;
-  font-weight: 600;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 1.5px;
-  color: var(--h-black);
+  color: var(--h-green);
   text-transform: uppercase;
-  line-height: 1.55;
+  line-height: 1.35;
+}
+
+.featureSeparator {
+  width: 1px;
+  height: 32px;
+  background: var(--h-gold);
+  opacity: 0.65;
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════
-   RIGHT PANEL — Split B&W + Models
+   RIGHT PANEL (Positioned under text canvas)
    ═══════════════════════════════════════════ */
 .rightPanel {
-  flex: 1;
-  position: relative;
-  display: flex;
-  overflow: hidden;
-}
-
-/* Light half (left side of right panel) */
-.halfLight {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  background: var(--h-white);
-  z-index: 0;
-  animation: splitRevealLight 0.9s var(--ease) 0.05s both;
-}
-
-/* Dark half (right side of right panel) */
-.halfDark {
+  flex: 0 0 62%;
+  width: 58%;
+  height: calc(100vh - var(--header-height));
+  min-height: 600px;
   position: absolute;
   right: 0;
   top: 0;
-  width: 50%;
-  height: 100%;
-  background: var(--h-dark);
-  z-index: 0;
-  animation: splitRevealDark 0.9s var(--ease) 0.05s both;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  overflow: hidden;
+  z-index: 1;
 }
 
-/* Thin split seam line */
-.halfDark::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 1px;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* Subtle scan-line vignette on dark half */
-.halfDark::after {
-  content: "";
+/* Subtle Kerala Line Art SVG Decoration */
+.keralaArtSvg {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.22;
+  z-index: 1;
+  animation: slowFloat 8s ease-in-out infinite;
 }
 
-/* ── Models image wrapper ── */
+/* Models image wrapper anchored to bottom right */
 .modelsImageWrapper {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 40px;
-  bottom: 0;
+  position: relative;
+  width: 100%;
+  height: 92%;
   z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
   opacity: 0;
-  animation: fadeIn 1s var(--ease) 0.55s forwards;
+  animation: slideInRight 1s var(--ease) 0.35s forwards;
 }
-
-/* Floating idle animation on models */
-/* .modelsImageWrapper:not(:hover) {
-  animation:
-    fadeIn 1s var(--ease) 0.55s forwards,
-    imageFloat 6s ease-in-out 1.6s infinite;
-}
-
-.modelsImageWrapper:hover {
-  animation: none;
-  opacity: 1;
-  transform: scale(1.015);
-  transition: transform 0.6s var(--ease);
-} */
 
 .modelsImage {
   object-fit: contain;
-  object-position: bottom center;
-  transition:
-    transform 0.6s var(--ease),
-    filter 0.5s var(--ease);
-  filter: contrast(1.02) brightness(1.01);
+  object-position: bottom right;
+  mix-blend-mode: multiply;
+  /* Blends image background seamlessly with #F8EEE4 */
+  transition: transform 0.5s var(--ease);
 }
 
 .modelsImageWrapper:hover .modelsImage {
-  transform: scale(1) translateY(-4px);
-  filter: contrast(1) brightness(1.02);
+  transform: scale(1.015);
 }
 
-/* ── Vertical tagline — far right edge ── */
-.verticalTagline {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 40px;
-  background: var(--h-dark);
-  z-index: 3;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  opacity: 0;
-  animation: fadeIn 0.6s var(--ease) 1.2s forwards;
-  border-left: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.verticalTagline span {
-  font-family: var(--font-inter);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 3.5px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  transform: rotate(180deg);
-  transition:
-    color 0.3s var(--ease),
-    letter-spacing 0.3s var(--ease);
-}
-
-.verticalTagline:hover span {
-  color: rgba(255, 255, 255, 0.88);
-  letter-spacing: 4px;
-}
-
-.vdot {
-  color: rgba(255, 255, 255, 0.28) !important;
-  margin: 10px 0;
-  animation: dotPulse 2.8s ease-in-out infinite;
-}
-
-.vdot:nth-child(3) {
-  animation-delay: 0.9s;
-}
-
-/* ─────────────────────────────────────────
-   FEATURES BAR
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════
+   BOTTOM FEATURES BAR
+   ═══════════════════════════════════════════ */
 .featuresBar {
   width: 100%;
-  background: var(--h-white);
-  border-top: 1px solid var(--h-divider);
-  padding: 22px 60px;
+  background: var(--h-bg);
+  border-top: 1px solid var(--h-gold);
+  padding: 20px 60px;
   opacity: 0;
-  animation: fadeIn 0.6s var(--ease) 1.5s forwards;
+  animation: fadeIn 0.6s var(--ease) 1s forwards;
   position: relative;
   overflow: hidden;
-}
-
-/* Subtle shimmer bar on hover */
-.featuresBar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(17, 17, 17, 0.03) 50%,
-    transparent 100%
-  );
-  transform: translateX(-100%);
-  transition: transform 0s;
-  pointer-events: none;
-}
-
-.featuresBar:hover::after {
-  transform: translateX(100%);
-  transition: transform 1s var(--ease);
+  z-index: 15;
 }
 
 .featuresTrack {
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -693,7 +535,7 @@
   gap: 10px;
   flex: 1;
   justify-content: center;
-  border-right: 1px solid var(--h-divider);
+  border-right: 1px solid var(--h-gold);
   padding: 0 28px;
   cursor: default;
   transition: transform 0.3s var(--ease-spring);
@@ -714,136 +556,160 @@
 .featureIcon {
   display: flex;
   align-items: center;
-  color: var(--h-black);
+  color: var(--h-green);
   flex-shrink: 0;
-  transition: color 0.25s var(--ease);
 }
 
 .featureText {
-  font-family: var(--font-inter);
-  font-size: 10px;
-  font-weight: 600;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 1.8px;
   line-height: 1.4;
   text-transform: uppercase;
-  color: var(--h-muted);
-  transition: color 0.25s var(--ease);
-}
-
-.featureItem:hover .featureText {
-  color: var(--h-black);
+  color: var(--h-eyebrow);
 }
 
 .mobileDuplicate {
   display: none;
 }
 
-/* ─────────────────────────────────────────
-   TABLET  ≤ 1100px
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════
+   RESPONSIVE — TABLET ≤ 1100px
+   ═══════════════════════════════════════════ */
 @media (max-width: 1100px) {
   .leftPanel {
-    flex: 0 0 46%;
-    padding: 60px 40px 60px 5%;
+    flex: 0 0 52%;
+    max-width: 58%;
+    padding: 48px 24px 48px 5%;
+  }
+
+  .rightPanel {
+    flex: 0 0 60%;
+    width: 60%;
+    height: 75vh;
+    min-height: 480px;
+  }
+
+  .modelsImageWrapper {
+    height: 88%;
   }
 
   .title {
-    font-size: clamp(54px, 6.5vw, 80px);
+    font-size: clamp(52px, 5vw, 68px);
   }
 
-  .verticalTagline {
-    width: 34px;
+  .sub {
+    font-size: 19px;
   }
-  .modelsImageWrapper {
-    right: 34px;
+
+  .eyebrow {
+    font-size: 16px;
   }
 
   .featuresBar {
-    padding: 20px 32px;
+    padding: 18px 32px;
   }
+
   .featureItem {
-    padding: 0 18px;
+    padding: 0 16px;
   }
 }
 
-/* ─────────────────────────────────────────
-   MOBILE  ≤ 768px
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════
+   RESPONSIVE — MOBILE ≤ 768px
+   ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
   .heroContainer {
     flex-direction: column;
     min-height: auto;
-    margin-top: 0;
-    margin-top: -10px;
   }
 
   .leftPanel {
     flex: none;
-    order: 2;
-    padding: 36px 24px 40px;
-    background: var(--h-white);
-  }
-
-  .rightPanel {
     order: 1;
-    flex: none;
-    height: 72vw;
-    min-height: 300px;
-    max-height: 480px;
-  }
-
-  .title {
-    font-size: clamp(44px, 12vw, 68px);
-    margin-bottom: 18px;
+    width: 100%;
+    max-width: 100%;
+    padding: 44px 24px 36px;
+    align-items: center;
+    text-align: center;
   }
 
   .eyebrow {
-    font-size: 10px;
-    margin-bottom: 16px;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .goldenDivider {
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .title {
+    font-size: clamp(38px, 9.5vw, 56px);
+    margin-bottom: 18px;
+  }
+
+  .titleDivider {
+    justify-content: center;
+    margin: 0 auto 20px;
   }
 
   .sub {
-    font-size: 11px;
-    margin-bottom: 28px;
+    font-size: 17px;
+    max-width: 100%;
+    margin-bottom: 30px;
   }
 
   .btnGroup {
+    width: 100%;
+    justify-content: center;
     margin-bottom: 36px;
-    gap: 10px;
   }
 
-  .shopBtn,
-  .customizeBtn {
-    padding: 13px 22px;
-    font-size: 10.5px;
+  .shopBtn {
+    width: 100%;
+    max-width: 360px;
   }
 
   .inlineFeatures {
-    gap: 22px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    width: 100%;
+    margin-top: 16px;
+    justify-items: center;
   }
 
-  .inlineText {
-    font-size: 9.5px;
+  .featureSeparator {
+    display: none;
   }
 
-  .verticalTagline {
-    width: 28px;
+  .rightPanel {
+    position: relative;
+    order: 2;
+    width: 100%;
+    flex: none;
+    height: 80vw;
+    min-height: 320px;
+    max-height: 480px;
+    align-items: center;
+    justify-content: center;
   }
+
   .modelsImageWrapper {
-    right: 28px;
+    height: 90%;
+    justify-content: center;
   }
 
-  /* Mobile floating animation — gentler */
-  .modelsImageWrapper:not(:hover) {
-    animation:
-      fadeIn 1s var(--ease) 0.55s forwards,
-      imageFloat 7s ease-in-out 1.6s infinite;
+  .modelsImage {
+    object-position: bottom center;
   }
 
-  /* Scrolling features bar */
+  /* Scrolling marquee for bottom features on mobile */
   .featuresBar {
     overflow: hidden;
-    padding: 18px 0;
+    padding: 16px 0;
   }
 
   .featuresTrack {
@@ -858,7 +724,7 @@
   .featureItem {
     flex: none;
     padding: 0 24px;
-    border-right: 1px solid var(--h-divider);
+    border-right: 1px solid var(--h-gold);
     white-space: nowrap;
     transform: none !important;
   }
@@ -868,73 +734,52 @@
   }
 }
 
-/* ─────────────────────────────────────────
-   SMALL MOBILE  ≤ 480px
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE ≤ 480px
+   ═══════════════════════════════════════════ */
 @media (max-width: 480px) {
   .leftPanel {
-    padding: 28px 20px 32px;
+    padding: 32px 20px 28px;
   }
 
   .title {
-    font-size: clamp(40px, 13vw, 58px);
+    font-size: clamp(34px, 10.5vw, 46px);
   }
 
-  .btnGroup {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .shopBtn,
-  .customizeBtn {
+  .shopBtn {
     width: 100%;
-    text-align: center;
-    justify-content: center;
+    max-width: 100%;
+    padding: 16px 20px;
+    font-size: 11.5px;
   }
 
   .inlineFeatures {
-    gap: 16px;
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .rightPanel {
-    height: 80vw;
+    height: 85vw;
   }
 }
 
-/* ─────────────────────────────────────────
-   REDUCED MOTION — honour user preference
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
+
   .eyebrow,
+  .goldenDivider,
   .title,
-  .rule,
+  .titleDivider,
   .sub,
   .btnGroup,
   .inlineFeatures,
   .modelsImageWrapper,
-  .verticalTagline,
   .featuresBar,
-  .leftPanel::after,
-  .rule::after,
-  .halfLight,
-  .halfDark {
+  .keralaArtSvg {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
-    clip-path: none !important;
-    width: 60px; /* rule fallback */
-  }
-
-  .modelsImageWrapper:not(:hover) {
-    animation: none !important;
-  }
-
-  .vdot {
-    animation: none !important;
-  }
-
-  .customizeBtn {
-    animation: none !important;
   }
 }
