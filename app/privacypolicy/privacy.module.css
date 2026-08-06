@@ -1,60 +1,210 @@
 .container {
-  width: 100%;
   min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: 60px;
+  background: #faf8f5;
+  color: #2d2d2d;
 }
 
-/* Header */
+/* =========================================
+   Hero Header
+========================================= */
+
 .header {
+  background: linear-gradient(135deg,
+      #4b1028 0%,
+      #651a38 55%,
+      #7b2344 100%);
+  color: #fff;
   text-align: center;
-  padding: 60px 20px 30px;
+  padding: 90px 20px 80px;
 }
 
 .header h1 {
-  font-size: 44px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .breadcrumb {
-  color: #777;
-  font-size: 16px;
-  letter-spacing: 1px;
+  margin-top: 18px;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .breadcrumb span {
   margin: 0 8px;
 }
 
-/* Content */
+/* =========================================
+   Main Content
+========================================= */
+
 .content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  color: #555;
-  line-height: 1.8;
-  font-size: 18px;
+  max-width: 900px;
+  margin: 70px auto;
+  padding: 0 28px;
 }
 
+/* =========================================
+   Section Headings
+========================================= */
+
 .content h2 {
-  margin-top: 30px;
-  margin-bottom: 10px;
-  font-size: 22px;
-  color: #000;
-  letter-spacing: 1px;
+  margin: 60px 0 24px;
+  padding-bottom: 12px;
+
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  color: #5c1029;
+
+  border-bottom: 2px solid #d9b46d;
+}
+
+.content h2:first-child {
+  margin-top: 0;
+}
+
+.content h3 {
+  margin: 38px 0 16px;
+
+  font-size: 1.2rem;
+  font-weight: 600;
+
+  color: #5c1029;
+}
+
+/* =========================================
+   Paragraphs
+========================================= */
+
+.content p {
+  margin-bottom: 20px;
+
+  font-size: 1rem;
+  line-height: 1.9;
+
+  color: #555;
+}
+
+/* =========================================
+   Lists
+========================================= */
+
+.content ul {
+  margin: 18px 0 28px 24px;
+  padding: 0;
+}
+
+.content li {
+  margin-bottom: 12px;
+
+  line-height: 1.8;
+  color: #555;
+}
+
+.content li::marker {
+  color: #c39b4b;
+}
+
+/* =========================================
+   Strong Text
+========================================= */
+
+.content strong {
+  color: #4b1028;
   font-weight: 600;
 }
 
-.content p {
-  margin-bottom: 18px;
+/* =========================================
+   Contact Block
+========================================= */
+
+.content p strong {
+  display: inline-block;
+  min-width: 130px;
 }
-.link {
-  cursor: pointer;
+
+/* =========================================
+   Links
+========================================= */
+
+.content a {
+  color: #5c1029;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.content a:hover {
+  color: #8b284d;
   text-decoration: underline;
 }
 
-.link:hover {
-  color: black;
+/* =========================================
+   Horizontal Divider (Optional)
+========================================= */
+
+.content hr {
+  margin: 60px 0;
+  border: none;
+  border-top: 1px solid #ece3d4;
+}
+
+/* =========================================
+   Responsive
+========================================= */
+
+@media (max-width: 992px) {
+  .content {
+    margin: 50px auto;
+  }
+
+  .content h2 {
+    font-size: 1.7rem;
+  }
+
+  .content h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 70px 20px 60px;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.85rem;
+  }
+
+  .content {
+    padding: 0 20px;
+  }
+
+  .content h2 {
+    font-size: 1.45rem;
+    margin: 48px 0 18px;
+  }
+
+  .content h3 {
+    margin: 30px 0 14px;
+  }
+
+  .content p,
+  .content li {
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .content p strong {
+    display: block;
+    margin-bottom: 4px;
+  }
 }
