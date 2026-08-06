@@ -374,7 +374,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
   const isWishlisted = selectedVariant?.isWishlisted ?? false;
   const isInCart = selectedVariant?.isAddedInCart ?? false;
-  const isOutOfStock = selectedVariant?.totalStock === 0;
+  const isOutOfStock = (selectedVariant?.totalStock ?? 0) <= 2;
 
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) {
@@ -424,7 +424,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       return;
     }
 
-    if (selectedVariant.totalStock === 0) {
+    if ((selectedVariant.totalStock ?? 0) <= 2) {
       showToast("Out of stock", "error");
       return;
     }
@@ -720,7 +720,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             <button
               className={styles.buyNow}
               onClick={handleBuyNow}
-              disabled={selectedVariant?.totalStock === 0}
+              disabled={(selectedVariant?.totalStock ?? 0) <= 2}
             >
               BUY IT NOW
             </button>
