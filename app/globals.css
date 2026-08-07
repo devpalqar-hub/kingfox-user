@@ -1,6 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Inter:wght@400;600;700;800;900&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -218,10 +223,119 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
+}
+
+/* Material Symbols Outlined — required when loaded via @import (not <link>) */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* KingFox QR Coupon Campaign Streetwear Utilities */
+
+.font-anton {
+  font-family: 'Anton', sans-serif;
+}
+
+.font-marker {
+  font-family: 'Permanent Marker', cursive;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.bg-kf-yellow {
+  background-color: #FFD000;
+}
+
+.text-kf-yellow {
+  color: #FFD000;
+}
+
+.bg-kf-black {
+  background-color: #111111;
+}
+
+.text-kf-black {
+  color: #111111;
+}
+
+.border-kf-black {
+  border-color: #111111;
+}
+
+.text-outline {
+  text-shadow:
+    -2px -2px 0 #111,
+    2px -2px 0 #111,
+    -2px 2px 0 #111,
+    2px 2px 0 #111;
+}
+
+.text-outline-sm {
+  text-shadow:
+    -1px -1px 0 #111,
+    1px -1px 0 #111,
+    -1px 1px 0 #111,
+    1px 1px 0 #111;
+}
+
+.rough-edge {
+  clip-path: polygon(1% 0, 100% 2%, 98% 99%, 0 100%);
+}
+
+.coupon-edge {
+  background: radial-gradient(circle at top left, transparent 12px, #ffffff 0) top left,
+    radial-gradient(circle at top right, transparent 12px, #ffffff 0) top right,
+    radial-gradient(circle at bottom right, transparent 12px, #ffffff 0) bottom right,
+    radial-gradient(circle at bottom left, transparent 12px, #ffffff 0) bottom left;
+  background-size: 51% 51%;
+  background-repeat: no-repeat;
+}
+
+.tape {
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
