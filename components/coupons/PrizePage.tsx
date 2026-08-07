@@ -13,7 +13,9 @@ export default function PrizePage({
   onOpenClaimForm,
 }: PrizePageProps) {
   return (
-    <div className="bg-kf-yellow min-h-screen font-inter text-kf-black overflow-x-hidden relative">
+    <div className="bg-kf-yellow min-h-screen font-inter text-kf-black overflow-x-hidden">
+      {/* Hero wrapper — mascot fades behind header + main hero only */}
+      <div className="relative overflow-hidden">
       {/* Texture Overlay */}
       <div
         className="fixed inset-0 pointer-events-none opacity-10 mix-blend-multiply z-0"
@@ -22,6 +24,24 @@ export default function PrizePage({
           backgroundSize: "20px 20px",
         }}
       />
+
+        {/* Faded Mascot Background — only in this hero wrapper */}
+        <div
+          className="absolute inset-0 pointer-events-none z-0 select-none"
+          aria-hidden="true"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(255,208,0,0.85) 0%, rgba(255,208,0,0.4) 60%, rgba(255,208,0,0.92) 100%)",
+          }}
+        >
+          <Image
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr9Ukhs7eRFeM2FFdv-AtNDFT2JR_swu-Wj424xZrPIChW0Wopyk5z9Jm-jhCE5VdQ3UmBmt094ENaQUZb12fKYEebguy2N6Wx8w9_R29Dah4VwPS-vDdIBBd-GX1aXFhCh2DaYDEStTKnwhy1NW7WrLtob7mVhO_QoA3Prbedk0OLeC6anM-oNz6VZIqptSkUnU6EhOmnyDKHO2QTpQx5Qb-PAuK5uCvRgDmgoi21Kh3FaI6UX382Q"
+            alt=""
+            fill
+            className="object-contain object-center sm:object-right opacity-20 mix-blend-multiply scale-110"
+            unoptimized
+          />
+        </div>
 
       {/* 1. Header */}
       <header className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-6 flex justify-between items-start">
@@ -87,25 +107,23 @@ export default function PrizePage({
         {/* Mascot / Store Graphic Container */}
         <div className="relative flex justify-center items-center mt-4 md:mt-0">
           <div className="relative w-full max-w-md aspect-square">
-            {/* White Torn Paper Container */}
+            {/* White Torn Paper Container with Store Mockup */}
             <div
-              className="absolute inset-0 bg-white shadow-2xl transform rotate-2 z-0 border-4 border-kf-black"
+              className="absolute inset-0 bg-white shadow-2xl transform rotate-2 z-0 border-4 border-kf-black overflow-hidden"
               style={{
                 clipPath: "polygon(4% 0, 100% 3%, 96% 100%, 0 97%)",
               }}
-            />
-
-            {/* Mascot Image */}
-            <div className="relative z-10 w-full h-full p-6 flex flex-col items-center justify-center text-center">
+            >
               <Image
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr9Ukhs7eRFeM2FFdv-AtNDFT2JR_swu-Wj424xZrPIChW0Wopyk5z9Jm-jhCE5VdQ3UmBmt094ENaQUZb12fKYEebguy2N6Wx8w9_R29Dah4VwPS-vDdIBBd-GX1aXFhCh2DaYDEStTKnwhy1NW7WrLtob7mVhO_QoA3Prbedk0OLeC6anM-oNz6VZIqptSkUnU6EhOmnyDKHO2QTpQx5Qb-PAuK5uCvRgDmgoi21Kh3FaI6UX382Q"
-                alt="KingFox Mascot"
-                width={400}
-                height={400}
-                className="w-full h-full object-contain filter drop-shadow-[8px_8px_0px_rgba(0,0,0,0.8)]"
-                unoptimized
+                src="/kingfox-store-mockup.png"
+                alt="KingFox Store"
+                fill
+                className="object-cover opacity-90"
               />
             </div>
+
+            {/* Spacer so the torn paper tile fills the aspect-square */}
+            <div className="relative z-10 w-full h-full" />
 
             {/* Callout Sticker */}
             <div className="absolute top-4 left-2 bg-kf-black text-kf-yellow font-anton text-xs uppercase p-3 rounded-full transform -rotate-12 shadow-lg border-2 border-kf-yellow z-20">
@@ -118,6 +136,7 @@ export default function PrizePage({
           </div>
         </div>
       </main>
+      </div>{/* end hero wrapper */}
 
       {/* 3. "You're Part of the Hunt" Section */}
       <section className="bg-kf-black text-white py-12 md:py-16 relative z-10 mt-12 border-y-8 border-dashed border-white rough-edge">

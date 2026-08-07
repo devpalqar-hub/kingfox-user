@@ -30,6 +30,7 @@ export default function QRCouponPage({ params }: PageProps) {
 
   const [pageState, setPageState] = useState<PageState>("LOADING");
   const [isAlreadyClaimed, setIsAlreadyClaimed] = useState(false);
+  const [codesPending, setCodesPending] = useState<number | undefined>(undefined);
   const [networkErrorMsg, setNetworkErrorMsg] = useState("");
 
   // Claim Form state
@@ -70,6 +71,7 @@ export default function QRCouponPage({ params }: PageProps) {
     }
 
     if (res.data) {
+      setCodesPending(res.data.campaign?.codesPending);
       if (res.data.isClaimed) {
         setPageState("INVALID_OR_CLAIMED");
         setIsAlreadyClaimed(true);
@@ -151,6 +153,7 @@ export default function QRCouponPage({ params }: PageProps) {
       <TryHarderPage
         isAlreadyClaimed={isAlreadyClaimed}
         couponCode={couponId}
+        codesPending={codesPending}
       />
     );
   }
