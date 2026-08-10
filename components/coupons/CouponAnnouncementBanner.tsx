@@ -53,7 +53,7 @@ export default function CouponAnnouncementBanner() {
             {items.map((item, idx) => (
               <div key={`t1-${idx}`} className="flex items-center gap-8">
                 <span className="font-anton text-base sm:text-xl tracking-widest text-kf-yellow uppercase">
-                   {item} 
+                  {item}
                 </span>
                 <span className="text-white text-sm font-bold">✦</span>
               </div>
@@ -65,7 +65,7 @@ export default function CouponAnnouncementBanner() {
             {items.map((item, idx) => (
               <div key={`t2-${idx}`} className="flex items-center gap-8">
                 <span className="font-anton text-base sm:text-xl tracking-widest text-kf-yellow uppercase">
-                 {item}
+                  {item}
                 </span>
                 <span className="text-white text-sm font-bold">✦</span>
               </div>

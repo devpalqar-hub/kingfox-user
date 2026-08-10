@@ -135,11 +135,10 @@ export default function ClaimForm({
               onChange={(e) => setName(e.target.value)}
               onBlur={() => setNameTouched(true)}
               disabled={isSubmitting}
-              className={`w-full px-4 py-3 bg-gray-50 text-kf-black font-inter text-sm rounded-lg border-2 ${
-                nameError
+              className={`w-full px-4 py-3 bg-gray-50 text-kf-black font-inter text-sm rounded-lg border-2 ${nameError
                   ? "border-red-500 focus:ring-red-500"
                   : "border-kf-black focus:border-kf-yellow"
-              } focus:outline-none shadow-[3px_3px_0px_#111] transition-all`}
+                } focus:outline-none shadow-[3px_3px_0px_#111] transition-all`}
             />
             {nameError && (
               <p className="text-xs text-red-600 font-semibold mt-1">
@@ -167,11 +166,10 @@ export default function ClaimForm({
                 onBlur={() => setPhoneTouched(true)}
                 disabled={isSubmitting}
                 maxLength={10}
-                className={`w-full pl-12 pr-4 py-3 bg-gray-50 text-kf-black font-inter text-sm rounded-lg border-2 ${
-                  phoneError
+                className={`w-full pl-12 pr-4 py-3 bg-gray-50 text-kf-black font-inter text-sm rounded-lg border-2 ${phoneError
                     ? "border-red-500 focus:ring-red-500"
                     : "border-kf-black focus:border-kf-yellow"
-                } focus:outline-none shadow-[3px_3px_0px_#111] transition-all`}
+                  } focus:outline-none shadow-[3px_3px_0px_#111] transition-all`}
               />
             </div>
             {phoneError && (
@@ -185,11 +183,10 @@ export default function ClaimForm({
           <button
             type="submit"
             disabled={!isFormValid || isSubmitting}
-            className={`w-full py-4 mt-2 font-anton text-2xl uppercase tracking-wider transition-all rounded-lg border-4 border-kf-black shadow-[6px_6px_0px_#111] ${
-              isFormValid && !isSubmitting
+            className={`w-full py-4 mt-2 font-anton text-2xl uppercase tracking-wider transition-all rounded-lg border-4 border-kf-black shadow-[6px_6px_0px_#111] ${isFormValid && !isSubmitting
                 ? "bg-kf-yellow text-kf-black hover:bg-yellow-400 active:translate-y-1 active:shadow-none cursor-pointer"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-400 shadow-none"
-            } flex items-center justify-center gap-2`}
+              } flex items-center justify-center gap-2`}
           >
             {isSubmitting ? (
               <>

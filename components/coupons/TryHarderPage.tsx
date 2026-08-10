@@ -6,12 +6,16 @@ import Link from "next/link";
 interface TryHarderPageProps {
   isAlreadyClaimed?: boolean;
   couponCode?: string;
+  codesPending?: number;
 }
 
 export default function TryHarderPage({
   isAlreadyClaimed = false,
   couponCode = "",
+  codesPending,
 }: TryHarderPageProps) {
+  const hasPendingCodes = typeof codesPending === "number" && codesPending > 0;
+
   return (
     <div className="bg-kf-yellow min-h-screen font-inter text-kf-black pb-24 overflow-x-hidden relative">
       {/* Texture Overlay */}
@@ -60,9 +64,22 @@ export default function TryHarderPage({
               : `QR CODE NOT FOUND!`}
           </p>
           <p className="font-inter font-semibold text-sm sm:text-base text-gray-700 max-w-md mx-auto">
-            {isAlreadyClaimed
-              ? "Someone else scanned and claimed this QR code before you! Keep your eyes open — there are more QR codes hidden across Kochi with secret discounts & free tees!"
-              : "Make sure you scan valid KingFox QR codes printed on our official flyers and posters around Kochi."}
+            {isAlreadyClaimed ? (
+              hasPendingCodes ? (
+                <>
+                  Someone else scanned and claimed this QR code before you! Keep
+                  your eyes open — there are{" "}
+                  <strong className="font-black text-black text-lg bg-kf-yellow px-2 py-0.5 rounded border border-kf-black shadow-[2px_2px_0px_#111] inline-block mx-1">
+                    {codesPending}
+                  </strong>{" "}
+                  more QR codes available nearby! Go find &apos;em!
+                </>
+              ) : (
+                "Someone else scanned and claimed this QR code before you! Keep your eyes open — there are more QR codes hidden across Kochi with secret discounts & free tees!"
+              )
+            ) : (
+              "Make sure you scan valid KingFox QR codes printed on our official flyers and posters around Kochi."
+            )}
           </p>
 
           <div className="mt-6 pt-6 border-t-2 border-dashed border-gray-300">
