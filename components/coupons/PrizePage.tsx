@@ -35,8 +35,8 @@ export default function PrizePage({
           }}
         >
           <Image
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr9Ukhs7eRFeM2FFdv-AtNDFT2JR_swu-Wj424xZrPIChW0Wopyk5z9Jm-jhCE5VdQ3UmBmt094ENaQUZb12fKYEebguy2N6Wx8w9_R29Dah4VwPS-vDdIBBd-GX1aXFhCh2DaYDEStTKnwhy1NW7WrLtob7mVhO_QoA3Prbedk0OLeC6anM-oNz6VZIqptSkUnU6EhOmnyDKHO2QTpQx5Qb-PAuK5uCvRgDmgoi21Kh3FaI6UX382Q"
-            alt=""
+            src="/couponPrize/mascot.png"
+            alt="Mascot"
             fill
             className="object-contain object-center sm:object-right opacity-20 mix-blend-multiply scale-110"
             unoptimized
@@ -231,7 +231,7 @@ export default function PrizePage({
           {/* Reward Pool Grid Graphics */}
           <div className="w-full flex justify-center items-center py-4">
             <Image
-              src="https://lh3.googleusercontent.com/aida/AP1WRLsPcvNUkdWxKBuEEccrTSNIHakCHiFbOH0vkofTQxaVn363sndPjmpM2v3_TkVVUy_wO142Q5_giU6EKLgUvfnDN0n9wWLU3Ue6LDcYQgjwFarjhMIml7HbNRpxyiTRzr3imJSldTlWS0k-WpVjjMdTLoITcTOY8uG8Fie81_A16D-bQBcIWuyzrzM6V5M-NgW9eXV3B-BFcPWBn6TV06eKgQOaXnbmPDJe4iqHoDJDdOh4rOM-gfMRRrIE"
+              src="/couponPrize/prizePool.jpeg"
               alt="KingFox Reward Pool Icons"
               width={800}
               height={400}
