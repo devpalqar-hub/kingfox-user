@@ -508,9 +508,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             {productImages.map((img, i) => (
               <div
                 key={i}
-                className={`${styles.thumbBox} ${
-                  activeImg === img ? styles.activeThumb : ""
-                }`}
+                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
+                  }`}
                 onClick={() => setActiveImg(img)}
               >
                 <img src={img} alt={`view ${i}`} />
@@ -549,10 +548,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                   {Number(selectedVariant.costPrice) >
                     Number(selectedVariant.sellingPrice) && (
-                    <span className={styles.strikePrice}>
-                      ₹{selectedVariant.costPrice}
-                    </span>
-                  )}
+                      <span className={styles.strikePrice}>
+                        ₹{selectedVariant.costPrice}
+                      </span>
+                    )}
                 </>
               ) : (
                 <span className={styles.price}>
@@ -659,7 +658,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                     const variantForSelectedSize = product?.variants.find(
                       (v) =>
                         v.color.toLowerCase() ===
-                          colorOption.name.toLowerCase() &&
+                        colorOption.name.toLowerCase() &&
                         v.size === selectedSize,
                     );
                     const fallbackVariant = product?.variants.find(
@@ -679,9 +678,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                       setActiveImg(nextVariant.image);
                     }
                   }}
-                  className={`${styles.colorItem} ${
-                    selectedColor === colorOption.name ? styles.activeColor : ""
-                  }`}
+                  className={`${styles.colorItem} ${selectedColor === colorOption.name ? styles.activeColor : ""
+                    }`}
                 >
                   <span
                     className={styles.colorDot}
@@ -700,7 +698,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </div>
           {/* Actions */}
           <div className={styles.actions}>
-            {isInCart ? (
+            {!selectedSize ? null : isInCart ? (
               <button
                 className={styles.addToCart}
                 onClick={() => router.push("/cart")}
@@ -712,7 +710,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 OUT OF STOCK
               </button>
             ) : (
-              <button className={styles.addToCart} onClick={handleAddToCart}>
+              <button
+                className={styles.addToCart}
+                onClick={handleAddToCart}
+              >
                 ADD TO CART
               </button>
             )}
@@ -776,9 +777,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           {metaSections.map((section, i) => (
             <button
               key={i}
-              className={`${styles.tabBtn} ${
-                activeTab === section.title ? styles.activeTabBtn : ""
-              }`}
+              className={`${styles.tabBtn} ${activeTab === section.title ? styles.activeTabBtn : ""
+                }`}
               onClick={() => setActiveTab(section.title)}
             >
               {section.title.toUpperCase()}
