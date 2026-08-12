@@ -65,7 +65,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     {
       icon: <MessageSquare size={24} />,
       label: 'WHATSAPP',
-      value: '+91 98765 43210',
+      value: '+91 8129882245',
       subtext: 'Mon-Sat, 10am - 8pm',
     },
     {
@@ -77,7 +77,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     {
       icon: <MapPin size={24} />,
       label: 'LOCATION',
-      value: 'Kerala, India', // Corrected spelling from your screenshot's "kerela"
+      value: 'Kerala, India', 
       subtext: 'Global shipping operations',
     },
   ];
