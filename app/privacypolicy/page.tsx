@@ -142,7 +142,7 @@ export default function PrivacyPolicy() {
         <strong>Business Address:</strong> KINGFOX CLOTHING STORE, MN'S AVENUE,
         Calicut, Kerala
         <br />
-        <strong>Phone:</strong> 8136882245
+        <strong>Phone:</strong> 8129882245
       </p>
 
       <h2>RETURN & REFUND POLICY</h2>
