@@ -233,8 +233,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </li>
 
                 <li>
-                  <Link href="/privacypolicy">
-                    Return Policy <ChevronRight size={18} />
+                  <Link href="/shippingpolicy">
+                    Shipping Policy <ChevronRight size={18} />
                   </Link>
                 </li>
               </ul>

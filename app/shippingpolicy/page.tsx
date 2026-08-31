@@ -8,7 +8,7 @@ export default function PrivacyPolicy() {
       <h3>Order Processing</h3>
 
       <p>
-        Orders are processed within <strong>1–2 business days</strong> from the
+        Orders are processed within <strong>2–4 business days</strong> from the
         date of order confirmation, excluding Sundays.
       </p>
 
