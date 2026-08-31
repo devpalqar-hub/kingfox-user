@@ -330,9 +330,9 @@ const Header = () => {
           <li>
             <Link href="/design-studio/select">CUSTOMIZE</Link>
           </li>
-          <li>
+          {/* <li>
             <Link href="/products?tag=ONAM COLLECTION">ONAM COLLECTIONS</Link>
-          </li>
+          </li> */}
           <li>
             <Link href="/new-arrivals">NEW ARRIVALS</Link>
           </li>
