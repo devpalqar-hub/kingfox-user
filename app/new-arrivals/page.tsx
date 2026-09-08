@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import styles from "./New-Arrivals.module.css";
 import { LuLayers, LuShieldCheck, LuRuler } from "react-icons/lu";
 import { useRouter } from "next/navigation";
@@ -11,13 +11,58 @@ import {
   removeFromWishlist,
   getWishList,
 } from "@/services/wishlist.service";
-import { getNewArrivals, getColorsBySize } from "@/services/product.service";
+import { getNewArrivals } from "@/services/product.service";
 import { getAllCategories } from "@/services/category.service";
 import { getReviewsByProductId } from "@/services/review.service";
 import ProductCard from "@/components/productcard/productcard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton/ProductCardSkeleton";
+import InfiniteScrollProducts from "@/components/InfiniteScrollProducts/InfiniteScrollProducts";
 
-const FIXED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+type ColorOption = {
+  name: string;
+  colorCode?: string | null;
+};
+
+const FIXED_SIZES = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "3XL",
+  "4XL",
+  "5XL",
+  "6XL",
+  "7XL",
+  "8XL",
+  "9XL",
+  "10XL",
+  "11XL",
+  "12XL",
+];
+
+const colorMap: Record<string, string> = {
+  red: "#ef4444",
+  blue: "#3b82f6",
+  green: "#22c55e",
+  yellow: "#eab308",
+  black: "#000000",
+  white: "#ffffff",
+  gray: "#6b7280",
+  purple: "#a855f7",
+  orange: "#f97316",
+  pink: "#ec4899",
+  brown: "#92400e",
+  navy: "#1e3a8a",
+  cyan: "#06b6d4",
+  lime: "#84cc16",
+  magenta: "#d946ef",
+  "mist grey": "#bfc5c9",
+  "military olive": "#556b2f",
+  "mud olive": "#5b5b2b",
+  "fluorescent green": "#39ff14",
+};
 
 const NewArrivals = () => {
   const { showToast } = useToast();
@@ -27,6 +72,8 @@ const NewArrivals = () => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
 
   const [size, setSize] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
@@ -37,7 +84,7 @@ const NewArrivals = () => {
     "newly_arrived" | "low_to_high" | "high_to_low" | null
   >(null);
 
-  const [availableColors, setAvailableColors] = useState<string[]>([]);
+  const [availableColors, setAvailableColors] = useState<ColorOption[]>([]);
   const [availableCategories, setAvailableCategories] = useState<
     { id: number; name: string; isOnline?: boolean }[]
   >([]);
@@ -47,6 +94,74 @@ const NewArrivals = () => {
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState<number | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const getColorValue = (
+    colorName?: string | null,
+    colorCode?: string | null,
+  ) => {
+    const normalizedColorCode = colorCode?.trim();
+    if (
+      normalizedColorCode &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(normalizedColorCode)
+    ) {
+      return normalizedColorCode;
+    }
+
+    const normalizedColorName = colorName?.trim().toLowerCase();
+    if (!normalizedColorName) {
+      return "#d1d5db";
+    }
+
+    return colorMap[normalizedColorName] || normalizedColorName;
+  };
+
+  const getProductColorOptions = useCallback(
+    (product: any): ColorOption[] => {
+      const variantColorOptions =
+        product.variants?.flatMap((variant: any) => {
+          const name = variant.color?.trim();
+          if (!name) {
+            return [];
+          }
+
+          return [
+            {
+              name,
+              colorCode: variant.colorCode,
+            },
+          ];
+        }) || [];
+
+      if (variantColorOptions.length > 0) {
+        return Array.from(
+          new Map(
+            variantColorOptions.map((colorOption: ColorOption) => [
+              colorOption.name.toLowerCase(),
+              colorOption,
+            ]),
+          ).values(),
+        ) as ColorOption[];
+      }
+
+      return (product.colors || []).map((name: string) => ({ name }));
+    },
+    [],
+  );
+
+  const getAvailableColorOptions = useCallback(
+    (productList: any[]) =>
+      Array.from(
+        new Map(
+          productList
+            .flatMap((product) => getProductColorOptions(product))
+            .map((colorOption) => [
+              colorOption.name.toLowerCase(),
+              colorOption,
+            ]),
+        ).values(),
+      ) as ColorOption[],
+    [getProductColorOptions],
+  );
 
   // Fetch categories
   useEffect(() => {
@@ -84,33 +199,23 @@ const NewArrivals = () => {
     fetchWishlist();
   }, []);
 
-  // Fetch colors when size changes
-  useEffect(() => {
-    const fetchColors = async () => {
-      if (!size) {
-        setAvailableColors([]);
-        return;
-      }
-      try {
-        const res = await getColorsBySize(size);
-        setAvailableColors(res.colors || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchColors();
-  }, [size]);
-
   // Reset page on filter change
   useEffect(() => {
     setPage(1);
+    setLoadMoreError(null);
   }, [size, color, minPrice, maxPrice, categoryId, sortBy]);
 
-  // Fetch products
+  // Fetch products (page 1 = full loading state, further pages = infinite scroll)
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        setLoading(true);
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setIsFetchingMore(true);
+        }
+        setLoadMoreError(null);
+
         const data = await getNewArrivals({
           page,
           limit: 8,
@@ -138,14 +243,42 @@ const NewArrivals = () => {
         setTotalProducts(data.pagination?.total || items.length);
       } catch (err) {
         console.error(err);
-        showToast("Failed to load products", "error");
+        if (page === 1) {
+          showToast("Failed to load products", "error");
+        } else {
+          setLoadMoreError("Unable to load more products. Please try again.");
+        }
       } finally {
         setLoading(false);
+        setIsFetchingMore(false);
       }
     };
 
     loadProducts();
   }, [page, size, color, minPrice, maxPrice, categoryId, sortBy]);
+
+  // Fetch ALL colours matching the current filters (independent of pagination/scroll
+  // and of the selected colour itself) so every swatch is available up front.
+  useEffect(() => {
+    const loadAllColors = async () => {
+      try {
+        const data = await getNewArrivals({
+          page: 1,
+          limit: 1000,
+          size: size || undefined,
+          minPrice: minPrice > 0 ? minPrice : undefined,
+          maxPrice: maxPrice < 5000 ? maxPrice : undefined,
+          categoryId: categoryId || undefined,
+        });
+
+        setAvailableColors(getAvailableColorOptions(data.items || []));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadAllColors();
+  }, [size, minPrice, maxPrice, categoryId, getAvailableColorOptions]);
 
   // Fetch reviews
   useEffect(() => {
@@ -231,7 +364,7 @@ const NewArrivals = () => {
           </h1>
           <div className={styles.subtextContainer}>
             <span className={styles.greenLine}></span>
-            <p className={styles.subtext}>AVAILABLE UP TO SIZE XL</p>
+            <p className={styles.subtext}>AVAILABLE UP TO SIZE 12XL</p>
           </div>
         </header>
       </div>
@@ -309,18 +442,27 @@ const NewArrivals = () => {
               <div className={styles.filterGroup}>
                 <p className={styles.filterLabel}>COLOR</p>
                 <div className={styles.colorGrid}>
-                  {availableColors.map((c) => (
+                  {availableColors.map((colorOption) => (
                     <div
-                      key={c}
-                      className={`${styles.colorItem} ${color === c ? styles.colorActive : ""}`}
+                      key={colorOption.name}
+                      className={`${styles.colorItem} ${
+                        color === colorOption.name ? styles.colorActive : ""
+                      }`}
                       onClick={() => {
-                        setColor((prev) => (prev === c ? null : c));
+                        setColor((prev) =>
+                          prev === colorOption.name ? null : colorOption.name,
+                        );
                         setPage(1);
                       }}
                     >
                       <span
                         className={styles.colorInner}
-                        style={{ backgroundColor: c.toLowerCase() }}
+                        style={{
+                          backgroundColor: getColorValue(
+                            colorOption.name,
+                            colorOption.colorCode,
+                          ),
+                        }}
                       />
                     </div>
                   ))}
@@ -441,7 +583,7 @@ const NewArrivals = () => {
                     )}
                     rating={reviewMap[product.id]?.rating ?? 0}
                     reviews={reviewMap[product.id]?.total ?? 0}
-                    colors={product.colors}
+                    colors={getProductColorOptions(product)}
                     image={
                       product.images && product.images.length > 0
                         ? product.images[0]
@@ -472,14 +614,12 @@ const NewArrivals = () => {
                     }}
                   />
                 </div>
-                {products.length < totalProducts && (
-                  <button
-                    className={styles.loadMoreBtn}
-                    onClick={() => setPage((prev) => prev + 1)}
-                  >
-                    LOAD MORE PRODUCTS
-                  </button>
-                )}
+                <InfiniteScrollProducts
+                  hasMore={products.length < totalProducts}
+                  isLoading={isFetchingMore}
+                  onLoadMore={() => setPage((prev) => prev + 1)}
+                  error={loadMoreError}
+                />
               </div>
             )}
           </main>

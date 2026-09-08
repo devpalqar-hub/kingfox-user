@@ -104,7 +104,7 @@ const OnamCollections = () => {
     return (
         <section className={styles.section}>
             <div className={styles.header}>
-                <h2 className={styles.title}>ONAM COLLECTIONS</h2>
+                <h2 className={styles.title}>GRAPHIC TEES</h2>
 
                 {/* 🔥 ARROWS */}
                 <div className={styles.navButtons}>

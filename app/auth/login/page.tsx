@@ -9,7 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import "react-phone-number-input/style.css";
-import PhoneInput from "react-phone-number-input";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 
 type Props = {
   isOpen: boolean;
@@ -86,12 +86,17 @@ export default function LoginModal({
   // 👉 Send OTP
   const handleSendOtp = async () => {
     try {
-      setLoading(true);
       if (!phone) {
+        showToast("Please enter a mobile number", "error");
+        return;
+      }
+
+      if (!isValidPhoneNumber(phone)) {
         showToast("Please enter a valid phone number", "error");
         return;
       }
 
+      setLoading(true);
       await sendOtp(phone);
 
       showToast("OTP sent successfully", "success", 3000);
