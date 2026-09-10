@@ -71,9 +71,9 @@ const ContactPage = () => {
     {
       icon: <Instagram size={24} />,
       label: "INSTAGRAM",
-      value: "@kingfoxclothing",
+      value: "@kingfoxclothingstore",
       subtext: "DM for quick queries",
-      href: "https://instagram.com/kingfoxclothing",
+      href: "https://instagram.com/kingfoxclothingstore",
     },
     {
       icon: <MapPin size={24} />,

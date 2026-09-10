@@ -51,7 +51,7 @@ const Footer = () => {
 
             <h3>Free Shipping</h3>
 
-            <p>For all orders above ₹1950</p>
+            <p>All over India(T&C apply)</p>
           </div>
 
           <div className={styles.trustCard}>

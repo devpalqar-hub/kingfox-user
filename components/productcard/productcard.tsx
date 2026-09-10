@@ -166,7 +166,7 @@ const ProductCard = ({
           </p>
         </div>
 
-        <div className={styles.colorOptions}>
+        {/* <div className={styles.colorOptions}>
           {colorOptions.map((color, i) => (
             <span
               key={`${color.name}-${i}`}
@@ -174,7 +174,7 @@ const ProductCard = ({
               style={{ backgroundColor: color.value }}
             />
           ))}
-        </div>
+        </div> */}
 
         {reviews !== undefined && reviews > 0 && (
           <div className={styles.ratingRow}>

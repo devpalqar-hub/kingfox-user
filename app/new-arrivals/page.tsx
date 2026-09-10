@@ -583,7 +583,7 @@ const NewArrivals = () => {
                     )}
                     rating={reviewMap[product.id]?.rating ?? 0}
                     reviews={reviewMap[product.id]?.total ?? 0}
-                    colors={getProductColorOptions(product)}
+                    // colors={getProductColorOptions(product)}
                     image={
                       product.images && product.images.length > 0
                         ? product.images[0]
