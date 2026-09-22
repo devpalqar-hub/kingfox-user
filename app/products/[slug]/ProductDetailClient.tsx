@@ -769,32 +769,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </div>
         </div>
       </div>
-      {/* Bottom Features Bar */}
-      <div className={styles.featuresBar}>
-        <div className={styles.featureItem}>
-          <div className={styles.featureIcon}>
-            <LuBox size={24} />
-          </div>
-          <h3>FREE SHIPPING</h3>
-          <p>Available India-wide on all orders</p>
-        </div>
-
-        <div className={styles.featureItem}>
-          <div className={styles.featureIcon}>
-            <LuRotateCcw size={24} />
-          </div>
-          <h3>10-DAY EASY EXCHANGE</h3>
-          <p>No questions asked return policy</p>
-        </div>
-
-        <div className={styles.featureItem}>
-          <div className={styles.featureIcon}>
-            <LuAward size={24} />
-          </div>
-          <h3>PREMIUM LOOP KNIT</h3>
-          <p>Superior quality 240 GSM cotton</p>
-        </div>
-      </div>
 
       <div className={styles.tabsContainer}>
         {/* Tab Headers */}
@@ -871,6 +845,34 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </div>
         ))}
       </div>
+
+      {/* Bottom Features Bar */}
+      <div className={styles.featuresBar}>
+        <div className={styles.featureItem}>
+          <div className={styles.featureIcon}>
+            <LuBox size={24} />
+          </div>
+          <h3>FREE SHIPPING</h3>
+          <p>Available India-wide on all orders</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.featureIcon}>
+            <LuRotateCcw size={24} />
+          </div>
+          <h3>10-DAY EASY EXCHANGE</h3>
+          <p>No questions asked return policy</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.featureIcon}>
+            <LuAward size={24} />
+          </div>
+          <h3>PREMIUM LOOP KNIT</h3>
+          <p>Superior quality 240 GSM cotton</p>
+        </div>
+      </div>
+
       {/* Community Feedback Section */}
 
       {reviewData && reviewData.total > 0 && (
