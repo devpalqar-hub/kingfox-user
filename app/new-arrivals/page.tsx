@@ -439,6 +439,7 @@ const NewArrivals = () => {
               </div>
 
               {/* COLOR */}
+{/*
               <div className={styles.filterGroup}>
                 <p className={styles.filterLabel}>COLOR</p>
                 <div className={styles.colorGrid}>
@@ -468,6 +469,7 @@ const NewArrivals = () => {
                   ))}
                 </div>
               </div>
+*/}
 
               {/* PRICE RANGE */}
               <div className={styles.filterGroup}>

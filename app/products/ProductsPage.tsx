@@ -565,6 +565,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
               </div>
             </div>
 
+{/*
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>COLOR</p>
 
@@ -594,6 +595,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                 ))}
               </div>
             </div>
+*/}
 
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>PRICE RANGE</p>
