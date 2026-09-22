@@ -90,13 +90,13 @@ const ProductCard = ({
     colors?.map((color) =>
       typeof color === "string"
         ? {
-            name: color,
-            value: getColorValue(color),
-          }
+          name: color,
+          value: getColorValue(color),
+        }
         : {
-            name: color.name,
-            value: getColorValue(color.name, color.colorCode),
-          },
+          name: color.name,
+          value: getColorValue(color.name, color.colorCode),
+        },
     ) || [
       { name: "gold", value: "#f1b941" },
       { name: "gray", value: "#777" },
@@ -116,10 +116,10 @@ const ProductCard = ({
 
   return (
     <div
-        className={styles.cardContainer}
-        onClick={() => router.push(getProductPath({ id, slug }))}
-        style={{ cursor: "pointer" }}
-      >
+      className={styles.cardContainer}
+      onClick={() => router.push(getProductPath({ id, slug }))}
+      style={{ cursor: "pointer" }}
+    >
       <div className={styles.imageWrapper}>
         {isNew && <span className={styles.newBadge}>NEW ARRIVAL</span>}
         <img src={image} alt={name} className={styles.productImage} />

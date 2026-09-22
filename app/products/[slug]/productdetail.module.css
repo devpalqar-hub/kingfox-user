@@ -75,7 +75,8 @@
   /* Shows which one is selected */
 }
 
-.thumbBox img {
+.thumbBox img,
+.thumbBox video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -84,9 +85,13 @@
 .mainImage {
   flex: 1;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.mainImage img {
+.mainImage img,
+.mainImage video {
   width: 100%;
   height: auto;
   border-radius: 20px;

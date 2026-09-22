@@ -44,6 +44,19 @@ type ProductDetailClientProps = {
   initialProduct: ProductDetailType;
 };
 
+const isVideoUrl = (url?: string | null) => {
+  if (!url) return false;
+  const lowerUrl = url.toLowerCase();
+  return (
+    lowerUrl.endsWith(".mp4") ||
+    lowerUrl.endsWith(".mov") ||
+    lowerUrl.endsWith(".webm") ||
+    lowerUrl.includes(".mp4?") ||
+    lowerUrl.includes(".mov?") ||
+    lowerUrl.includes(".webm?")
+  );
+};
+
 const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -512,12 +525,24 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   }`}
                 onClick={() => setActiveImg(img)}
               >
-                <img src={img} alt={`view ${i}`} />
+                {isVideoUrl(img) ? (
+                  <video src={img} muted playsInline />
+                ) : (
+                  <img src={img} alt={`view ${i}`} />
+                )}
               </div>
             ))}
           </div>
           <div className={styles.mainImage}>
-            <img src={activeImg || productImages[0]} alt={productDisplayName} />
+            {isVideoUrl(activeImg || productImages[0]) ? (
+              <video 
+                src={activeImg || productImages[0]} 
+                controls 
+                playsInline 
+              />
+            ) : (
+              <img src={activeImg || productImages[0]} alt={productDisplayName} />
+            )}
 
             {/* ❤️ Wishlist */}
             <button
