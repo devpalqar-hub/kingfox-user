@@ -294,7 +294,6 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
       const nextProducts = dedupeProducts(initialData.items || []);
       setProducts(nextProducts);
       setTotalProducts(initialData.pagination.total || 0);
-      setAvailableColors(getAvailableColorOptions(nextProducts));
       setAvailableSizes(getPageSizes(nextProducts));
       setLoading(false);
       setIsFetchingMore(false);
@@ -333,15 +332,11 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
 
         const incomingProducts = dedupeProducts(data.items || []);
 
-        setProducts((prev) => {
-          const mergedProducts =
-            page === INITIAL_PAGE
-              ? incomingProducts
-              : dedupeProducts([...prev, ...incomingProducts]);
-
-          setAvailableColors(getAvailableColorOptions(mergedProducts));
-          return mergedProducts;
-        });
+        setProducts((prev) =>
+          page === INITIAL_PAGE
+            ? incomingProducts
+            : dedupeProducts([...prev, ...incomingProducts]),
+        );
 
         setTotalProducts(data.pagination.total || 0);
         setAvailableSizes(getPageSizes(incomingProducts));
@@ -372,6 +367,42 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
     tag,
     queryKey,
     initialData,
+    getAvailableColorOptions,
+  ]);
+
+  // Fetch ALL colours matching the current filters (independent of pagination/scroll
+  // and of the selected colour itself) so every swatch is available up front.
+  useEffect(() => {
+    if (!initialized) {
+      return;
+    }
+
+    const loadAllColors = async () => {
+      try {
+        const data = await getProducts({
+          page: 1,
+          limit: 1000,
+          size: size || undefined,
+          minPrice: minPrice > 0 ? minPrice : undefined,
+          maxPrice: maxPrice < DEFAULT_MAX_PRICE ? maxPrice : undefined,
+          categoryId: categoryId || undefined,
+          tags: tag ? [tag] : undefined,
+        });
+
+        setAvailableColors(getAvailableColorOptions(dedupeProducts(data.items || [])));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadAllColors();
+  }, [
+    initialized,
+    size,
+    minPrice,
+    maxPrice,
+    categoryId,
+    tag,
     getAvailableColorOptions,
   ]);
 
@@ -534,6 +565,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
               </div>
             </div>
 
+{/*
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>COLOR</p>
 
@@ -563,6 +595,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                 ))}
               </div>
             </div>
+*/}
 
             <div className={styles.filterGroup}>
               <p className={styles.filterLabel}>PRICE RANGE</p>
@@ -678,7 +711,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                     price={String(product.priceRange?.min || 0)}
                     rating={reviewMap[product.id]?.rating ?? 0}
                     reviews={reviewMap[product.id]?.total ?? 0}
-                    colors={getProductColorOptions(product)}
+                    // colors={getProductColorOptions(product)}
                     image={
                       product.images && product.images.length > 0
                         ? product.images[0]

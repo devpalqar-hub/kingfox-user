@@ -51,7 +51,7 @@ const Footer = () => {
 
             <h3>Free Shipping</h3>
 
-            <p>For all orders above ₹1950</p>
+            <p>All over India(T&C apply)</p>
           </div>
 
           <div className={styles.trustCard}>
@@ -198,8 +198,8 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/privacypolicy" className={styles.link}>
-                    Privacy Policy
+                  <Link href="/shippingpolicy" className={styles.link}>
+                    Shipping Policy
                   </Link>
                 </li>
                 <li>

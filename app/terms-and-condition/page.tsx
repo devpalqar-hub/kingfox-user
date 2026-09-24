@@ -28,8 +28,8 @@ export default function TermsPage() {
         <p>
           These terms of service (“Terms” / “Terms of Use”) describe the terms on
           which KING FOX CLOTHING grants users access to the Platform, and should
-          be read with the privacy policy available at:
-          https://www.thekingfoxclothing.com/privacy-policy (“Privacy Policy”).
+          be read with the shipping policy available at:
+          https://www.thekingfoxclothing.com/shipping-policy (“Shipping Policy”).
         </p>
 
         <p>

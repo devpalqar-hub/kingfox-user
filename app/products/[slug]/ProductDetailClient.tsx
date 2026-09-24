@@ -44,6 +44,19 @@ type ProductDetailClientProps = {
   initialProduct: ProductDetailType;
 };
 
+const isVideoUrl = (url?: string | null) => {
+  if (!url) return false;
+  const lowerUrl = url.toLowerCase();
+  return (
+    lowerUrl.endsWith(".mp4") ||
+    lowerUrl.endsWith(".mov") ||
+    lowerUrl.endsWith(".webm") ||
+    lowerUrl.includes(".mp4?") ||
+    lowerUrl.includes(".mov?") ||
+    lowerUrl.includes(".webm?")
+  );
+};
+
 const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -508,17 +521,28 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             {productImages.map((img, i) => (
               <div
                 key={i}
-                className={`${styles.thumbBox} ${
-                  activeImg === img ? styles.activeThumb : ""
-                }`}
+                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
+                  }`}
                 onClick={() => setActiveImg(img)}
               >
-                <img src={img} alt={`view ${i}`} />
+                {isVideoUrl(img) ? (
+                  <video src={img} muted playsInline />
+                ) : (
+                  <img src={img} alt={`view ${i}`} />
+                )}
               </div>
             ))}
           </div>
           <div className={styles.mainImage}>
-            <img src={activeImg || productImages[0]} alt={productDisplayName} />
+            {isVideoUrl(activeImg || productImages[0]) ? (
+              <video 
+                src={activeImg || productImages[0]} 
+                controls 
+                playsInline 
+              />
+            ) : (
+              <img src={activeImg || productImages[0]} alt={productDisplayName} />
+            )}
 
             {/* ❤️ Wishlist */}
             <button
@@ -549,10 +573,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                   {Number(selectedVariant.costPrice) >
                     Number(selectedVariant.sellingPrice) && (
-                    <span className={styles.strikePrice}>
-                      ₹{selectedVariant.costPrice}
-                    </span>
-                  )}
+                      <span className={styles.strikePrice}>
+                        ₹{selectedVariant.costPrice}
+                      </span>
+                    )}
                 </>
               ) : (
                 <span className={styles.price}>
@@ -659,7 +683,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                     const variantForSelectedSize = product?.variants.find(
                       (v) =>
                         v.color.toLowerCase() ===
-                          colorOption.name.toLowerCase() &&
+                        colorOption.name.toLowerCase() &&
                         v.size === selectedSize,
                     );
                     const fallbackVariant = product?.variants.find(
@@ -679,9 +703,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                       setActiveImg(nextVariant.image);
                     }
                   }}
-                  className={`${styles.colorItem} ${
-                    selectedColor === colorOption.name ? styles.activeColor : ""
-                  }`}
+                  className={`${styles.colorItem} ${selectedColor === colorOption.name ? styles.activeColor : ""
+                    }`}
                 >
                   <span
                     className={styles.colorDot}
@@ -700,7 +723,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </div>
           {/* Actions */}
           <div className={styles.actions}>
-            {isInCart ? (
+            {!selectedSize ? null : isInCart ? (
               <button
                 className={styles.addToCart}
                 onClick={() => router.push("/cart")}
@@ -712,7 +735,10 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 OUT OF STOCK
               </button>
             ) : (
-              <button className={styles.addToCart} onClick={handleAddToCart}>
+              <button
+                className={styles.addToCart}
+                onClick={handleAddToCart}
+              >
                 ADD TO CART
               </button>
             )}
@@ -743,32 +769,6 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </div>
         </div>
       </div>
-      {/* Bottom Features Bar */}
-      <div className={styles.featuresBar}>
-        <div className={styles.featureItem}>
-          <div className={styles.featureIcon}>
-            <LuBox size={24} />
-          </div>
-          <h3>FREE SHIPPING</h3>
-          <p>Available India-wide on all orders</p>
-        </div>
-
-        <div className={styles.featureItem}>
-          <div className={styles.featureIcon}>
-            <LuRotateCcw size={24} />
-          </div>
-          <h3>10-DAY EASY EXCHANGE</h3>
-          <p>No questions asked return policy</p>
-        </div>
-
-        <div className={styles.featureItem}>
-          <div className={styles.featureIcon}>
-            <LuAward size={24} />
-          </div>
-          <h3>PREMIUM LOOP KNIT</h3>
-          <p>Superior quality 240 GSM cotton</p>
-        </div>
-      </div>
 
       <div className={styles.tabsContainer}>
         {/* Tab Headers */}
@@ -776,9 +776,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           {metaSections.map((section, i) => (
             <button
               key={i}
-              className={`${styles.tabBtn} ${
-                activeTab === section.title ? styles.activeTabBtn : ""
-              }`}
+              className={`${styles.tabBtn} ${activeTab === section.title ? styles.activeTabBtn : ""
+                }`}
               onClick={() => setActiveTab(section.title)}
             >
               {section.title.toUpperCase()}
@@ -846,6 +845,34 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           </div>
         ))}
       </div>
+
+      {/* Bottom Features Bar */}
+      <div className={styles.featuresBar}>
+        <div className={styles.featureItem}>
+          <div className={styles.featureIcon}>
+            <LuBox size={24} />
+          </div>
+          <h3>FREE SHIPPING</h3>
+          <p>Available India-wide on all orders</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.featureIcon}>
+            <LuRotateCcw size={24} />
+          </div>
+          <h3>10-DAY EASY EXCHANGE</h3>
+          <p>No questions asked return policy</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.featureIcon}>
+            <LuAward size={24} />
+          </div>
+          <h3>PREMIUM LOOP KNIT</h3>
+          <p>Superior quality 240 GSM cotton</p>
+        </div>
+      </div>
+
       {/* Community Feedback Section */}
 
       {reviewData && reviewData.total > 0 && (

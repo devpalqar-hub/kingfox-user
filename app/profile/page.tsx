@@ -315,7 +315,15 @@ const ProfilePage = () => {
                 {o.items.length + (o.customDesignItems?.length || 0)} ITEMS
               </span>
               <span>₹{o.finalAmount}</span>
-              <span className={styles.status}>{formatStatus(o.status)}</span>
+              <span
+                className={
+                  o.status.toLowerCase() === "returned"
+                    ? styles.statusReturned
+                    : styles.status
+                }
+              >
+                {formatStatus(o.status)}
+              </span>
             </div>
           ))}
         </div>

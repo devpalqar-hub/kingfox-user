@@ -3,7 +3,7 @@
 import { FaWhatsapp } from "react-icons/fa";
 import styles from "./whatsappButton.module.css";
 
-const PHONE = "+919876543210";
+const PHONE = "+918129882245";
 const MESSAGE = encodeURIComponent(
     "Hi Kingfox, I'm interested in your products."
 );

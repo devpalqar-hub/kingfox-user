@@ -192,6 +192,16 @@
   background-color: rgba(0, 128, 0, 0.227);
 }
 
+.statusReturned {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 10px;
+  width: fit-content;
+  color: #c2410c;
+  background-color: rgba(194, 65, 12, 0.15);
+}
+
 /* WISHLIST */
 .wishlist {
   margin-top: 40px;

@@ -137,17 +137,6 @@ export default function ApparelSelection() {
                       }
                     }}
                   />
-                  <button
-                    className={styles.addBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelect(category.id);
-                    }}
-                    aria-label={`Quick add ${category.name}`}
-                    tabIndex={-1}
-                  >
-                    +
-                  </button>
                 </div>
 
                 <div className={styles.cardBody}>
