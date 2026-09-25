@@ -5,7 +5,7 @@
 
 .header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   position: relative;
   margin-bottom: 40px;
@@ -16,6 +16,7 @@
   font-weight: 700;
   letter-spacing: -1px;
   margin: 0;
+  text-align: center;
   font-family: var(--font-space);
 }
 /* VIEW ALL BUTTON */
@@ -72,15 +73,6 @@
 }
 
 @media (max-width: 460px) {
-  .section {
-    padding: 40px 16px;
-  }
-
-  .title {
-    font-size: 22px;
-    padding: 12px 22px;
-  }
-
   .grid {
     display: flex;
     flex-wrap: wrap;
@@ -124,7 +116,11 @@
 @media (max-width: 720px) {
   .header {
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+  }
+
+  .navButtons {
+    position: static;
   }
 
   .viewAll {
@@ -151,9 +147,19 @@
     padding: 40px 16px;
   }
 
+  .header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .navButtons {
+    position: static;
+  }
+
   .title {
     font-size: 22px;
-    padding: 12px 22px;
+    padding: 0;
+    text-align: center;
   }
 
   .grid {
@@ -165,6 +171,7 @@
   }
 
   .viewAll {
+    position: static;
     font-size: 12px;
     padding: 10px 20px;
     border-radius: 10px;
