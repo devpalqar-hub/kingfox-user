@@ -1,7 +1,7 @@
 .bannerSection {
   position: relative;
   width: 100%;
-  background: #0a0a0a;
+  background: #0a0908;
   padding: 0 20px 28px;
 }
 
@@ -11,8 +11,8 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    #d4af37 25%,
-    #d4af37 75%,
+    #E8A93A 25%,
+    #E8A93A 75%,
     transparent 100%
   );
   margin-bottom: 0;
@@ -35,7 +35,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #d4af37;
+  background: #E8A93A;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -55,7 +55,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.22em;
-  color: #d4af37;
+  color: #E8A93A;
   text-transform: uppercase;
 }
 
@@ -76,7 +76,7 @@
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(232, 169, 58, 0.18);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.6),
     0 24px 60px rgba(0, 0, 0, 0.55);
@@ -223,7 +223,7 @@
 }
 
 .dot.activeDot {
-  background: #d4af37;
+  background: #E8A93A;
   width: 22px;
   border-radius: 3px;
 }
@@ -236,7 +236,7 @@
 
 .navBtn {
   background: rgba(10, 10, 10, 0.55);
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  border: 1px solid rgba(232, 169, 58, 0.3);
   color: #fff;
   width: 32px;
   height: 32px;
@@ -254,8 +254,8 @@
 }
 
 .navBtn:hover {
-  background: rgba(212, 175, 55, 0.22);
-  border-color: #d4af37;
+  background: rgba(232, 169, 58, 0.22);
+  border-color: #E8A93A;
   transform: scale(1.08);
 }
 
@@ -289,11 +289,11 @@
   bottom: 0;
   left: 0;
   height: 2px;
-  background: linear-gradient(90deg, #b8860b, #d4af37, #ffe680);
+  background: linear-gradient(90deg, #D9911F, #E8A93A, #F5EAD9);
   z-index: 11;
   transform-origin: left;
   animation: progressFill var(--slide-duration, 5s) linear forwards;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+  box-shadow: 0 0 10px rgba(232, 169, 58, 0.8);
 }
 
 @keyframes progressFill {
@@ -314,7 +314,7 @@
   left: 14px;
   z-index: 5;
   background: rgba(0, 0, 0, 0.52);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(232, 169, 58, 0.35);
   border-radius: 6px;
   padding: 4px 10px;
   backdrop-filter: blur(6px);

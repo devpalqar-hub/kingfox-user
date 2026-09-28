@@ -4,6 +4,7 @@ import styles from "./collection.module.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getAllCategories } from "@/services/category.service";
+import { useScrollReveal } from "@/lib/useScrollReveal";
 
 // ─── Slot definitions ─────────────────────────────────────────────────────────
 // Each slot maps to one card in the Collections grid.
@@ -97,6 +98,7 @@ function CollectionCard({
 const Collections = () => {
   const router = useRouter();
   const [allCategories, setAllCategories] = useState<MatchedCategory[]>([]);
+  const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -128,7 +130,10 @@ const Collections = () => {
   };
 
   return (
-    <section className={styles.wrapper}>
+    <section
+      ref={revealRef}
+      className={`${styles.wrapper} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
+    >
       {/* ── HEADER ── */}
       <div className={styles.header}>
         <span className={styles.rule} />

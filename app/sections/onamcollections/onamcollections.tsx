@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ProductCard from "@/components/productcard/productcard";
 import styles from "./onamcollections.module.css";
+import { useScrollReveal } from "@/lib/useScrollReveal";
 import { getProducts } from "@/services/product.service";
 import {
     getWishList,
@@ -21,6 +22,7 @@ const OnamCollections = () => {
     const { user } = useAuth();
 
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
 
     // 🔥 FETCH PRODUCTS
     useEffect(() => {
@@ -102,7 +104,10 @@ const OnamCollections = () => {
     if (!products || products.length === 0) return null;
 
     return (
-        <section className={styles.section}>
+        <section
+            ref={revealRef}
+            className={`${styles.section} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
+        >
             <div className={styles.header}>
                 <h2 className={styles.title}>GRAPHIC COLLECTIONS</h2>
 

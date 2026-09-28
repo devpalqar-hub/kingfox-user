@@ -407,9 +407,11 @@ const Header = () => {
                       top: "100%",
                       left: 0,
                       width: "100%",
-                      background: "#fff",
+                      background: "#16130f",
+                      border: "1px solid rgba(232, 169, 58, 0.18)",
+                      borderTop: "none",
                       borderRadius: "0 0 16px 16px",
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
                       zIndex: 100,
                       marginTop: 4,
                       maxHeight: 340,
@@ -421,7 +423,7 @@ const Header = () => {
                         style={{
                           padding: 16,
                           textAlign: "center",
-                          color: "#888",
+                          color: "rgba(245,234,217,0.6)",
                         }}
                       >
                         Loading...
@@ -432,7 +434,7 @@ const Header = () => {
                         style={{
                           padding: 16,
                           textAlign: "center",
-                          color: "#d00",
+                          color: "#e06a5a",
                         }}
                       >
                         {searchError}
@@ -446,7 +448,7 @@ const Header = () => {
                           style={{
                             padding: 16,
                             textAlign: "center",
-                            color: "#888",
+                            color: "rgba(245,234,217,0.6)",
                           }}
                         >
                           No products found.
@@ -466,7 +468,7 @@ const Header = () => {
                                 alignItems: "center",
                                 gap: 12,
                                 padding: "10px 18px",
-                                borderBottom: "1px solid #f0f0f0",
+                                borderBottom: "1px solid rgba(232, 169, 58, 0.12)",
                                 cursor: "pointer",
                                 transition: "background 0.15s",
                               }}
@@ -484,7 +486,7 @@ const Header = () => {
                                   height: 48,
                                   objectFit: "cover",
                                   borderRadius: 8,
-                                  background: "#f3f3f3",
+                                  background: "rgba(245,234,217,0.06)",
                                 }}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src =
@@ -492,12 +494,18 @@ const Header = () => {
                                 }}
                               />
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: 600, fontSize: 15 }}>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: 15,
+                                    color: "#F5EAD9",
+                                  }}
+                                >
                                   {product.name}
                                 </div>
                                 <div
                                   style={{
-                                    color: "#888",
+                                    color: "rgba(245,234,217,0.55)",
                                     fontSize: 13,
                                     marginTop: 2,
                                     whiteSpace: "nowrap",
@@ -605,7 +613,12 @@ const Header = () => {
             onClick={() => setDrawerProductsOpen((v) => !v)}
           >
             <span
-              style={{ fontSize: 15, fontWeight: 600, letterSpacing: "0.4px" }}
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                letterSpacing: "0.4px",
+                color: "#F5EAD9",
+              }}
             >
               PRODUCTS
             </span>

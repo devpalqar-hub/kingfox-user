@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchBanners } from "@/services/banner.service";
 import { BannerWithMediaType } from "@/types/banner.types";
 import styles from "./banners.module.css";
+import { useScrollReveal } from "@/lib/useScrollReveal";
 
 const SLIDE_DURATION = 5000;
 
@@ -17,6 +18,7 @@ export default function Banners() {
   const [progressKey, setProgressKey] = useState(0);
   const autoPlayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
 
   const total = banners.length;
   const isSingleBanner = total === 1;
@@ -85,7 +87,10 @@ export default function Banners() {
 
   if (loading) {
     return (
-      <section className={styles.bannerSection}>
+      <section
+        ref={revealRef}
+        className={`${styles.bannerSection} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
+      >
         <div className={styles.sectionDivider} />
         <div className={styles.labelStrip}>
           <div className={styles.labelLeft}>
@@ -107,7 +112,10 @@ export default function Banners() {
   const activeBanner = banners[current];
 
   return (
-    <section className={styles.bannerSection}>
+    <section
+      ref={revealRef}
+      className={`${styles.bannerSection} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
+    >
       {/* Top gold separator */}
       <div className={styles.sectionDivider} />
 

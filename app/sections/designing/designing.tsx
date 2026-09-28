@@ -3,8 +3,11 @@ import styles from "./designing.module.css";
 // Try Shirt instead of Hanger for a cleaner apparel look
 import { Shirt, Palette, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useScrollReveal } from "@/lib/useScrollReveal";
 
 const Designing = () => {
+  const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
+
   const steps = [
     {
       icon: <Shirt size={32} />,
@@ -24,7 +27,11 @@ const Designing = () => {
   ];
 
   return (
-    <section id="designing-section" className={styles.container}>
+    <section
+      id="designing-section"
+      ref={revealRef}
+      className={`${styles.container} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
+    >
       <header className={styles.header}>
         <p className={styles.subtext}>UNLOCK YOUR CREATIVITY</p>
         <h1 className={styles.title}>

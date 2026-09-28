@@ -5,13 +5,15 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Jost:wght@300;400;500;600;700&display=swap");
 
-/* ── TOKENS ──────────────────────────────── */
+/* ── DIWALI NIGHT THEME TOKENS ──────────── */
 :root {
-  --c-bg: #e9e8e3;
-  --c-black: #111111;
-  --c-white: #ffffff;
-  --c-card-bg: #1c1c1c;
-  --c-label-bg: rgba(255, 255, 255, 0.92);
+  --c-bg: #0a0908;
+  --c-black: #F5EAD9;
+  --c-white: #F5EAD9;
+  --c-card-bg: #16130f;
+  --c-label-bg: rgba(10, 9, 8, 0.92);
+  --dw-gold: #E8A93A;
+  --dw-gold-deep: #D9911F;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --radius: 18px;
   --gap: 14px;
@@ -67,7 +69,7 @@
   font-size: 10.5px;
   font-weight: 400;
   letter-spacing: 3.5px;
-  color: #555;
+  color: rgba(245, 234, 217, 0.6);
   text-transform: uppercase;
 }
 
@@ -196,7 +198,7 @@
   align-items: center;
   gap: 8px;
   background: transparent;
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border: 1.5px solid rgba(232, 169, 58, 0.55);
   color: var(--c-white);
   font-family: "Jost", sans-serif;
   font-size: 9.5px;
@@ -213,8 +215,8 @@
 }
 
 .exploreBtn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(232, 169, 58, 0.18);
+  border-color: var(--dw-gold);
 }
 
 .card:hover .exploreBtn {
@@ -237,8 +239,8 @@
   top: 16px;
   right: 16px;
   z-index: 5;
-  background: var(--c-black);
-  color: var(--c-white);
+  background: linear-gradient(90deg, var(--dw-gold-deep), var(--dw-gold));
+  color: #1a1200;
   font-family: "Jost", sans-serif;
   font-size: 9.5px;
   font-weight: 600;
@@ -252,10 +254,10 @@
 @keyframes badgePulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 0 rgba(217, 145, 31, 0.3);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0);
+    box-shadow: 0 0 0 6px rgba(217, 145, 31, 0);
   }
 }
 
@@ -271,26 +273,26 @@
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  background: var(--c-black);
-  color: var(--c-white);
+  background: linear-gradient(90deg, var(--dw-gold-deep), var(--dw-gold));
+  color: #1a1200;
   border: none;
   padding: 16px 52px;
   border-radius: 100px;
   font-family: "Jost", sans-serif;
   font-size: 10.5px;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 2.8px;
   cursor: pointer;
   transition:
     background 0.3s ease,
     transform 0.4s var(--ease),
     box-shadow 0.4s ease;
+  box-shadow: 0 8px 24px rgba(217, 145, 31, 0.28);
 }
 
 .viewAllBtn:hover {
-  background: #2a2a2a;
   transform: translateY(-2px);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 14px 32px rgba(217, 145, 31, 0.4);
 }
 
 /* ─────────────────────────────────────────
