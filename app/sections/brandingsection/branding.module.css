@@ -1,9 +1,6 @@
 .brandingContainer {
-  --dw-gold: #E8A93A;
-  --dw-cream: #F5EAD9;
-
-  background-color: #0a0908;
-  color: var(--dw-cream);
+  background-color: #000000;
+  color: #ffffff;
   padding: 80px 20px;
   text-align: center;
   display: flex;
@@ -22,7 +19,6 @@
   letter-spacing: 2px;
   margin-bottom: 30px;
   margin-top: 0;
-  color: var(--dw-gold);
 }
 
 .description {
@@ -30,11 +26,11 @@
   letter-spacing: 1px;
   margin-bottom: 10px;
   text-transform: uppercase;
-  color: rgba(245, 234, 217, 0.65);
+  color: #cccccc;
 }
 
 .handle {
-  color: var(--dw-cream);
+  color: #ffffff;
   font-weight: 700;
 }
 
@@ -42,19 +38,18 @@
   font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: rgba(245, 234, 217, 0.65);
+  color: #cccccc;
 }
 
 .link {
-  color: var(--dw-gold);
+  color: #ffffff;
   text-decoration: underline;
   text-underline-offset: 4px;
   font-weight: 600;
-  transition: color 0.25s ease;
 }
 
 .link:hover {
-  color: var(--dw-cream);
+  color: #aaaaaa;
 }
 @media (max-width: 1024px) {
 

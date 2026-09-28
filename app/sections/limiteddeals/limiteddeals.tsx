@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ProductCard from "@/components/productcard/productcard";
 import styles from "./limited.module.css";
-import { useScrollReveal } from "@/lib/useScrollReveal";
 import { getProducts } from "@/services/product.service";
 import {
   getWishList,
@@ -22,7 +21,6 @@ const LimitedDeals = () => {
   const { user } = useAuth();
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
 
   // 🔥 FETCH PRODUCTS
   useEffect(() => {
@@ -103,10 +101,7 @@ const LimitedDeals = () => {
   if (!products || products.length === 0) return null;
 
   return (
-    <section
-      ref={revealRef}
-      className={`${styles.section} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
-    >
+    <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>LIMITED DEALS</h2>
 

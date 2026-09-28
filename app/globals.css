@@ -220,27 +220,3 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
-
-/* ── SHARED SCROLL-REVEAL (fade + slide-up) ──────────────────────────
-   Used site-wide via lib/useScrollReveal.ts. Additive utility classes —
-   scoped to their own names, safe alongside existing global tokens. */
-.scrollReveal {
-  opacity: 0;
-  transform: translateY(32px);
-  transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.scrollReveal.scrollRevealVisible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scrollReveal {
-    transition: none;
-    opacity: 1;
-    transform: none;
-  }
-}

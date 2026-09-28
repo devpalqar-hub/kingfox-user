@@ -1,17 +1,9 @@
-"use client";
-
 import React from 'react';
 import styles from './branding.module.css';
-import { useScrollReveal } from '@/lib/useScrollReveal';
 
 const Branding = () => {
-  const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
-
   return (
-    <section
-      ref={revealRef}
-      className={`${styles.brandingContainer} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
-    >
+    <section className={styles.brandingContainer}>
       <div className={styles.content}>
         <h2 className={styles.hashtag}>#KINGFOXCALICUT</h2>
         <p className={styles.description}>

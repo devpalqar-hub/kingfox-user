@@ -4,7 +4,6 @@ import Image from "next/image";
 import styles from "./card.module.css";
 import { getAllCampaigns } from "@/services/luckyDraw.service";
 import { useRouter } from "next/navigation";
-import { useScrollReveal } from "@/lib/useScrollReveal";
 
 type CampaignStatus = "ACTIVE" | "CLOSED" | "UPCOMING";
 
@@ -140,7 +139,6 @@ const Cards = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const { ref: revealRef, isVisible } = useScrollReveal<HTMLElement>();
 
   useEffect(() => {
     const loadData = async () => {
@@ -187,10 +185,7 @@ const Cards = () => {
   }
 
   return (
-    <section
-      ref={revealRef}
-      className={`${styles.container} scrollReveal ${isVisible ? "scrollRevealVisible" : ""}`}
-    >
+    <section className={styles.container}>
       {/* Section heading */}
       <div className={styles.sectionHeader}>
         <div className={styles.headerLeft}>
