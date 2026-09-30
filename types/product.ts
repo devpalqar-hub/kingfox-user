@@ -57,6 +57,7 @@ export interface ProductDetail {
 export interface MetaInfo {
   title: string;
   text: string;
+  /** Can point to either an image or a supported video file. */
   imageUrl?: string;
 }
 

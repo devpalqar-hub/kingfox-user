@@ -46,15 +46,9 @@ type ProductDetailClientProps = {
 
 const isVideoUrl = (url?: string | null) => {
   if (!url) return false;
-  const lowerUrl = url.toLowerCase();
-  return (
-    lowerUrl.endsWith(".mp4") ||
-    lowerUrl.endsWith(".mov") ||
-    lowerUrl.endsWith(".webm") ||
-    lowerUrl.includes(".mp4?") ||
-    lowerUrl.includes(".mov?") ||
-    lowerUrl.includes(".webm?")
-  );
+  // Strip query/hash parameters so CDN-hosted video URLs are detected too.
+  const pathname = url.split(/[?#]/, 1)[0].toLowerCase();
+  return /\.(mp4|mov|webm|m4v|ogv|ogg)$/i.test(pathname);
 };
 
 const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
@@ -511,6 +505,16 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     product?.onlineName && product.onlineName.trim().length > 0
       ? product.onlineName
       : product?.name;
+  const mainMedia = activeImg || productImages[0];
+
+  const handleImageZoom = (event: React.MouseEvent<HTMLDivElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((event.clientX - bounds.left) / bounds.width) * 100));
+    const y = Math.max(0, Math.min(100, ((event.clientY - bounds.top) / bounds.height) * 100));
+
+    event.currentTarget.style.setProperty("--zoom-x", `${x}%`);
+    event.currentTarget.style.setProperty("--zoom-y", `${y}%`);
+  };
 
   return (
     <>
@@ -533,15 +537,26 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
               </div>
             ))}
           </div>
-          <div className={styles.mainImage}>
-            {isVideoUrl(activeImg || productImages[0]) ? (
+          <div
+            className={styles.mainImage}
+            onMouseMove={isVideoUrl(mainMedia) ? undefined : handleImageZoom}
+          >
+            {isVideoUrl(mainMedia) ? (
               <video 
-                src={activeImg || productImages[0]} 
+                src={mainMedia}
                 controls 
                 playsInline 
               />
             ) : (
-              <img src={activeImg || productImages[0]} alt={productDisplayName} />
+              <img src={mainMedia} alt={productDisplayName} />
+            )}
+
+            {!isVideoUrl(mainMedia) && mainMedia && (
+              <div
+                aria-hidden="true"
+                className={styles.imageZoomLens}
+                style={{ backgroundImage: `url(${JSON.stringify(mainMedia)})` }}
+              />
             )}
 
             {/* ❤️ Wishlist */}
@@ -798,8 +813,16 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                 {section.imageUrl && (
                   <div className={styles.descImageSide}>
-                    <div className={styles.textureCard}>
-                      <img src={section.imageUrl} alt={section.title} />
+                    <div
+                      className={`${styles.textureCard} ${
+                        isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                      }`}
+                    >
+                      {isVideoUrl(section.imageUrl) ? (
+                        <video src={section.imageUrl} controls playsInline preload="metadata" />
+                      ) : (
+                        <img src={section.imageUrl} alt={section.title} />
+                      )}
                     </div>
                   </div>
                 )}
@@ -834,8 +857,16 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
                   {section.imageUrl && (
                     <div className={styles.descImageSide}>
-                      <div className={styles.textureCard}>
-                        <img src={section.imageUrl} alt={section.title} />
+                      <div
+                        className={`${styles.textureCard} ${
+                          isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                        }`}
+                      >
+                        {isVideoUrl(section.imageUrl) ? (
+                          <video src={section.imageUrl} controls playsInline preload="metadata" />
+                        ) : (
+                          <img src={section.imageUrl} alt={section.title} />
+                        )}
                       </div>
                     </div>
                   )}

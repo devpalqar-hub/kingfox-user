@@ -15,6 +15,7 @@ interface ProductCardProps {
   id: number;
   slug?: string | null;
   image: string;
+  images?: string[];
   name: string;
   price: string;
   reviews?: number;
@@ -30,6 +31,7 @@ const ProductCard = ({
   id,
   slug,
   image,
+  images,
   name,
   price,
   rating,
@@ -43,6 +45,7 @@ const ProductCard = ({
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const alternateImage = images?.find((productImage) => productImage !== image);
 
   const colorMap: Record<string, string> = {
     red: "#ef4444",
@@ -120,9 +123,21 @@ const ProductCard = ({
       onClick={() => router.push(getProductPath({ id, slug }))}
       style={{ cursor: "pointer" }}
     >
-      <div className={styles.imageWrapper}>
+      <div
+        className={`${styles.imageWrapper} ${
+          alternateImage ? styles.hasAlternateImage : ""
+        }`}
+      >
         {isNew && <span className={styles.newBadge}>NEW ARRIVAL</span>}
         <img src={image} alt={name} className={styles.productImage} />
+        {alternateImage && (
+          <img
+            src={alternateImage}
+            alt=""
+            aria-hidden="true"
+            className={`${styles.productImage} ${styles.alternateProductImage}`}
+          />
+        )}
 
         {/* <div className={styles.iconOverlay}>
           <button

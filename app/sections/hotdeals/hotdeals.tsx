@@ -122,6 +122,7 @@ const HotDeals = () => {
               price={String(product.priceRange?.min || 0)}
               rating={4}
               image={product.images?.[0]}
+              images={product.images}
               isWishlisted={wishlistIds.includes(product.id)}
               onWishlistToggle={() => handleWishlistToggle(product.id)}
             />
