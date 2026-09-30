@@ -102,6 +102,7 @@ const Bestseller = () => {
               price={String(product.priceRange?.min || 0)}
               rating={4}
               image={product.images?.[0] || "/placeholder-product.png"}
+              images={product.images}
             />
           </div>
         ))}

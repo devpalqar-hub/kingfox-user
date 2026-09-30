@@ -717,6 +717,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                         ? product.images[0]
                         : "/placeholder-product.png"
                     }
+                    images={product.images}
                     isWishlisted={wishlist.includes(product.id)}
                     onWishlistToggle={() => handleWishlist(product.id)}
                     wishlistLoading={wishlistLoading === product.id}

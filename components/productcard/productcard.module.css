@@ -34,6 +34,26 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: opacity 280ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.alternateProductImage {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.035) translateY(1.5%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hasAlternateImage:hover .productImage:first-of-type {
+    opacity: 0;
+    transform: scale(1.015) translateY(-1.5%);
+  }
+
+  .hasAlternateImage:hover .alternateProductImage {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .iconOverlay {

@@ -85,6 +85,7 @@ const RelatedProducts = ({ categoryId, currentProductId }: Props) => {
             price={String(product.priceRange?.min || 0)}
             rating={4}
             image={product.images?.[0]}
+            images={product.images}
             colors={getProductColorOptions(product)}
           />
         ))}
