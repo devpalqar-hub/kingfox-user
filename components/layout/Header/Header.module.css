@@ -20,7 +20,7 @@
 
 /* Announcement Bar */
 .announcementBar {
-  background-color: #1E3A22;
+  background-color: #352c01;
   color: #fff;
   padding: 10px 0;
   text-align: center;
@@ -69,11 +69,11 @@
 }
 
 .homeNav {
-  background: #fff1e3;
+  background: #fbd5af;
 }
 
 .innerNav {
-  background: #fff;
+  background: #fbd5af;
 }
 
 .logo {

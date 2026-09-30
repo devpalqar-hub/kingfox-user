@@ -1,8 +1,8 @@
 /* ── DIWALI HERO — TOKENS ─────────────── */
 :root {
-  --h-gold: #E8A93A;
-  --h-gold-deep: #C9821E;
-  --h-cream: #F5EAD9;
+  --h-gold: #e8a93a;
+  --h-gold-deep: #c9821e;
+  --h-cream: #f5ead9;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --header-height: var(--site-header-offset, 80px);
 }
@@ -36,14 +36,84 @@
   inset: 0;
   z-index: 2;
   background:
-    linear-gradient(90deg,
+    linear-gradient(
+      90deg,
       rgba(6, 8, 14, 0.85) 0%,
       rgba(6, 8, 14, 0.58) 30%,
       rgba(6, 8, 14, 0.12) 55%,
-      rgba(6, 8, 14, 0) 72%),
-    linear-gradient(0deg,
-      rgba(6, 8, 14, 0.5) 0%,
-      rgba(6, 8, 14, 0) 40%);
+      rgba(6, 8, 14, 0) 72%
+    ),
+    linear-gradient(0deg, rgba(6, 8, 14, 0.5) 0%, rgba(6, 8, 14, 0) 40%);
+}
+
+/* ── CRACKER BURST — auto-fires for the first 3s on load, then on click ── */
+.burstLayer {
+  position: absolute;
+  z-index: 6;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.burstFlash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 245, 220, 0.95) 0%,
+    rgba(242, 197, 101, 0.55) 45%,
+    rgba(242, 197, 101, 0) 75%
+  );
+  animation: cracker-flash 0.45s var(--ease) forwards;
+}
+
+@keyframes cracker-flash {
+  0% {
+    opacity: 1;
+    transform: scale(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(5.5);
+  }
+}
+
+.burstParticle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: cracker-burst 0.95s cubic-bezier(0.15, 0.65, 0.35, 1) forwards;
+}
+
+@keyframes cracker-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(var(--dx), calc(var(--dy) + 36px)) scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burstFlash,
+  .burstParticle {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* ── CONTENT OVERLAY ── */
@@ -59,7 +129,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 620px;
+  max-width: 740px;
   padding: 0 5% 4vh 7%;
 }
 
@@ -102,7 +172,12 @@
 }
 
 .titleAccent {
-  background: linear-gradient(100deg, var(--h-gold-deep), var(--h-gold) 55%, #f2c565 100%);
+  background: linear-gradient(
+    100deg,
+    var(--h-gold-deep),
+    var(--h-gold) 55%,
+    #f2c565 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -122,9 +197,18 @@
 .btnGroup {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 36px;
+}
+
+@media (max-width: 720px) {
+  .btnGroup {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 36px;
+    gap: 12px;
+  }
 }
 
 .shopBtn {
@@ -143,7 +227,9 @@
   cursor: pointer;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(201, 130, 30, 0.32);
-  transition: background 0.35s var(--ease), transform 0.35s var(--ease),
+  transition:
+    background 0.35s var(--ease),
+    transform 0.35s var(--ease),
     box-shadow 0.35s var(--ease);
 }
 
@@ -179,7 +265,9 @@
   text-transform: uppercase;
   cursor: pointer;
   border-radius: 8px;
-  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease),
+  transition:
+    border-color 0.35s var(--ease),
+    transform 0.35s var(--ease),
     background 0.35s var(--ease);
 }
 
@@ -253,11 +341,12 @@
   }
 
   .scrim {
-    background:
-      linear-gradient(0deg,
-        rgba(6, 8, 14, 0.92) 0%,
-        rgba(6, 8, 14, 0.55) 45%,
-        rgba(6, 8, 14, 0.2) 100%);
+    background: linear-gradient(
+      0deg,
+      rgba(6, 8, 14, 0.92) 0%,
+      rgba(6, 8, 14, 0.55) 45%,
+      rgba(6, 8, 14, 0.2) 100%
+    );
   }
 
   .leftPanel {
