@@ -4,6 +4,10 @@ import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { Bebas_Neue, Inter } from "next/font/google";
 import AppShell from "@/components/layout/AppShell";
 import WhatsappButton from "@/components/whatsappButton/whatsappButton";
+import { cn } from "@/lib/utils";
+import MetaPixel from "@/components/MetaPixel";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const viewport = {
   width: "device-width",
@@ -41,10 +45,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
+      <head>
+        <link rel="preconnect" href="https://googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+
+      </head>
       <body
         className={`${jakarta.variable} ${space.variable} ${bebas.variable} ${inter.variable}`}
       >
+        <MetaPixel />
         <AppShell>
           {children}
           <WhatsappButton />
