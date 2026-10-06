@@ -19,12 +19,14 @@
   text-align: center;
   font-family: var(--font-space);
 }
+
 /* VIEW ALL BUTTON */
 .viewAllWrapper {
   display: flex;
   justify-content: center;
   margin-top: 30px;
 }
+
 .viewAll {
   position: absolute;
   right: 60px;
@@ -72,6 +74,19 @@
   border-radius: 6px;
 }
 
+.navButton {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.mobileNavButton {
+  display: none;
+}
+
 @media (max-width: 460px) {
   .grid {
     display: flex;
@@ -81,7 +96,8 @@
   }
 
   .cardWrapper {
-    width: calc(50% - 7px); /* 2 cards */
+    width: calc(50% - 7px);
+    /* 2 cards */
   }
 }
 
@@ -95,6 +111,7 @@
   font-size: 16px;
   margin-bottom: 16px;
 }
+
 /* ===================== */
 /* TABLET */
 /* ===================== */
@@ -115,12 +132,18 @@
 
 @media (max-width: 720px) {
   .header {
-    flex-direction: column;
-    gap: 16px;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
   }
 
   .navButtons {
-    position: static;
+    display: none;
+  }
+
+  .mobileNavButton {
+    display: block;
   }
 
   .viewAll {
@@ -130,6 +153,8 @@
   .title {
     font-size: 32px;
     text-align: center;
+    flex: 1;
+    margin: 0;
   }
 
   .grid {
@@ -147,15 +172,6 @@
     padding: 40px 16px;
   }
 
-  .header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .navButtons {
-    position: static;
-  }
-
   .title {
     font-size: 22px;
     padding: 0;
@@ -166,6 +182,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
+
   .viewAllWrapper {
     margin-top: 25px;
   }

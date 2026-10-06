@@ -1016,6 +1016,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         categoryId={product.category.id}
         categoryName={product.category.name}
         currentProductId={product.id}
+        tags={product.tags}
       />
 
       {/* NEWSLETTER */}
