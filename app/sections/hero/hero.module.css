@@ -388,6 +388,10 @@
     max-width: 380px;
   }
 
+  .btnArrow {
+    display: none;
+  }
+
   .badgeRow {
     justify-content: center;
     gap: 20px;
