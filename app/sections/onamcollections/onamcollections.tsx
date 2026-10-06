@@ -104,7 +104,11 @@ const OnamCollections = () => {
     return (
         <section className={styles.section}>
             <div className={styles.header}>
+                <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollLeft}><FaArrowLeft /></button>
+                
                 <h2 className={styles.title}>GRAPHIC COLLECTIONS</h2>
+
+                <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollRight}><FaArrowRight /></button>
 
                 {/* 🔥 ARROWS */}
                 <div className={styles.navButtons}>
@@ -127,6 +131,7 @@ const OnamCollections = () => {
                             images={product.images}
                             isWishlisted={wishlistIds.includes(product.id)}
                             onWishlistToggle={() => handleWishlistToggle(product.id)}
+                            tags={product.tags}
                         />
                     </div>
                 ))}

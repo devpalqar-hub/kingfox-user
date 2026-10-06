@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import LoginModal from "@/app/auth/login/page";
 import InfiniteScrollProducts from "@/components/InfiniteScrollProducts/InfiniteScrollProducts";
@@ -91,6 +91,7 @@ const getPageSizes = (productList: Product[]) => {
 const ProductsPage = ({ initialData }: ProductsPageProps) => {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [products, setProducts] = useState<Product[]>(() =>
     dedupeProducts(initialData.items || []),
@@ -117,7 +118,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
   const [wishlistLoading, setWishlistLoading] = useState<number | null>(null);
   const [availableColors, setAvailableColors] = useState<ColorOption[]>([]);
   const [initialized, setInitialized] = useState(false);
-  const [tag, setTag] = useState<string | null>(null);
+  const [tag, setTag] = useState<string[]>([]);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState("");
   const [loading, setLoading] = useState(initialData.items.length === 0);
@@ -254,10 +255,10 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
 
   useEffect(() => {
     const categoryFromURL = searchParams.get("categoryId");
-    const tagFromURL = searchParams.get("tag");
+    const tagsFromURL = searchParams.getAll("tag");
 
     setCategoryId(categoryFromURL ? Number(categoryFromURL) : null);
-    setTag(tagFromURL || null);
+    setTag(tagsFromURL);
     setInitialized(true);
   }, [searchParams]);
 
@@ -287,7 +288,8 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
       color === null &&
       minPrice === 0 &&
       maxPrice === DEFAULT_MAX_PRICE &&
-      sortBy === null;
+      sortBy === null &&
+      tag.length === 0;
 
     if (shouldUseInitialData) {
       initialDataConsumedRef.current = true;
@@ -326,7 +328,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
           minPrice: minPrice > 0 ? minPrice : undefined,
           maxPrice: maxPrice < DEFAULT_MAX_PRICE ? maxPrice : undefined,
           categoryId: categoryId || undefined,
-          tags: tag ? [tag] : undefined,
+          tags: tag && tag.length > 0 ? tag : undefined,
           sortBy: sortBy || undefined,
         });
 
@@ -386,7 +388,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
           minPrice: minPrice > 0 ? minPrice : undefined,
           maxPrice: maxPrice < DEFAULT_MAX_PRICE ? maxPrice : undefined,
           categoryId: categoryId || undefined,
-          tags: tag ? [tag] : undefined,
+          tags: tag && tag.length > 0 ? tag : undefined,
         });
 
         setAvailableColors(getAvailableColorOptions(dedupeProducts(data.items || [])));
@@ -468,7 +470,9 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
     setMaxPrice(DEFAULT_MAX_PRICE);
     setCategoryId(null);
     setSortBy(null);
+    setTag([]);
     setPage(INITIAL_PAGE);
+    router.replace("/products", { scroll: false });
   };
 
   useEffect(() => {
@@ -721,6 +725,7 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
                     isWishlisted={wishlist.includes(product.id)}
                     onWishlistToggle={() => handleWishlist(product.id)}
                     wishlistLoading={wishlistLoading === product.id}
+                    tags={product.tags}
                   />
                 </div>
               ))

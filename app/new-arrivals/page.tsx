@@ -595,6 +595,7 @@ const NewArrivals = () => {
                     isWishlisted={wishlist.includes(product.id)}
                     onWishlistToggle={() => handleWishlist(product.id)}
                     wishlistLoading={wishlistLoading === product.id}
+                    tags={product.tags}
                   />
                 ))
               )}

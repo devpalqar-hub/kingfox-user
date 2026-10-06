@@ -71,6 +71,19 @@
   border-radius: 6px;
 }
 
+.navButton {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.mobileNavButton {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .cardWrapper {
     min-width: calc(50% - 10px); /* 2 cards */
@@ -105,8 +118,18 @@
 
 @media (max-width: 720px) {
   .header {
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .navButtons {
+    display: none;
+  }
+  
+  .mobileNavButton {
+    display: block;
   }
 
   .viewAll {
@@ -116,6 +139,8 @@
   .title {
     font-size: 32px;
     text-align: center;
+    flex: 1;
+    margin: 0;
   }
 
   .grid {
@@ -135,7 +160,7 @@
 
   .title {
     font-size: 22px;
-    padding: 12px 22px;
+    padding: 0;
   }
 
   .grid {

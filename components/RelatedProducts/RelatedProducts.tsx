@@ -8,12 +8,13 @@ import { useRouter } from "next/navigation";
 import { Product } from "@/types/product";
 
 type Props = {
-  categoryId: number;
-  categoryName: string;
+  categoryId?: number;
+  categoryName?: string;
   currentProductId: number;
+  tags?: any[];
 };
 
-const RelatedProducts = ({ categoryId, currentProductId }: Props) => {
+const RelatedProducts = ({ categoryId, currentProductId, tags }: Props) => {
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
@@ -47,10 +48,13 @@ const RelatedProducts = ({ categoryId, currentProductId }: Props) => {
     return (product.colors || []).map((name) => ({ name }));
   };
 
+  const tagNames = tags?.map((t: any) => (typeof t === "string" ? t : t?.name)).filter(Boolean) || [];
+
   useEffect(() => {
     const fetchRelated = async () => {
       const res = await getProducts({
-        categoryId,
+        tags: tagNames.length > 0 ? tagNames : undefined,
+        categoryId: tagNames.length === 0 ? categoryId : undefined,
         limit: 8,
       });
 
@@ -63,7 +67,7 @@ const RelatedProducts = ({ categoryId, currentProductId }: Props) => {
     };
 
     fetchRelated();
-  }, [categoryId, currentProductId]);
+  }, [categoryId, currentProductId, tags]);
 
   if (!products || products.length === 0) {
     return null;
@@ -93,7 +97,14 @@ const RelatedProducts = ({ categoryId, currentProductId }: Props) => {
 
       <button
         className={styles.viewAll}
-        onClick={() => router.push(`/products?categoryId=${categoryId}`)}
+        onClick={() => {
+          if (tagNames.length > 0) {
+            const query = tagNames.map((t: string) => `tag=${encodeURIComponent(t)}`).join('&');
+            router.push(`/products?${query}`);
+          } else {
+            router.push(`/products?categoryId=${categoryId}`);
+          }
+        }}
       >
         VIEW ALL PRODUCTS
       </button>
