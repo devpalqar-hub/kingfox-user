@@ -22,6 +22,18 @@ const OnamCollections = () => {
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // 🔥 CLEAR HASH ON SCROLL
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.location.hash === '#graphic-collections') {
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     // 🔥 FETCH PRODUCTS
     useEffect(() => {
         const fetchOnamCollections = async () => {
@@ -102,7 +114,7 @@ const OnamCollections = () => {
     if (!products || products.length === 0) return null;
 
     return (
-        <section className={styles.section}>
+        <section id="graphic-collections" className={styles.section}>
             <div className={styles.header}>
                 <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollLeft}><FaArrowLeft /></button>
                 

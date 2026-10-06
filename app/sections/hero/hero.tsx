@@ -94,7 +94,7 @@ const Hero: React.FC = () => {
   }, [spawnBurst]);
 
   const handleShopDiwaliClick = () => {
-    router.push("/products?tag=DIWALI%20COLLECTION");
+    router.push("/#graphic-collections");
   };
 
   const handleExploreClick = () => {
@@ -187,9 +187,9 @@ const Hero: React.FC = () => {
             <button
               className={styles.shopBtn}
               onClick={handleShopDiwaliClick}
-              aria-label="Shop the Diwali Drop"
+              aria-label="Shop exclusive collection"
             >
-              SHOP THE DIWALI DROP&nbsp;
+              SHOP EXCLUSIVE COLLECTION&nbsp;
               <ArrowRight size={18} className={styles.btnArrow} />
             </button>
 
