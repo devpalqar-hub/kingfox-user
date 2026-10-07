@@ -806,7 +806,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             if (activeTab !== section.title) return null;
 
             return (
-              <div key={i} className={styles.descriptionGrid}>
+              <div key={i} className={`${styles.descriptionGrid} ${isVideoUrl(section.imageUrl) ? styles.descriptionGridVideo : ""}`}>
                 <div className={styles.descTextSide}>
                   <div dangerouslySetInnerHTML={{ __html: section.text }} />
                 </div>
@@ -850,7 +850,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
             {openAccordion === section.title && (
               <div className={styles.accordionContent}>
-                <div className={styles.descriptionGrid}>
+                <div className={`${styles.descriptionGrid} ${isVideoUrl(section.imageUrl) ? styles.descriptionGridVideo : ""}`}>
                   <div className={styles.descTextSide}>
                     <div dangerouslySetInnerHTML={{ __html: section.text }} />
                   </div>
