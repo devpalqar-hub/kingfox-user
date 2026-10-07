@@ -489,6 +489,10 @@
   align-items: flex-start;
 }
 
+.descriptionGridVideo {
+  grid-template-columns: 1fr auto;
+}
+
 .descTitle {
   font-size: 20px;
   font-weight: 900;
@@ -664,11 +668,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-/* Keep the gradient from covering the video's native controls. */
-.textureCardVideo::after {
-  display: none;
 }
 
 .textureCard::after {
@@ -1605,6 +1604,11 @@
     height: 220px;
   }
 
+  .textureCard.textureCardVideo {
+    height: 400px;
+    margin: 0 auto;
+  }
+
   .descTitle {
     font-size: 15px;
     margin-bottom: 14px;
@@ -1826,6 +1830,11 @@
     gap: 18px;
   }
 
+  .textureCard.textureCardVideo {
+    height: 450px;
+    margin: 0 auto;
+  }
+
   .descTitle {
     font-size: 14px;
   }
@@ -1836,6 +1845,22 @@
 
   .descList li {
     font-size: 12px;
+  }
+
+  .descTextSide p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .descTextSide li {
+    font-size: 12px;
+  }
+
+  .descTextSide h1,
+  .descTextSide h2,
+  .descTextSide h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
   }
 
   .textureCard {
