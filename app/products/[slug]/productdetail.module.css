@@ -670,23 +670,21 @@
   display: block;
 }
 
-/* Keep the gradient from covering the video's native controls. */
+/* Video card — fixed height, natural width, no overlay */
 .textureCard.textureCardVideo {
   height: 500px;
-  /* Fixed height for video */
   width: fit-content;
-  /* Width according to video ratio */
-  aspect-ratio: auto;
   background-color: transparent;
 }
 
-.textureCardVideo video {
+.textureCard.textureCardVideo video {
   width: auto;
   height: 100%;
   object-fit: contain;
 }
 
-.textureCardVideo::after {
+/* Suppress gradient overlay on video cards so controls are clickable */
+.textureCard.textureCardVideo::after {
   display: none;
 }
 
