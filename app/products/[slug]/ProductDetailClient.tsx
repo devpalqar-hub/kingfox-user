@@ -9,6 +9,8 @@ import {
   LuAward,
   LuChevronLeft,
   LuChevronRight,
+  LuChevronUp,
+  LuChevronDown,
   LuX,
 } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
@@ -498,6 +500,41 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     return { min, max };
   }, [product]);
 
+  const thumbsRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateThumbArrows = () => {
+    const el = thumbsRef.current;
+    if (!el) return;
+    const horizontal = getComputedStyle(el).flexDirection === "row";
+    const pos = horizontal ? el.scrollLeft : el.scrollTop;
+    const size = horizontal ? el.clientWidth : el.clientHeight;
+    const total = horizontal ? el.scrollWidth : el.scrollHeight;
+    setCanScrollPrev(pos > 2);
+    setCanScrollNext(pos + size < total - 2);
+  };
+
+  const scrollThumbs = (dir: 1 | -1) => {
+    const el = thumbsRef.current;
+    if (!el) return;
+    const horizontal = getComputedStyle(el).flexDirection === "row";
+    const amount = (horizontal ? el.clientWidth : el.clientHeight) * 0.7 * dir;
+    el.scrollBy(
+      horizontal ? { left: amount, behavior: "smooth" } : { top: amount, behavior: "smooth" },
+    );
+  };
+
+  useEffect(() => {
+    updateThumbArrows();
+    window.addEventListener("resize", updateThumbArrows);
+    const t = setTimeout(updateThumbArrows, 300);
+    return () => {
+      window.removeEventListener("resize", updateThumbArrows);
+      clearTimeout(t);
+    };
+  }, [product, activeImg]);
+
   if (!product) {
     return <div>Loading...</div>;
   }
@@ -521,7 +558,22 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       <div className={styles.container}>
         {/* LEFT: Image Gallery */}
         <div className={styles.gallery}>
-          <div className={styles.thumbnails}>
+          <div className={styles.thumbnailsWrap}>
+          {canScrollPrev && (
+            <button
+              type="button"
+              aria-label="Scroll thumbnails back"
+              className={`${styles.thumbArrow} ${styles.thumbArrowPrev}`}
+              onClick={() => scrollThumbs(-1)}
+            >
+              <LuChevronUp />
+            </button>
+          )}
+          <div
+            className={styles.thumbnails}
+            ref={thumbsRef}
+            onScroll={updateThumbArrows}
+          >
             {productImages.map((img, i) => (
               <div
                 key={i}
@@ -536,6 +588,17 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 )}
               </div>
             ))}
+          </div>
+          {canScrollNext && (
+            <button
+              type="button"
+              aria-label="Scroll thumbnails forward"
+              className={`${styles.thumbArrow} ${styles.thumbArrowNext}`}
+              onClick={() => scrollThumbs(1)}
+            >
+              <LuChevronDown />
+            </button>
+          )}
           </div>
           <div
             className={styles.mainImage}
