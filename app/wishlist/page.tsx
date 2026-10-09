@@ -24,6 +24,7 @@ import { addToCartAPI } from "@/services/cart.service";
 import { moveAllWishlistToCartAPI } from "@/services/cart.service";
 import { getProductPath } from "@/lib/product-path";
 import { Product } from "@/types/product";
+import { trackAddToCart } from "@/lib/meta-pixel";
 
 type WishlistProductLike = {
   id: number;
@@ -194,6 +195,13 @@ export default function WishlistPage() {
         return;
       }
       await addToCartAPI(variantId, 1);
+      trackAddToCart({
+        id: variantId,
+        quantity: 1,
+        price: item.variant?.price,
+        name: item.product?.onlineName?.trim() || item.product?.name,
+        category: item.product?.category,
+      });
       await removeFromWishlist(variantId);
       setWishlist((prev) => prev.filter((w) => w.variantId !== variantId));
       window.dispatchEvent(new Event("cartUpdated"));

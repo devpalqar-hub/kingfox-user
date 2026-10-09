@@ -1,11 +1,12 @@
 import OrderConfirmation from "./OrderConfirmation";
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
-  searchParams: { orderId?: string; orderid?: string };
+  searchParams: Promise<{ orderId?: string; orderid?: string }>;
 }) {
-  const orderId = searchParams.orderId || searchParams.orderid;
+  const params = await searchParams;
+  const orderId = params.orderId || params.orderid;
 
   return <OrderConfirmation orderId={orderId} />;
 }

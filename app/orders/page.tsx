@@ -1,17 +1,19 @@
 import OrdersPage from "./OrdersPage";
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     razorpay_payment_id?: string;
     razorpay_order_id?: string;
-  };
+  }>;
 }) {
+  const params = await searchParams;
+
   return (
     <OrdersPage
-      paymentId={searchParams.razorpay_payment_id}
-      orderId={searchParams.razorpay_order_id}
+      paymentId={params.razorpay_payment_id}
+      orderId={params.razorpay_order_id}
     />
   );
 }

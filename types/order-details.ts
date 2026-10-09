@@ -14,6 +14,8 @@ export interface OrderDetailsCustomItem {
 
 export interface OrderDetailsItem {
   id: number;
+  /** Not guaranteed by the API; the Meta Purchase code falls back to the checkout response. */
+  variantId?: number;
   quantity: number;
   price: string;
   subtotal: string;
