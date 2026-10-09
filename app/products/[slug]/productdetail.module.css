@@ -1698,6 +1698,11 @@
   .textureCard.textureCardVideo {
     height: 400px;
     margin: 0 auto;
+    border-radius: 0;
+  }
+
+  .textureCard.textureCardVideo video {
+    border-radius: 0;
   }
 
   .descTitle {
@@ -1924,6 +1929,11 @@
   .textureCard.textureCardVideo {
     height: 450px;
     margin: 0 auto;
+    border-radius: 0;
+  }
+
+  .textureCard.textureCardVideo video {
+    border-radius: 0;
   }
 
   .descTitle {
@@ -1996,4 +2006,11 @@
     font-size: 12px;
   }
 
+}
+
+/* Mobile: no radius on main gallery video */
+@media (max-width: 768px) {
+  .mainImage video {
+    border-radius: 0;
+  }
 }

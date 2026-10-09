@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Eye, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import { useRouter } from "next/navigation";
@@ -56,6 +56,11 @@ const ProductCard = ({
       const upperName = tagName?.toUpperCase();
       return upperName === "NEW ARRIVAL" || upperName === "NEW ARRIVALS";
     });
+
+  const isBestSeller = tags?.some((tag: any) => {
+    const tagName = typeof tag === "string" ? tag : tag?.name;
+    return tagName?.toUpperCase().trim() === "BEST SELLER";
+  });
 
   const colorMap: Record<string, string> = {
     red: "#ef4444",
@@ -138,7 +143,11 @@ const ProductCard = ({
           alternateImage ? styles.hasAlternateImage : ""
         }`}
       >
-        {isProductNew && <span className={styles.newBadge}>NEW</span>}
+        {isProductNew ? (
+          <span className={styles.newBadge}>NEW</span>
+        ) : isBestSeller ? (
+          <span className={styles.newBadge}>BEST SELLER</span>
+        ) : null}
         <img src={image} alt={name} className={styles.productImage} />
         {alternateImage && (
           <img
@@ -168,16 +177,6 @@ const ProductCard = ({
           </button>
         </div> */}
 
-        <button
-          className={styles.viewBtn}
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(getProductPath({ id, slug }));
-          }}
-        >
-          <Eye size={18} />
-          VIEW
-        </button>
       </div>
 
       <div className={styles.details}>

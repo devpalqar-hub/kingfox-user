@@ -104,17 +104,7 @@ const OnamCollections = () => {
     return (
         <section className={styles.section}>
             <div className={styles.header}>
-                <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollLeft}><FaArrowLeft /></button>
-                
                 <h2 className={styles.title}>GRAPHIC COLLECTIONS</h2>
-
-                <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollRight}><FaArrowRight /></button>
-
-                {/* 🔥 ARROWS */}
-                <div className={styles.navButtons}>
-                    <button onClick={scrollLeft}><FaArrowLeft /></button>
-                    <button onClick={scrollRight}><FaArrowRight /></button>
-                </div>
             </div>
 
             {/* 🔥 CAROUSEL */}
