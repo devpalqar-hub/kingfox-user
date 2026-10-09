@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   MdAccountBalance,
@@ -18,6 +18,7 @@ import { getCartAPI, updateCartItemAPI } from "@/services/cart.service";
 import { checkoutAPI, previewOrderAPI } from "@/services/order.service";
 import { getProfileAPI } from "@/services/profile.service";
 import { clearGuestCart, getGuestCart, updateGuestCart } from "@/lib/cart";
+import { trackInitiateCheckout } from "@/lib/meta-pixel";
 import { CartItem, CustomDesignCartItem } from "@/types/cart";
 import { OrderPreviewResponse } from "@/types/order";
 import { ProfileResponse } from "@/types/profile";
@@ -129,6 +130,23 @@ export default function CheckoutPage() {
 
     loadCart();
   }, [token]);
+
+  // Meta Pixel: checkout has begun once the cart has loaded with items (once per visit).
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (checkoutTracked.current) return;
+    if (items.length === 0 && customItems.length === 0) return;
+    checkoutTracked.current = true;
+
+    trackInitiateCheckout(
+      items.map((item) => ({
+        id: item.variantId,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      localSubtotal,
+    );
+  }, [items, customItems, localSubtotal]);
 
   useEffect(() => {
     if (hasCustomOrders && paymentMethod !== "RAZORPAY") {

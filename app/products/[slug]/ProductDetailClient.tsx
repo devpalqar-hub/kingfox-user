@@ -25,6 +25,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { getWishList } from "@/services/wishlist.service";
 import RelatedProducts from "@/components/RelatedProducts/RelatedProducts";
+import { trackAddToCart, trackViewContent } from "@/lib/meta-pixel";
 
 type ReviewItem = {
   id: number;
@@ -183,6 +184,26 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
     fetchReviews();
   }, [product?.id]);
+
+  // Meta Pixel: one ViewContent per product view (catalog item_group_id = product id).
+  const viewedProductId = useRef<number | null>(null);
+  useEffect(() => {
+    if (!initialProduct.id || viewedProductId.current === initialProduct.id) {
+      return;
+    }
+    viewedProductId.current = initialProduct.id;
+
+    const prices = (initialProduct.variants || [])
+      .map((v) => Number(v.sellingPrice))
+      .filter((n) => Number.isFinite(n));
+
+    trackViewContent({
+      id: initialProduct.id,
+      name: initialProduct.onlineName?.trim() || initialProduct.name,
+      category: initialProduct.category?.name,
+      value: prices.length ? Math.min(...prices) : 0,
+    });
+  }, [initialProduct]);
 
   // review couresal
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -383,6 +404,17 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const isInCart = selectedVariant?.isAddedInCart ?? false;
   const isOutOfStock = (selectedVariant?.totalStock ?? 0) <= 2;
 
+  const trackVariantAddedToCart = () => {
+    if (!product || !selectedVariant) return;
+    trackAddToCart({
+      id: selectedVariant.id,
+      quantity: 1,
+      price: selectedVariant.sellingPrice,
+      name: productDisplayName,
+      category: product.category?.name,
+    });
+  };
+
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) {
       showToast("Please select size & color", "error");
@@ -409,6 +441,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         });
       }
 
+      trackVariantAddedToCart();
       window.dispatchEvent(new Event("cartUpdated"));
       setProduct((prev) => {
         if (!prev) return prev;
@@ -467,6 +500,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         };
       });
 
+      trackVariantAddedToCart();
       window.dispatchEvent(new Event("cartUpdated"));
 
       router.push("/cart");
