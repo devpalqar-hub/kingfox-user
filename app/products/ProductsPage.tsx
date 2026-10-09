@@ -35,10 +35,6 @@ const PRODUCTS_LIMIT = 8;
 const DEFAULT_MAX_PRICE = 5000;
 const INITIAL_PAGE = 1;
 const FIXED_SIZES = [
-  "XS",
-  "S",
-  "M",
-  "L",
   "XL",
   "XXL",
   "3XL",
