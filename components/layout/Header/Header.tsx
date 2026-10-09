@@ -290,7 +290,7 @@ const Header = () => {
         {/* LOGO */}
         <div className={styles.logo}>
           <Link href="/" onClick={closeDrawer}>
-            <img src="/logo.png" alt="Logo" className={styles.logoImg} />
+            <img src="/logoImg.webp" alt="Logo" className={styles.logoImg} />
           </Link>
           <span className={styles.logoText}>KINGFOX</span>
         </div>

@@ -24,10 +24,6 @@ type ColorOption = {
 };
 
 const FIXED_SIZES = [
-  "XS",
-  "S",
-  "M",
-  "L",
   "XL",
   "XXL",
   "3XL",
@@ -595,6 +591,7 @@ const NewArrivals = () => {
                     isWishlisted={wishlist.includes(product.id)}
                     onWishlistToggle={() => handleWishlist(product.id)}
                     wishlistLoading={wishlistLoading === product.id}
+                    tags={product.tags}
                   />
                 ))
               )}

@@ -9,6 +9,8 @@ import {
   LuAward,
   LuChevronLeft,
   LuChevronRight,
+  LuChevronUp,
+  LuChevronDown,
   LuX,
 } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
@@ -532,6 +534,41 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     return { min, max };
   }, [product]);
 
+  const thumbsRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateThumbArrows = () => {
+    const el = thumbsRef.current;
+    if (!el) return;
+    const horizontal = getComputedStyle(el).flexDirection === "row";
+    const pos = horizontal ? el.scrollLeft : el.scrollTop;
+    const size = horizontal ? el.clientWidth : el.clientHeight;
+    const total = horizontal ? el.scrollWidth : el.scrollHeight;
+    setCanScrollPrev(pos > 2);
+    setCanScrollNext(pos + size < total - 2);
+  };
+
+  const scrollThumbs = (dir: 1 | -1) => {
+    const el = thumbsRef.current;
+    if (!el) return;
+    const horizontal = getComputedStyle(el).flexDirection === "row";
+    const amount = (horizontal ? el.clientWidth : el.clientHeight) * 0.7 * dir;
+    el.scrollBy(
+      horizontal ? { left: amount, behavior: "smooth" } : { top: amount, behavior: "smooth" },
+    );
+  };
+
+  useEffect(() => {
+    updateThumbArrows();
+    window.addEventListener("resize", updateThumbArrows);
+    const t = setTimeout(updateThumbArrows, 300);
+    return () => {
+      window.removeEventListener("resize", updateThumbArrows);
+      clearTimeout(t);
+    };
+  }, [product, activeImg]);
+
   if (!product) {
     return <div>Loading...</div>;
   }
@@ -555,31 +592,57 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       <div className={styles.container}>
         {/* LEFT: Image Gallery */}
         <div className={styles.gallery}>
-          <div className={styles.thumbnails}>
-            {productImages.map((img, i) => (
-              <div
-                key={i}
-                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
-                  }`}
-                onClick={() => setActiveImg(img)}
+          <div className={styles.thumbnailsWrap}>
+            {canScrollPrev && (
+              <button
+                type="button"
+                aria-label="Scroll thumbnails back"
+                className={`${styles.thumbArrow} ${styles.thumbArrowPrev}`}
+                onClick={() => scrollThumbs(-1)}
               >
-                {isVideoUrl(img) ? (
-                  <video src={img} muted playsInline />
-                ) : (
-                  <img src={img} alt={`view ${i}`} />
-                )}
-              </div>
-            ))}
+                <LuChevronUp />
+              </button>
+            )}
+            <div
+              className={styles.thumbnails}
+              ref={thumbsRef}
+              onScroll={updateThumbArrows}
+            >
+              {productImages.map((img, i) => (
+                <div
+                  key={i}
+                  className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
+                    }`}
+                  onClick={() => setActiveImg(img)}
+                >
+                  {isVideoUrl(img) ? (
+                    <video src={img} muted playsInline />
+                  ) : (
+                    <img src={img} alt={`view ${i}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            {canScrollNext && (
+              <button
+                type="button"
+                aria-label="Scroll thumbnails forward"
+                className={`${styles.thumbArrow} ${styles.thumbArrowNext}`}
+                onClick={() => scrollThumbs(1)}
+              >
+                <LuChevronDown />
+              </button>
+            )}
           </div>
           <div
             className={styles.mainImage}
             onMouseMove={isVideoUrl(mainMedia) ? undefined : handleImageZoom}
           >
             {isVideoUrl(mainMedia) ? (
-              <video 
+              <video
                 src={mainMedia}
-                controls 
-                playsInline 
+                controls
+                playsInline
               />
             ) : (
               <img src={mainMedia} alt={productDisplayName} />
@@ -840,7 +903,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             if (activeTab !== section.title) return null;
 
             return (
-              <div key={i} className={styles.descriptionGrid}>
+              <div key={i} className={`${styles.descriptionGrid} ${isVideoUrl(section.imageUrl) ? styles.descriptionGridVideo : ""}`}>
                 <div className={styles.descTextSide}>
                   <div dangerouslySetInnerHTML={{ __html: section.text }} />
                 </div>
@@ -848,9 +911,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 {section.imageUrl && (
                   <div className={styles.descImageSide}>
                     <div
-                      className={`${styles.textureCard} ${
-                        isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
-                      }`}
+                      className={`${styles.textureCard} ${isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                        }`}
                     >
                       {isVideoUrl(section.imageUrl) ? (
                         <video src={section.imageUrl} controls playsInline preload="metadata" />
@@ -884,7 +946,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
             {openAccordion === section.title && (
               <div className={styles.accordionContent}>
-                <div className={styles.descriptionGrid}>
+                <div className={`${styles.descriptionGrid} ${isVideoUrl(section.imageUrl) ? styles.descriptionGridVideo : ""}`}>
                   <div className={styles.descTextSide}>
                     <div dangerouslySetInnerHTML={{ __html: section.text }} />
                   </div>
@@ -892,9 +954,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   {section.imageUrl && (
                     <div className={styles.descImageSide}>
                       <div
-                        className={`${styles.textureCard} ${
-                          isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
-                        }`}
+                        className={`${styles.textureCard} ${isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                          }`}
                       >
                         {isVideoUrl(section.imageUrl) ? (
                           <video src={section.imageUrl} controls playsInline preload="metadata" />
@@ -1050,6 +1111,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         categoryId={product.category.id}
         categoryName={product.category.name}
         currentProductId={product.id}
+        tags={product.tags}
       />
 
       {/* NEWSLETTER */}
