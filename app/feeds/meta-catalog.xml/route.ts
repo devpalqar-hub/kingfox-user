@@ -1,15 +1,19 @@
 import { getSiteUrl } from "@/lib/seo";
 import { getProductPath } from "@/lib/product-path";
 import { getProductById, getProducts } from "@/services/product.service";
-import type { ProductDetail, Variant } from "@/types/product";
+import {
+  getCatalogImage,
+  getProductDescription,
+  getProductTitle,
+  isVariantInStock,
+} from "@/lib/catalog";
+import type { ProductDetail } from "@/types/product";
 
 // Meta fetches this on its own schedule; regenerate from the backend hourly.
 export const revalidate = 3600;
 
 const PAGE_SIZE = 50;
 const DETAIL_CONCURRENCY = 6;
-// Mirrors the storefront: ProductDetailClient treats totalStock <= 2 as out of stock.
-const OUT_OF_STOCK_THRESHOLD = 2;
 const FALLBACK_BRAND = "Kingfox";
 
 const escapeXml = (value: string) =>
@@ -20,22 +24,6 @@ const escapeXml = (value: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 
-const stripHtml = (value: string) =>
-  value
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const isVideoUrl = (url: string) =>
-  /\.(mp4|mov|webm|m4v|ogv|ogg)$/i.test(url.split(/[?#]/, 1)[0]);
-
-const pickImage = (variant: Variant, product: ProductDetail) =>
-  [variant.image, ...(variant.images || []), ...(product.images || [])].find(
-    (url): url is string =>
-      !!url && /^https?:\/\//i.test(url) && !isVideoUrl(url),
-  );
-
 const formatPrice = (amount: number) => `${amount.toFixed(2)} INR`;
 
 const tag = (name: string, value?: string | number | null) =>
@@ -44,13 +32,13 @@ const tag = (name: string, value?: string | number | null) =>
     : `<g:${name}>${escapeXml(String(value))}</g:${name}>`;
 
 const buildItems = (product: ProductDetail, site: string) => {
-  const title = (product.onlineName?.trim() || product.name || "").trim();
-  const description = stripHtml(product.description || "") || title;
+  const title = getProductTitle(product);
+  const description = getProductDescription(product);
   const link = `${site}${getProductPath(product)}`;
 
   return (product.variants || []).flatMap((variant) => {
     const selling = Number(variant.sellingPrice);
-    const image = pickImage(variant, product);
+    const image = getCatalogImage(variant, product);
 
     // Meta rejects items without price/image; skip rather than invent values.
     if (!title || !Number.isFinite(selling) || selling <= 0 || !image) {
@@ -60,7 +48,7 @@ const buildItems = (product: ProductDetail, site: string) => {
     // The storefront shows costPrice as the struck-through list price.
     const listPrice = Number(variant.costPrice);
     const hasSale = Number.isFinite(listPrice) && listPrice > selling;
-    const inStock = (variant.totalStock ?? 0) > OUT_OF_STOCK_THRESHOLD;
+    const inStock = isVariantInStock(variant);
 
     return [
       `<item>${[
