@@ -868,7 +868,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           <div className={styles.trustBadges}>
             <div className={styles.badge}>
               <LuCircleCheck size={22} />
-              <span>100% COTTON</span>
+              <span>QUALITY ASSURED</span>
             </div>
             <div className={styles.badge}>
               <LuShieldCheck size={22} />
