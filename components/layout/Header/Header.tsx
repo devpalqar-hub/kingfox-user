@@ -68,8 +68,8 @@ const Header = () => {
   }, [menuOpen]);
 
   const SlotDigit = ({ digit, delay }: { digit: string; delay: number }) => {
-    const target = parseInt(digit, 10);
-    const CELL_HEIGHT = 28;
+    const parsed = parseInt(digit, 10);
+    const target = isNaN(parsed) ? 0 : parsed;
 
     const fullCycle = Array.from({ length: 10 }, (_, i) => i);
     const reelDigits = [
@@ -79,7 +79,7 @@ const Header = () => {
       ...Array.from({ length: target + 1 }, (_, i) => i),
     ];
 
-    const totalScroll = (reelDigits.length - 1) * CELL_HEIGHT;
+    const scrollSteps = reelDigits.length - 1;
 
     return (
       <div className={styles.digitWrap}>
@@ -87,7 +87,7 @@ const Header = () => {
           className={styles.digitReel}
           style={
             {
-              "--scroll": `-${totalScroll}px`,
+              "--scroll": `calc(-1 * ${scrollSteps} * var(--cell-height, 28px))`,
               "--delay": `${delay}ms`,
             } as React.CSSProperties
           }
