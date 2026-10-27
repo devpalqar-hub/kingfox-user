@@ -17,7 +17,7 @@ import styles from "./hero.module.css";
 
 const trustBadges = [
   { icon: <Truck size={20} strokeWidth={1.6} />, line1: "FREE SHIPPING", line2: "ACROSS INDIA" },
-  { icon: <PackageCheck size={20} strokeWidth={1.6} />, line1: "EASY RETURNS", line2: "14 DAYS" },
+  { icon: <PackageCheck size={20} strokeWidth={1.6} />, line1: "EASY RETURNS", line2: "7 DAYS" },
   { icon: <Crown size={20} strokeWidth={1.6} />, line1: "SIZES UP TO", line2: "12XL" },
 ];
 
