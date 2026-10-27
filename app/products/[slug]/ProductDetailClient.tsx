@@ -593,56 +593,56 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         {/* LEFT: Image Gallery */}
         <div className={styles.gallery}>
           <div className={styles.thumbnailsWrap}>
-          {canScrollPrev && (
-            <button
-              type="button"
-              aria-label="Scroll thumbnails back"
-              className={`${styles.thumbArrow} ${styles.thumbArrowPrev}`}
-              onClick={() => scrollThumbs(-1)}
-            >
-              <LuChevronUp />
-            </button>
-          )}
-          <div
-            className={styles.thumbnails}
-            ref={thumbsRef}
-            onScroll={updateThumbArrows}
-          >
-            {productImages.map((img, i) => (
-              <div
-                key={i}
-                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
-                  }`}
-                onClick={() => setActiveImg(img)}
+            {canScrollPrev && (
+              <button
+                type="button"
+                aria-label="Scroll thumbnails back"
+                className={`${styles.thumbArrow} ${styles.thumbArrowPrev}`}
+                onClick={() => scrollThumbs(-1)}
               >
-                {isVideoUrl(img) ? (
-                  <video src={img} muted playsInline />
-                ) : (
-                  <img src={img} alt={`view ${i}`} />
-                )}
-              </div>
-            ))}
-          </div>
-          {canScrollNext && (
-            <button
-              type="button"
-              aria-label="Scroll thumbnails forward"
-              className={`${styles.thumbArrow} ${styles.thumbArrowNext}`}
-              onClick={() => scrollThumbs(1)}
+                <LuChevronUp />
+              </button>
+            )}
+            <div
+              className={styles.thumbnails}
+              ref={thumbsRef}
+              onScroll={updateThumbArrows}
             >
-              <LuChevronDown />
-            </button>
-          )}
+              {productImages.map((img, i) => (
+                <div
+                  key={i}
+                  className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
+                    }`}
+                  onClick={() => setActiveImg(img)}
+                >
+                  {isVideoUrl(img) ? (
+                    <video src={img} muted playsInline />
+                  ) : (
+                    <img src={img} alt={`view ${i}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            {canScrollNext && (
+              <button
+                type="button"
+                aria-label="Scroll thumbnails forward"
+                className={`${styles.thumbArrow} ${styles.thumbArrowNext}`}
+                onClick={() => scrollThumbs(1)}
+              >
+                <LuChevronDown />
+              </button>
+            )}
           </div>
           <div
             className={styles.mainImage}
             onMouseMove={isVideoUrl(mainMedia) ? undefined : handleImageZoom}
           >
             {isVideoUrl(mainMedia) ? (
-              <video 
+              <video
                 src={mainMedia}
-                controls 
-                playsInline 
+                controls
+                playsInline
               />
             ) : (
               <img src={mainMedia} alt={productDisplayName} />
@@ -868,7 +868,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           <div className={styles.trustBadges}>
             <div className={styles.badge}>
               <LuCircleCheck size={22} />
-              <span>100% COTTON</span>
+              <span>QUALITY ASSURED</span>
             </div>
             <div className={styles.badge}>
               <LuShieldCheck size={22} />
@@ -911,9 +911,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 {section.imageUrl && (
                   <div className={styles.descImageSide}>
                     <div
-                      className={`${styles.textureCard} ${
-                        isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
-                      }`}
+                      className={`${styles.textureCard} ${isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                        }`}
                     >
                       {isVideoUrl(section.imageUrl) ? (
                         <video src={section.imageUrl} controls playsInline preload="metadata" />
@@ -955,9 +954,8 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                   {section.imageUrl && (
                     <div className={styles.descImageSide}>
                       <div
-                        className={`${styles.textureCard} ${
-                          isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
-                        }`}
+                        className={`${styles.textureCard} ${isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                          }`}
                       >
                         {isVideoUrl(section.imageUrl) ? (
                           <video src={section.imageUrl} controls playsInline preload="metadata" />
