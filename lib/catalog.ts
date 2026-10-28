@@ -8,8 +8,8 @@ import type { ProductDetail, Variant } from "@/types/product";
  * Item id = variant id, group id = product id.
  */
 
-// Mirrors the storefront: ProductDetailClient treats totalStock <= 2 as out of stock.
-const OUT_OF_STOCK_THRESHOLD = 2;
+// A variant is out of stock only when its stock is 0 (shared by storefront, feed and JSON-LD).
+export const OUT_OF_STOCK_THRESHOLD = 0;
 
 export const isVariantInStock = (variant: Variant) =>
   (variant.totalStock ?? 0) > OUT_OF_STOCK_THRESHOLD;

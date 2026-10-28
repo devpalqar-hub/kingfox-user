@@ -28,6 +28,7 @@ import { useToast } from "@/context/ToastContext";
 import { getWishList } from "@/services/wishlist.service";
 import RelatedProducts from "@/components/RelatedProducts/RelatedProducts";
 import { trackAddToCart, trackViewContent } from "@/lib/meta-pixel";
+import { OUT_OF_STOCK_THRESHOLD } from "@/lib/catalog";
 
 type ReviewItem = {
   id: number;
@@ -404,7 +405,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
   const isWishlisted = selectedVariant?.isWishlisted ?? false;
   const isInCart = selectedVariant?.isAddedInCart ?? false;
-  const isOutOfStock = (selectedVariant?.totalStock ?? 0) <= 2;
+  const isOutOfStock = (selectedVariant?.totalStock ?? 0) <= OUT_OF_STOCK_THRESHOLD;
 
   const trackVariantAddedToCart = () => {
     if (!product || !selectedVariant) return;
@@ -466,7 +467,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       return;
     }
 
-    if ((selectedVariant.totalStock ?? 0) <= 2) {
+    if ((selectedVariant.totalStock ?? 0) <= OUT_OF_STOCK_THRESHOLD) {
       showToast("Out of stock", "error");
       return;
     }
@@ -858,7 +859,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             <button
               className={styles.buyNow}
               onClick={handleBuyNow}
-              disabled={(selectedVariant?.totalStock ?? 0) <= 2}
+              disabled={(selectedVariant?.totalStock ?? 0) <= OUT_OF_STOCK_THRESHOLD}
             >
               BUY IT NOW
             </button>
