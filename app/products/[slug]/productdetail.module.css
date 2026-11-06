@@ -141,7 +141,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   border-radius: 20px;
 }
 
@@ -154,29 +153,50 @@
 }
 
 .imageZoomLens {
+  /* Positioned entirely by transform from JS (top-left of the lens box). */
   position: absolute;
-  left: var(--zoom-x, 50%);
-  top: var(--zoom-y, 50%);
-  width: clamp(130px, 22vw, 180px);
+  left: 0;
+  top: 0;
+  width: clamp(170px, 20vw, 240px);
   aspect-ratio: 1;
-  border: 2px solid rgba(255, 255, 255, 0.92);
-  border-radius: 50%;
-  background-color: #f5f5f5;
-  background-repeat: no-repeat;
-  background-size: 260%;
-  background-position: var(--zoom-x, 50%) var(--zoom-y, 50%);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-  opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -50%) scale(0.92);
-  transition: opacity 160ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
   z-index: 2;
 }
 
+.imageZoomLensInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 14px 34px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 120ms ease, transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Magnified copy: sized and moved from JS; max-width reset beats the global img rule. */
+.imageZoomLensInner img {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  max-width: none;
+  border-radius: 0;
+  will-change: transform;
+  user-select: none;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .mainImage:hover .imageZoomLens {
+  .mainImage:has(.imageZoomLens) {
+    cursor: none;
+  }
+
+  .mainImage:hover .imageZoomLens[data-active="true"] .imageZoomLensInner {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
 }
 

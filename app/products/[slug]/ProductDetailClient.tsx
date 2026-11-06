@@ -48,6 +48,9 @@ type ProductDetailClientProps = {
   initialProduct: ProductDetailType;
 };
 
+/** Magnifier lens zoom factor relative to the on-page image size. */
+const ZOOM_LEVEL = 2.5;
+
 const isVideoUrl = (url?: string | null) => {
   if (!url) return false;
   // Strip query/hash parameters so CDN-hosted video URLs are detected too.
@@ -536,6 +539,18 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   }, [product]);
 
   const thumbsRef = useRef<HTMLDivElement>(null);
+  const zoomImgRef = useRef<HTMLImageElement>(null);
+  const zoomLensRef = useRef<HTMLDivElement>(null);
+  const zoomBigRef = useRef<HTMLImageElement>(null);
+  const zoomPointer = useRef<{ x: number; y: number } | null>(null);
+  const zoomRaf = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (zoomRaf.current !== null) cancelAnimationFrame(zoomRaf.current);
+    },
+    [],
+  );
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
@@ -579,13 +594,41 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       : product?.name;
   const mainMedia = activeImg || productImages[0];
 
-  const handleImageZoom = (event: React.MouseEvent<HTMLDivElement>) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(100, ((event.clientX - bounds.left) / bounds.width) * 100));
-    const y = Math.max(0, Math.min(100, ((event.clientY - bounds.top) / bounds.height) * 100));
+  // Magnifier lens, centred on the cursor like a real magnifying glass.
+  // Maths is in px from the *rendered* image box; the lens and the magnified
+  // <img> are moved with transforms (GPU, no layout) once per animation frame.
+  const paintZoom = () => {
+    zoomRaf.current = null;
+    const img = zoomImgRef.current;
+    const lens = zoomLensRef.current;
+    const big = zoomBigRef.current;
+    const p = zoomPointer.current;
+    if (!img || !lens || !big || !p) return;
 
-    event.currentTarget.style.setProperty("--zoom-x", `${x}%`);
-    event.currentTarget.style.setProperty("--zoom-y", `${y}%`);
+    const boxRect = lens.parentElement!.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+    const ix = p.x - imgRect.left;
+    const iy = p.y - imgRect.top;
+    const inside = ix >= 0 && iy >= 0 && ix <= imgRect.width && iy <= imgRect.height;
+    lens.dataset.active = inside ? "true" : "false";
+    if (!inside) return;
+
+    const r = lens.offsetWidth / 2;
+    lens.style.transform = `translate3d(${p.x - boxRect.left - r}px, ${p.y - boxRect.top - r}px, 0)`;
+    big.style.width = `${imgRect.width * ZOOM_LEVEL}px`;
+    big.style.height = `${imgRect.height * ZOOM_LEVEL}px`;
+    // Image point (ix, iy) sits exactly at the lens centre.
+    big.style.transform = `translate3d(${r - ix * ZOOM_LEVEL}px, ${r - iy * ZOOM_LEVEL}px, 0)`;
+  };
+
+  const handleImageZoom = (event: React.MouseEvent<HTMLDivElement>) => {
+    zoomPointer.current = { x: event.clientX, y: event.clientY };
+    if (zoomRaf.current === null) zoomRaf.current = requestAnimationFrame(paintZoom);
+  };
+
+  const handleImageZoomLeave = () => {
+    zoomPointer.current = null;
+    if (zoomLensRef.current) zoomLensRef.current.dataset.active = "false";
   };
 
   return (
@@ -638,6 +681,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           <div
             className={styles.mainImage}
             onMouseMove={isVideoUrl(mainMedia) ? undefined : handleImageZoom}
+            onMouseLeave={isVideoUrl(mainMedia) ? undefined : handleImageZoomLeave}
           >
             {isVideoUrl(mainMedia) ? (
               <video
@@ -646,15 +690,21 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
                 playsInline
               />
             ) : (
-              <img src={mainMedia} alt={productDisplayName} />
+              <img ref={zoomImgRef} src={mainMedia} alt={productDisplayName} />
             )}
 
             {!isVideoUrl(mainMedia) && mainMedia && (
               <div
+                ref={zoomLensRef}
                 aria-hidden="true"
+                data-active="false"
                 className={styles.imageZoomLens}
-                style={{ backgroundImage: `url(${JSON.stringify(mainMedia)})` }}
-              />
+              >
+                <div className={styles.imageZoomLensInner}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img ref={zoomBigRef} src={mainMedia} alt="" draggable={false} />
+                </div>
+              </div>
             )}
 
             {/* ❤️ Wishlist */}

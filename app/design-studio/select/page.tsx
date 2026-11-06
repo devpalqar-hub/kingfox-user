@@ -81,16 +81,6 @@ export default function ApparelSelection() {
             for everyday confidence.
           </p>
 
-          {/* <div className={styles.heroButtons}>
-            <button className={styles.btnPrimary}>
-              SHOP ALL
-              <span className={styles.btnArrow}>→</span>
-            </button>
-            <button className={styles.btnSecondary}>
-              CUSTOMIZE YOURS
-              <span className={styles.btnIcon}>✦</span>
-            </button>
-          </div> */}
         </div>
 
         {/* Vertical side text */}
