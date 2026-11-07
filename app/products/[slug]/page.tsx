@@ -2,6 +2,8 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import ProductDetailClient from "./ProductDetailClient";
+import ProductJsonLd from "@/lib/ProductJsonLd";
+import { getSiteUrl } from "@/lib/seo";
 import { getProductPath } from "@/lib/product-path";
 import { findProductById, findProductBySlug } from "@/services/product.service";
 import type { ProductDetail } from "@/types/product";
@@ -97,5 +99,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     redirect(resolvedProduct.canonicalPath);
   }
 
-  return <ProductDetailClient initialProduct={resolvedProduct.product} />;
+  return (
+    <>
+      <ProductJsonLd
+        product={resolvedProduct.product}
+        url={`${getSiteUrl()}${resolvedProduct.canonicalPath}`}
+      />
+      <ProductDetailClient initialProduct={resolvedProduct.product} />
+    </>
+  );
 }

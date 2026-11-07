@@ -52,12 +52,64 @@
   align-items: flex-start;
 }
 
+.thumbnailsWrap {
+  position: relative;
+  width: 80px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
 .thumbnails {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 80px;
-  /* Fixed width for the sidebar thumbs */
+  /* Fixed width for the sidebar thumbs; height follows the main image */
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.thumbnails::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbBox {
+  flex-shrink: 0;
+}
+
+.thumbArrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  font-size: 16px;
+}
+
+.thumbArrow:hover {
+  background: #000;
+  color: #fff;
+}
+
+.thumbArrowPrev {
+  top: 4px;
+}
+
+.thumbArrowNext {
+  bottom: 4px;
 }
 
 .thumbBox {
@@ -79,7 +131,8 @@
 .thumbBox video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  display: block;
 }
 
 .mainImage {
@@ -88,6 +141,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 20px;
 }
 
 .mainImage img,
@@ -96,6 +150,54 @@
   height: auto;
   border-radius: 20px;
   display: block;
+}
+
+.imageZoomLens {
+  /* Positioned entirely by transform from JS (top-left of the lens box). */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: clamp(170px, 20vw, 240px);
+  aspect-ratio: 1;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 2;
+}
+
+.imageZoomLensInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 14px 34px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 120ms ease, transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Magnified copy: sized and moved from JS; max-width reset beats the global img rule. */
+.imageZoomLensInner img {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  max-width: none;
+  border-radius: 0;
+  will-change: transform;
+  user-select: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mainImage:has(.imageZoomLens) {
+    cursor: none;
+  }
+
+  .mainImage:hover .imageZoomLens[data-active="true"] .imageZoomLensInner {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Right Side Details */
@@ -460,6 +562,10 @@
   align-items: flex-start;
 }
 
+.descriptionGridVideo {
+  grid-template-columns: 1fr auto;
+}
+
 .descTitle {
   font-size: 20px;
   font-weight: 900;
@@ -629,21 +735,34 @@
 }
 
 
-.textureCard img {
+.textureCard img,
+.textureCard video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
+/* Video card — fixed height, natural width, no overlay */
+.textureCard.textureCardVideo {
+  height: 500px;
+  width: fit-content;
+  background-color: transparent;
+}
+
+.textureCard.textureCardVideo video {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Suppress gradient overlay on video cards so controls are clickable */
+.textureCard.textureCardVideo::after {
+  display: none;
+}
+
 .textureCard::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg,
-      rgba(255, 255, 255, 0.6) 0%,
-      rgba(255, 255, 255, 0) 100%);
-  z-index: 1;
+  display: none;
 }
 
 .textureLabel {
@@ -785,6 +904,7 @@
   padding: 10px;
   border: none;
   cursor: pointer;
+  z-index: 3;
 }
 
 .active {
@@ -1333,6 +1453,10 @@
     grid-template-columns: repeat(5, 1fr);
   }
 
+  .thumbnailsWrap {
+    width: 70px;
+  }
+
   .thumbnails {
     width: 70px;
   }
@@ -1496,11 +1620,33 @@
     display: block;
   }
 
-  .thumbnails {
+  .thumbnailsWrap {
     order: 2;
+    width: 100%;
+    align-self: auto;
+  }
+
+  .thumbnails {
+    position: static;
     flex-direction: row;
     width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .thumbArrow {
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+  }
+
+  .thumbArrowPrev {
+    left: 2px;
+  }
+
+  .thumbArrowNext {
+    left: auto;
+    right: 2px;
+    bottom: auto;
   }
 
   .thumbBox {
@@ -1567,6 +1713,16 @@
 
   .textureCard {
     height: 220px;
+  }
+
+  .textureCard.textureCardVideo {
+    height: 400px;
+    margin: 0 auto;
+    border-radius: 0;
+  }
+
+  .textureCard.textureCardVideo video {
+    border-radius: 0;
   }
 
   .descTitle {
@@ -1790,6 +1946,16 @@
     gap: 18px;
   }
 
+  .textureCard.textureCardVideo {
+    height: 450px;
+    margin: 0 auto;
+    border-radius: 0;
+  }
+
+  .textureCard.textureCardVideo video {
+    border-radius: 0;
+  }
+
   .descTitle {
     font-size: 14px;
   }
@@ -1800,6 +1966,22 @@
 
   .descList li {
     font-size: 12px;
+  }
+
+  .descTextSide p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .descTextSide li {
+    font-size: 12px;
+  }
+
+  .descTextSide h1,
+  .descTextSide h2,
+  .descTextSide h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
   }
 
   .textureCard {
@@ -1844,4 +2026,11 @@
     font-size: 12px;
   }
 
+}
+
+/* Mobile: no radius on main gallery video */
+@media (max-width: 768px) {
+  .mainImage video {
+    border-radius: 0;
+  }
 }

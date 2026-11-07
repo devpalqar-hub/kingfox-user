@@ -10,6 +10,11 @@ import { useAuth } from "@/context/AuthContext";
 import { clearGuestCart } from "@/lib/cart";
 import { getOrderDetailsAPI } from "@/services/order-details.service";
 import { OrderDetailsResponse } from "@/types/order-details";
+import {
+  hasTrackedPurchase,
+  trackPurchaseOnce,
+  type MetaLineItem,
+} from "@/lib/meta-pixel";
 
 import styles from "./orderplaced.module.css";
 
@@ -133,6 +138,32 @@ const buildStoredOrder = (orderId?: string | null): FallbackOrder | null => {
   }
 };
 
+const PURCHASE_POLL_ATTEMPTS = 10;
+const PURCHASE_POLL_INTERVAL_MS = 3000;
+// Order statuses (backend UpdateOrderStatusDto): PAYMENT_PENDING and CANCELLED
+// are not purchases; every other status means payment was confirmed (Razorpay
+// webhook moves PAYMENT_PENDING -> PENDING) or a pay-at-store order was placed.
+const NON_PURCHASE_STATUSES = new Set(["PAYMENT_PENDING", "CANCELLED"]);
+
+/** variantId by order-item id, taken from the checkout response saved at checkout. */
+const readCheckoutVariantIds = (orderId: string) => {
+  const map = new Map<number, number>();
+  try {
+    const raw = localStorage.getItem("lastOrderData");
+    if (!raw) return map;
+    const stored = JSON.parse(raw) as FallbackOrder;
+    if (String(stored.id) !== orderId) return map;
+    (stored.items || []).forEach((item) => {
+      if (item.id !== undefined && item.variantId !== undefined) {
+        map.set(item.id, item.variantId);
+      }
+    });
+  } catch {
+    // ignore malformed storage
+  }
+  return map;
+};
+
 export default function OrderConfirmation({
   orderId, // ✅ comes from props now
 }: {
@@ -152,6 +183,67 @@ export default function OrderConfirmation({
     localStorage.removeItem("lastCheckoutItems");
     localStorage.removeItem("lastCheckoutCustomItems");
   }, [token]);
+
+  // Meta Pixel Purchase: only for an order the backend (authenticated) reports as
+  // paid/placed. Never from the URL or from localStorage alone.
+  useEffect(() => {
+    if (!token) return;
+
+    const id = orderId || localStorage.getItem("lastOrderId");
+    if (!id || hasTrackedPurchase(id)) return;
+
+    const variantIds = readCheckoutVariantIds(id);
+    let cancelled = false;
+
+    const run = async () => {
+      for (let attempt = 0; attempt < PURCHASE_POLL_ATTEMPTS; attempt++) {
+        let res: OrderDetailsResponse;
+        try {
+          res = await getOrderDetailsAPI(id, {
+            headers: { "Skip-Auth-Error": true },
+          });
+        } catch {
+          return;
+        }
+        if (cancelled) return;
+        if (res.status === "CANCELLED") return;
+
+        if (!NON_PURCHASE_STATUSES.has(res.status)) {
+          const items: MetaLineItem[] = [];
+          res.items.forEach((item) => {
+            const variantId = item.variantId ?? variantIds.get(item.id);
+            if (variantId === undefined) {
+              console.warn("Meta Purchase: no variant id for order item", item.id);
+              return;
+            }
+            items.push({
+              id: variantId,
+              quantity: item.quantity,
+              price: item.price,
+            });
+          });
+
+          const value = Number(res.finalAmount);
+          if (Number.isFinite(value)) {
+            trackPurchaseOnce(res.id, items, value);
+          }
+          return;
+        }
+
+        // Still PAYMENT_PENDING: the Razorpay webhook may not have landed yet.
+        await new Promise((resolve) =>
+          setTimeout(resolve, PURCHASE_POLL_INTERVAL_MS),
+        );
+        if (cancelled) return;
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId, token]);
 
   useEffect(() => {
     const fetchOrder = async () => {

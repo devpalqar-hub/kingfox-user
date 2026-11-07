@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Eye, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { FaHeart } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ interface ProductCardProps {
   id: number;
   slug?: string | null;
   image: string;
+  images?: string[];
   name: string;
   price: string;
   reviews?: number;
@@ -24,12 +25,14 @@ interface ProductCardProps {
   isWishlisted?: boolean;
   onWishlistToggle?: () => void;
   wishlistLoading?: boolean;
+  tags?: any[];
 }
 
 const ProductCard = ({
   id,
   slug,
   image,
+  images,
   name,
   price,
   rating,
@@ -39,10 +42,25 @@ const ProductCard = ({
   isWishlisted,
   onWishlistToggle,
   wishlistLoading,
+  tags,
 }: ProductCardProps) => {
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const alternateImage = images?.find((productImage) => productImage !== image);
+
+  const isProductNew =
+    isNew ||
+    tags?.some((tag: any) => {
+      const tagName = typeof tag === "string" ? tag : tag?.name;
+      const upperName = tagName?.toUpperCase();
+      return upperName === "NEW ARRIVAL" || upperName === "NEW ARRIVALS";
+    });
+
+  const isBestSeller = tags?.some((tag: any) => {
+    const tagName = typeof tag === "string" ? tag : tag?.name;
+    return tagName?.toUpperCase().trim() === "BEST SELLER";
+  });
 
   const colorMap: Record<string, string> = {
     red: "#ef4444",
@@ -120,9 +138,25 @@ const ProductCard = ({
       onClick={() => router.push(getProductPath({ id, slug }))}
       style={{ cursor: "pointer" }}
     >
-      <div className={styles.imageWrapper}>
-        {isNew && <span className={styles.newBadge}>NEW ARRIVAL</span>}
+      <div
+        className={`${styles.imageWrapper} ${
+          alternateImage ? styles.hasAlternateImage : ""
+        }`}
+      >
+        {isProductNew ? (
+          <span className={styles.newBadge}>NEW</span>
+        ) : isBestSeller ? (
+          <span className={styles.newBadge}>BEST SELLER</span>
+        ) : null}
         <img src={image} alt={name} className={styles.productImage} />
+        {alternateImage && (
+          <img
+            src={alternateImage}
+            alt=""
+            aria-hidden="true"
+            className={`${styles.productImage} ${styles.alternateProductImage}`}
+          />
+        )}
 
         {/* <div className={styles.iconOverlay}>
           <button
@@ -143,22 +177,12 @@ const ProductCard = ({
           </button>
         </div> */}
 
-        <button
-          className={styles.viewBtn}
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(getProductPath({ id, slug }));
-          }}
-        >
-          <Eye size={18} />
-          VIEW
-        </button>
       </div>
 
       <div className={styles.details}>
         <div className={styles.row}>
           <h3 className={styles.productName}>{name}</h3>
-          <p>
+          <p className={styles.price}>
             {new Intl.NumberFormat("en-IN", {
               style: "currency",
               currency: "INR",

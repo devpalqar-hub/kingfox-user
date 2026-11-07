@@ -57,9 +57,9 @@ const ContactPage = () => {
     {
       icon: <Mail size={24} />,
       label: "EMAIL SUPPORT",
-      value: "support@kingfoxclothing.com",
+      value: "customercare@kingfoxclothing.com",
       subtext: "24hr response time",
-      href: "mailto:support@kingfoxclothing.com",
+      href: "mailto:customercare@kingfoxclothing.com",
     },
     {
       icon: <MessageSquare size={24} />,

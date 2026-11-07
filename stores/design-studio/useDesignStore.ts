@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { DesignProject, Layer, TextLayer, ImageLayer, ApparelConfig, PricingEstimate } from '@/types/design-studio';
+import { DesignProject, Layer, PricingEstimate } from '@/types/design-studio';
 import { calculateEstimatedPricing } from '@/services/design-studio/pricingCalculator';
 import { CustomDesignVariant } from '@/services/custom-design.service';
 
-type ViewType = 'front' | 'back' | 'sleeve';
+type ViewType = 'front' | 'back' | 'left' | 'right';
 
 interface DesignState {
   project: DesignProject;
@@ -12,20 +12,8 @@ interface DesignState {
   pricing: PricingEstimate | null;
   availableVariants: CustomDesignVariant[];
 
-  // GLB Snapshot state (front + back renders of the selected garment)
-  glbSnapshots: {
-    front: string | null;
-    back: string | null;
-    loading: boolean;
-  };
-
   // Actions
   setAvailableVariants: (variants: CustomDesignVariant[]) => void;
-  setGLBSnapshots: (snapshots: {
-    front: string | null;
-    back: string | null;
-    loading: boolean;
-  }) => void;
   setApparelCategory: (categoryId: string) => void;
   setApparelSize: (size: string) => void;
   setApparelQuantity: (quantity: number) => void;
@@ -57,7 +45,8 @@ const initialProject: DesignProject = {
   designs: {
     front: [],
     back: [],
-    sleeve: [],
+    left: [],
+    right: [],
   },
 };
 
@@ -67,17 +56,23 @@ export const useDesignStore = create<DesignState>((set, get) => ({
   selectedLayerId: null,
   pricing: null,
   availableVariants: [],
-  glbSnapshots: { front: null, back: null, loading: false },
 
   setAvailableVariants: (variants) => set({ availableVariants: variants }),
-  setGLBSnapshots: (snapshots) => set({ glbSnapshots: snapshots }),
 
   setApparelCategory: (categoryId) =>
     set((state) => ({
       project: {
         ...state.project,
         apparelConfig: { ...state.project.apparelConfig, categoryId },
+        // A different garment has different print frames, so old layer
+        // positions are meaningless — start the design fresh.
+        designs:
+          categoryId === state.project.apparelConfig.categoryId
+            ? state.project.designs
+            : { front: [], back: [], left: [], right: [] },
       },
+      activeView: 'front',
+      selectedLayerId: null,
     })),
 
   setApparelSize: (size) =>
@@ -313,8 +308,8 @@ export const useDesignStore = create<DesignState>((set, get) => ({
         designs: {
           front: [],
           back: [],
-          sleeve: [],
-          neck: [],
+          left: [],
+          right: [],
         },
       },
       selectedLayerId: null,

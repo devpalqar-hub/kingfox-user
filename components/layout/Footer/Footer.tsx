@@ -107,7 +107,7 @@ const Footer = () => {
                   </a>
                   <p style={{ marginTop: "20px" }}>+91 8129 8822 45</p>
                   <p style={{ textTransform: "lowercase" }}>
-                    kingfoxclothingstore@gmail.com
+                    customercare@kingfoxclothing.com
                   </p>
                   <div className={styles.socialRow}>
                     <a

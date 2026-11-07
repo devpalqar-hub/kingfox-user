@@ -9,6 +9,8 @@ import {
   LuAward,
   LuChevronLeft,
   LuChevronRight,
+  LuChevronUp,
+  LuChevronDown,
   LuX,
 } from "react-icons/lu";
 import { IoStarSharp } from "react-icons/io5";
@@ -25,6 +27,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { getWishList } from "@/services/wishlist.service";
 import RelatedProducts from "@/components/RelatedProducts/RelatedProducts";
+import { trackAddToCart, trackViewContent } from "@/lib/meta-pixel";
+import { OUT_OF_STOCK_THRESHOLD } from "@/lib/catalog";
 
 type ReviewItem = {
   id: number;
@@ -44,17 +48,14 @@ type ProductDetailClientProps = {
   initialProduct: ProductDetailType;
 };
 
+/** Magnifier lens zoom factor relative to the on-page image size. */
+const ZOOM_LEVEL = 2.5;
+
 const isVideoUrl = (url?: string | null) => {
   if (!url) return false;
-  const lowerUrl = url.toLowerCase();
-  return (
-    lowerUrl.endsWith(".mp4") ||
-    lowerUrl.endsWith(".mov") ||
-    lowerUrl.endsWith(".webm") ||
-    lowerUrl.includes(".mp4?") ||
-    lowerUrl.includes(".mov?") ||
-    lowerUrl.includes(".webm?")
-  );
+  // Strip query/hash parameters so CDN-hosted video URLs are detected too.
+  const pathname = url.split(/[?#]/, 1)[0].toLowerCase();
+  return /\.(mp4|mov|webm|m4v|ogv|ogg)$/i.test(pathname);
 };
 
 const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
@@ -189,6 +190,26 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
     fetchReviews();
   }, [product?.id]);
+
+  // Meta Pixel: one ViewContent per product view (catalog item_group_id = product id).
+  const viewedProductId = useRef<number | null>(null);
+  useEffect(() => {
+    if (!initialProduct.id || viewedProductId.current === initialProduct.id) {
+      return;
+    }
+    viewedProductId.current = initialProduct.id;
+
+    const prices = (initialProduct.variants || [])
+      .map((v) => Number(v.sellingPrice))
+      .filter((n) => Number.isFinite(n));
+
+    trackViewContent({
+      id: initialProduct.id,
+      name: initialProduct.onlineName?.trim() || initialProduct.name,
+      category: initialProduct.category?.name,
+      value: prices.length ? Math.min(...prices) : 0,
+    });
+  }, [initialProduct]);
 
   // review couresal
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -387,7 +408,18 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
   const isWishlisted = selectedVariant?.isWishlisted ?? false;
   const isInCart = selectedVariant?.isAddedInCart ?? false;
-  const isOutOfStock = (selectedVariant?.totalStock ?? 0) <= 2;
+  const isOutOfStock = (selectedVariant?.totalStock ?? 0) <= OUT_OF_STOCK_THRESHOLD;
+
+  const trackVariantAddedToCart = () => {
+    if (!product || !selectedVariant) return;
+    trackAddToCart({
+      id: selectedVariant.id,
+      quantity: 1,
+      price: selectedVariant.sellingPrice,
+      name: productDisplayName,
+      category: product.category?.name,
+    });
+  };
 
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) {
@@ -415,6 +447,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         });
       }
 
+      trackVariantAddedToCart();
       window.dispatchEvent(new Event("cartUpdated"));
       setProduct((prev) => {
         if (!prev) return prev;
@@ -437,7 +470,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
       return;
     }
 
-    if ((selectedVariant.totalStock ?? 0) <= 2) {
+    if ((selectedVariant.totalStock ?? 0) <= OUT_OF_STOCK_THRESHOLD) {
       showToast("Out of stock", "error");
       return;
     }
@@ -473,6 +506,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         };
       });
 
+      trackVariantAddedToCart();
       window.dispatchEvent(new Event("cartUpdated"));
 
       router.push("/cart");
@@ -504,6 +538,53 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     return { min, max };
   }, [product]);
 
+  const thumbsRef = useRef<HTMLDivElement>(null);
+  const zoomImgRef = useRef<HTMLImageElement>(null);
+  const zoomLensRef = useRef<HTMLDivElement>(null);
+  const zoomBigRef = useRef<HTMLImageElement>(null);
+  const zoomPointer = useRef<{ x: number; y: number } | null>(null);
+  const zoomRaf = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (zoomRaf.current !== null) cancelAnimationFrame(zoomRaf.current);
+    },
+    [],
+  );
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const updateThumbArrows = () => {
+    const el = thumbsRef.current;
+    if (!el) return;
+    const horizontal = getComputedStyle(el).flexDirection === "row";
+    const pos = horizontal ? el.scrollLeft : el.scrollTop;
+    const size = horizontal ? el.clientWidth : el.clientHeight;
+    const total = horizontal ? el.scrollWidth : el.scrollHeight;
+    setCanScrollPrev(pos > 2);
+    setCanScrollNext(pos + size < total - 2);
+  };
+
+  const scrollThumbs = (dir: 1 | -1) => {
+    const el = thumbsRef.current;
+    if (!el) return;
+    const horizontal = getComputedStyle(el).flexDirection === "row";
+    const amount = (horizontal ? el.clientWidth : el.clientHeight) * 0.7 * dir;
+    el.scrollBy(
+      horizontal ? { left: amount, behavior: "smooth" } : { top: amount, behavior: "smooth" },
+    );
+  };
+
+  useEffect(() => {
+    updateThumbArrows();
+    window.addEventListener("resize", updateThumbArrows);
+    const t = setTimeout(updateThumbArrows, 300);
+    return () => {
+      window.removeEventListener("resize", updateThumbArrows);
+      clearTimeout(t);
+    };
+  }, [product, activeImg]);
+
   if (!product) {
     return <div>Loading...</div>;
   }
@@ -511,37 +592,119 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     product?.onlineName && product.onlineName.trim().length > 0
       ? product.onlineName
       : product?.name;
+  const mainMedia = activeImg || productImages[0];
+
+  // Magnifier lens, centred on the cursor like a real magnifying glass.
+  // Maths is in px from the *rendered* image box; the lens and the magnified
+  // <img> are moved with transforms (GPU, no layout) once per animation frame.
+  const paintZoom = () => {
+    zoomRaf.current = null;
+    const img = zoomImgRef.current;
+    const lens = zoomLensRef.current;
+    const big = zoomBigRef.current;
+    const p = zoomPointer.current;
+    if (!img || !lens || !big || !p) return;
+
+    const boxRect = lens.parentElement!.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+    const ix = p.x - imgRect.left;
+    const iy = p.y - imgRect.top;
+    const inside = ix >= 0 && iy >= 0 && ix <= imgRect.width && iy <= imgRect.height;
+    lens.dataset.active = inside ? "true" : "false";
+    if (!inside) return;
+
+    const r = lens.offsetWidth / 2;
+    lens.style.transform = `translate3d(${p.x - boxRect.left - r}px, ${p.y - boxRect.top - r}px, 0)`;
+    big.style.width = `${imgRect.width * ZOOM_LEVEL}px`;
+    big.style.height = `${imgRect.height * ZOOM_LEVEL}px`;
+    // Image point (ix, iy) sits exactly at the lens centre.
+    big.style.transform = `translate3d(${r - ix * ZOOM_LEVEL}px, ${r - iy * ZOOM_LEVEL}px, 0)`;
+  };
+
+  const handleImageZoom = (event: React.MouseEvent<HTMLDivElement>) => {
+    zoomPointer.current = { x: event.clientX, y: event.clientY };
+    if (zoomRaf.current === null) zoomRaf.current = requestAnimationFrame(paintZoom);
+  };
+
+  const handleImageZoomLeave = () => {
+    zoomPointer.current = null;
+    if (zoomLensRef.current) zoomLensRef.current.dataset.active = "false";
+  };
 
   return (
     <>
       <div className={styles.container}>
         {/* LEFT: Image Gallery */}
         <div className={styles.gallery}>
-          <div className={styles.thumbnails}>
-            {productImages.map((img, i) => (
-              <div
-                key={i}
-                className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
-                  }`}
-                onClick={() => setActiveImg(img)}
+          <div className={styles.thumbnailsWrap}>
+            {canScrollPrev && (
+              <button
+                type="button"
+                aria-label="Scroll thumbnails back"
+                className={`${styles.thumbArrow} ${styles.thumbArrowPrev}`}
+                onClick={() => scrollThumbs(-1)}
               >
-                {isVideoUrl(img) ? (
-                  <video src={img} muted playsInline />
-                ) : (
-                  <img src={img} alt={`view ${i}`} />
-                )}
-              </div>
-            ))}
+                <LuChevronUp />
+              </button>
+            )}
+            <div
+              className={styles.thumbnails}
+              ref={thumbsRef}
+              onScroll={updateThumbArrows}
+            >
+              {productImages.map((img, i) => (
+                <div
+                  key={i}
+                  className={`${styles.thumbBox} ${activeImg === img ? styles.activeThumb : ""
+                    }`}
+                  onClick={() => setActiveImg(img)}
+                >
+                  {isVideoUrl(img) ? (
+                    <video src={img} muted playsInline />
+                  ) : (
+                    <img src={img} alt={`view ${i}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            {canScrollNext && (
+              <button
+                type="button"
+                aria-label="Scroll thumbnails forward"
+                className={`${styles.thumbArrow} ${styles.thumbArrowNext}`}
+                onClick={() => scrollThumbs(1)}
+              >
+                <LuChevronDown />
+              </button>
+            )}
           </div>
-          <div className={styles.mainImage}>
-            {isVideoUrl(activeImg || productImages[0]) ? (
-              <video 
-                src={activeImg || productImages[0]} 
-                controls 
-                playsInline 
+          <div
+            className={styles.mainImage}
+            onMouseMove={isVideoUrl(mainMedia) ? undefined : handleImageZoom}
+            onMouseLeave={isVideoUrl(mainMedia) ? undefined : handleImageZoomLeave}
+          >
+            {isVideoUrl(mainMedia) ? (
+              <video
+                src={mainMedia}
+                controls
+                playsInline
               />
             ) : (
-              <img src={activeImg || productImages[0]} alt={productDisplayName} />
+              <img ref={zoomImgRef} src={mainMedia} alt={productDisplayName} />
+            )}
+
+            {!isVideoUrl(mainMedia) && mainMedia && (
+              <div
+                ref={zoomLensRef}
+                aria-hidden="true"
+                data-active="false"
+                className={styles.imageZoomLens}
+              >
+                <div className={styles.imageZoomLensInner}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img ref={zoomBigRef} src={mainMedia} alt="" draggable={false} />
+                </div>
+              </div>
             )}
 
             {/* ❤️ Wishlist */}
@@ -746,7 +909,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             <button
               className={styles.buyNow}
               onClick={handleBuyNow}
-              disabled={(selectedVariant?.totalStock ?? 0) <= 2}
+              disabled={(selectedVariant?.totalStock ?? 0) <= OUT_OF_STOCK_THRESHOLD}
             >
               BUY IT NOW
             </button>
@@ -756,7 +919,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           <div className={styles.trustBadges}>
             <div className={styles.badge}>
               <LuCircleCheck size={22} />
-              <span>100% COTTON</span>
+              <span>QUALITY ASSURED</span>
             </div>
             <div className={styles.badge}>
               <LuShieldCheck size={22} />
@@ -791,15 +954,22 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
             if (activeTab !== section.title) return null;
 
             return (
-              <div key={i} className={styles.descriptionGrid}>
+              <div key={i} className={`${styles.descriptionGrid} ${isVideoUrl(section.imageUrl) ? styles.descriptionGridVideo : ""}`}>
                 <div className={styles.descTextSide}>
                   <div dangerouslySetInnerHTML={{ __html: section.text }} />
                 </div>
 
                 {section.imageUrl && (
                   <div className={styles.descImageSide}>
-                    <div className={styles.textureCard}>
-                      <img src={section.imageUrl} alt={section.title} />
+                    <div
+                      className={`${styles.textureCard} ${isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                        }`}
+                    >
+                      {isVideoUrl(section.imageUrl) ? (
+                        <video src={section.imageUrl} controls playsInline preload="metadata" />
+                      ) : (
+                        <img src={section.imageUrl} alt={section.title} />
+                      )}
                     </div>
                   </div>
                 )}
@@ -827,15 +997,22 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
             {openAccordion === section.title && (
               <div className={styles.accordionContent}>
-                <div className={styles.descriptionGrid}>
+                <div className={`${styles.descriptionGrid} ${isVideoUrl(section.imageUrl) ? styles.descriptionGridVideo : ""}`}>
                   <div className={styles.descTextSide}>
                     <div dangerouslySetInnerHTML={{ __html: section.text }} />
                   </div>
 
                   {section.imageUrl && (
                     <div className={styles.descImageSide}>
-                      <div className={styles.textureCard}>
-                        <img src={section.imageUrl} alt={section.title} />
+                      <div
+                        className={`${styles.textureCard} ${isVideoUrl(section.imageUrl) ? styles.textureCardVideo : ""
+                          }`}
+                      >
+                        {isVideoUrl(section.imageUrl) ? (
+                          <video src={section.imageUrl} controls playsInline preload="metadata" />
+                        ) : (
+                          <img src={section.imageUrl} alt={section.title} />
+                        )}
                       </div>
                     </div>
                   )}
@@ -985,6 +1162,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
         categoryId={product.category.id}
         categoryName={product.category.name}
         currentProductId={product.id}
+        tags={product.tags}
       />
 
       {/* NEWSLETTER */}

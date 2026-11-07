@@ -82,7 +82,11 @@ const Bestseller = () => {
     <section className={styles.section}>
       {/* HEADER */}
       <div className={styles.header}>
+        <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollLeft}><FaArrowLeft/></button>
+        
         <h2 className={styles.title}>BESTSELLER</h2>
+
+        <button className={`${styles.navButton} ${styles.mobileNavButton}`} onClick={scrollRight}><FaArrowRight/></button>
 
         {/* 🔥 ARROWS */}
         <div className={styles.navButtons}>
@@ -102,6 +106,8 @@ const Bestseller = () => {
               price={String(product.priceRange?.min || 0)}
               rating={4}
               image={product.images?.[0] || "/placeholder-product.png"}
+              images={product.images}
+              tags={product.tags}
             />
           </div>
         ))}

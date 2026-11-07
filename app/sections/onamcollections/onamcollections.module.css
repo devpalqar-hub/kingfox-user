@@ -16,14 +16,17 @@
   font-weight: 700;
   letter-spacing: -1px;
   margin: 0;
+  text-align: center;
   font-family: var(--font-space);
 }
+
 /* VIEW ALL BUTTON */
 .viewAllWrapper {
   display: flex;
   justify-content: center;
   margin-top: 30px;
 }
+
 .viewAll {
   position: absolute;
   right: 60px;
@@ -71,16 +74,20 @@
   border-radius: 6px;
 }
 
+.navButton {
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.mobileNavButton {
+  display: none;
+}
+
 @media (max-width: 460px) {
-  .section {
-    padding: 40px 16px;
-  }
-
-  .title {
-    font-size: 22px;
-    padding: 12px 22px;
-  }
-
   .grid {
     display: flex;
     flex-wrap: wrap;
@@ -89,7 +96,8 @@
   }
 
   .cardWrapper {
-    width: calc(50% - 7px); /* 2 cards */
+    width: calc(50% - 7px);
+    /* 2 cards */
   }
 }
 
@@ -103,6 +111,7 @@
   font-size: 16px;
   margin-bottom: 16px;
 }
+
 /* ===================== */
 /* TABLET */
 /* ===================== */
@@ -123,8 +132,18 @@
 
 @media (max-width: 720px) {
   .header {
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .navButtons {
+    display: none;
+  }
+
+  .mobileNavButton {
+    display: block;
   }
 
   .viewAll {
@@ -134,6 +153,8 @@
   .title {
     font-size: 32px;
     text-align: center;
+    flex: 1;
+    margin: 0;
   }
 
   .grid {
@@ -153,18 +174,21 @@
 
   .title {
     font-size: 22px;
-    padding: 12px 22px;
+    padding: 0;
+    text-align: center;
   }
 
   .grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
+
   .viewAllWrapper {
     margin-top: 25px;
   }
 
   .viewAll {
+    position: static;
     font-size: 12px;
     padding: 10px 20px;
     border-radius: 10px;

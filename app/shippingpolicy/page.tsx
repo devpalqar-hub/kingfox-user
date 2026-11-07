@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
       </p>
 
       <p>
-        <strong>Email:</strong> kingfoxclothingstore@gmail.com
+        <strong>Email:</strong> customercare@kingfoxclothing.com
         <br />
         <strong>Name:</strong> MUHAMMED SHAHID KM
         <br />

@@ -1,6 +1,7 @@
 .contactHero {
   width: 100%;
-  padding: 40px 5% 0; /* Adds breathing room on the sides */
+  padding: 40px 5% 0;
+  /* Adds breathing room on the sides */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,7 +12,8 @@
 }
 
 .container {
-  max-width: 1400px; /* Constrains the content width */
+  max-width: 1400px;
+  /* Constrains the content width */
   width: 100%;
   height: 100%;
   display: flex;
@@ -22,7 +24,8 @@
 }
 
 .textContent {
-  flex: 1; /* Gives text more space than the image */
+  flex: 1;
+  /* Gives text more space than the image */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -30,7 +33,8 @@
 }
 
 .title {
-  font-family: 'Inter', sans-serif; /* Use a bold sans-serif */
+  font-family: 'Inter', sans-serif;
+  /* Use a bold sans-serif */
   font-size: 130px;
   font-weight: 850;
   line-height: 0.85;
@@ -44,14 +48,16 @@
   line-height: 1.5;
   color: #000;
   margin-bottom: 34px;
-  max-width: 400px; /* Keeps text from stretching too wide */
+  max-width: 400px;
+  /* Keeps text from stretching too wide */
 }
 
 .trackButton {
   padding: 14px 32px;
   border: 1px solid #000;
   background: transparent;
-  border-radius: 10px; /* Rounded corners for the button */
+  border-radius: 10px;
+  /* Rounded corners for the button */
   font-weight: 700;
   font-size: 13px;
   text-transform: uppercase;
@@ -63,7 +69,8 @@
   flex: 1;
   align-self: stretch;
   display: flex;
-  justify-content: center; /* Pushes image to the far right */
+  justify-content: center;
+  /* Pushes image to the far right */
   align-items: flex-end;
   position: relative;
   min-height: 640px;
@@ -78,14 +85,14 @@
   object-fit: contain;
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.12));
 }
+
 .infoSection {
   padding: 60px 20px;
   background-color: #ffffff;
-   margin-top: -20px;
+  margin-top: -20px;
 }
 
 .infoGrid {
-  max-width: 1200px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -93,9 +100,11 @@
 }
 
 .infoCard {
-  background-color: #f5f5f5; /* Light grey background from screenshot */
+  background-color: #f5f5f5;
+  /* Light grey background from screenshot */
   padding: 20px;
-  border-radius: 24px; /* Soft rounded corners */
+  border-radius: 24px;
+  /* Soft rounded corners */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -154,6 +163,7 @@
   margin-bottom: 10px;
   letter-spacing: -1px;
 }
+
 .selectWrapper {
   position: relative;
   width: 100%;
@@ -182,6 +192,7 @@
   pointer-events: none;
   color: #333;
 }
+
 .formSubtitle {
   color: #666;
   margin-bottom: 30px;
@@ -207,12 +218,13 @@
   margin-bottom: 8px;
 }
 
-.inputGroup input, 
-.inputGroup select, 
+.inputGroup input,
+.inputGroup select,
 .inputGroup textarea {
   padding: 15px 20px;
   border: 1.5px solid #000;
-  border-radius: 15px; /* Rounded corners from screenshot */
+  border-radius: 15px;
+  /* Rounded corners from screenshot */
   font-size: 14px;
   outline: none;
 }
@@ -237,6 +249,7 @@
   padding: 30px;
   background: #f9f9f9;
 }
+
 .supportLinks li a {
   display: flex;
   justify-content: space-between;
@@ -245,6 +258,7 @@
   text-decoration: none;
   color: inherit;
 }
+
 .supportCard h3 {
   font-weight: 800;
   margin-bottom: 20px;
@@ -327,12 +341,14 @@
   max-width: 800px;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Space between the rounded boxes */
+  gap: 15px;
+  /* Space between the rounded boxes */
 }
 
 .faqItem {
   border: 1px solid #000000;
-  border-radius: 50px; /* Gives that pill shape from your image */
+  border-radius: 50px;
+  /* Gives that pill shape from your image */
   overflow: hidden;
   transition: all 0.3s ease;
 }
@@ -369,7 +385,8 @@
 }
 
 .answerShow {
-  max-height: 200px; /* Adjust based on content */
+  max-height: 200px;
+  /* Adjust based on content */
   padding-bottom: 25px;
 }
 
@@ -378,14 +395,16 @@
   color: #666;
   line-height: 1.6;
 }
+
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(6px); /* 🔥 glass effect */
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  /* 🔥 glass effect */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,12 +418,13 @@
   width: 360px;
   text-align: center;
   animation: pop 0.35s ease;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .modalIcon {
   font-size: 42px;
-  color: #22c55e; /* 🔥 nice green success color */
+  color: #22c55e;
+  /* 🔥 nice green success color */
   margin-bottom: 10px;
   margin-left: 130px;
 }
@@ -437,160 +457,165 @@
   background: #222;
   transform: translateY(-1px);
 }
+
 @keyframes pop {
   from {
     transform: scale(0.7);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
   }
 }
-@media (max-width: 1024px){
 
-.contactHero{
-  min-height:auto;
-}
-
-.container{
-  gap:40px;
-  min-height: auto;   /* ✅ remove forced height */
-    padding: 30px 20px;
-}
-
-.title{
-  font-size:88px;
-}
-
-.description{
-  font-size:15px;
-}
-
-.imageWrapper{
-  min-height:420px;
-}
-
-.heroImage{
-  max-height:420px;
-}
-
-/* Info cards */
-.infoGrid{
-  grid-template-columns:repeat(2,1fr);
-}
-
-/* Form section */
-.formContainer{
-  grid-template-columns:1fr 1fr;
-  gap:30px;
-}
-
-}
-@media (max-width: 720px){
+@media (max-width: 1024px) {
 
   .contactHero {
-  min-height: auto !important;
-  padding: 30px 20px;
-}
+    min-height: auto;
+  }
 
-/* HERO */
-.container{
-  flex-direction:column;
-  text-align:center;
-  padding: 30px 20px;
-  min-height: auto;
-}
+  .container {
+    gap: 40px;
+    min-height: auto;
+    /* ✅ remove forced height */
+    padding: 30px 20px;
+  }
 
-.textContent{
-  align-items:center;
-}
+  .title {
+    font-size: 88px;
+  }
 
-.title{
-  font-size:56px;
-  line-height:0.9;
-}
+  .description {
+    font-size: 15px;
+  }
 
-.description{
-  max-width:100%;
-}
+  .imageWrapper {
+    min-height: 420px;
+  }
 
-.imageWrapper{
-  justify-content:center;
-  min-height:340px;
-}
+  .heroImage {
+    max-height: 420px;
+  }
 
-.heroImage{
-  max-height:340px;
-}
+  /* Info cards */
+  .infoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-/* INFO CARDS */
-.infoGrid{
-  grid-template-columns:repeat(2,1fr);
-}
-
-/* FORM */
-.formContainer{
-  grid-template-columns:1fr;
-}
-
-/* INPUT ROW */
-.inputRow{
-  grid-template-columns:1fr;
-}
+  /* Form section */
+  .formContainer {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
 
 }
 
-@media (max-width: 460px){
+@media (max-width: 720px) {
 
-.contactHero {
+  .contactHero {
+    min-height: auto !important;
+    padding: 30px 20px;
+  }
+
+  /* HERO */
+  .container {
+    flex-direction: column;
+    text-align: center;
+    padding: 30px 20px;
+    min-height: auto;
+  }
+
+  .textContent {
+    align-items: center;
+  }
+
+  .title {
+    font-size: 56px;
+    line-height: 0.9;
+  }
+
+  .description {
+    max-width: 100%;
+  }
+
+  .imageWrapper {
+    justify-content: center;
+    min-height: 340px;
+  }
+
+  .heroImage {
+    max-height: 340px;
+  }
+
+  /* INFO CARDS */
+  .infoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* FORM */
+  .formContainer {
+    grid-template-columns: 1fr;
+  }
+
+  /* INPUT ROW */
+  .inputRow {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 460px) {
+
+  .contactHero {
     min-height: auto !important;
     padding: 20px 16px;
   }
 
-.title{
-  font-size:42px;
-  letter-spacing:-1px;
-}
+  .title {
+    font-size: 42px;
+    letter-spacing: -1px;
+  }
 
-.description{
-  font-size:14px;
-}
+  .description {
+    font-size: 14px;
+  }
 
-.trackButton{
-  font-size:11px;
-  padding:8px 20px;
-}
+  .trackButton {
+    font-size: 11px;
+    padding: 8px 20px;
+  }
 
-/* INFO SECTION */
-.infoGrid{
-  grid-template-columns:1fr;
-}
+  /* INFO SECTION */
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
 
-/* FORM */
-.formTitle{
-  font-size:26px;
-}
+  /* FORM */
+  .formTitle {
+    font-size: 26px;
+  }
 
-.inputGroup input,
-.inputGroup textarea,
-.selectInput{
-  padding:14px 16px;
-}
+  .inputGroup input,
+  .inputGroup textarea,
+  .selectInput {
+    padding: 14px 16px;
+  }
 
-/* SUPPORT CARD */
-.supportCard{
-  padding:20px;
-}
+  /* SUPPORT CARD */
+  .supportCard {
+    padding: 20px;
+  }
 
-/* FAQ */
-.faqHeader{
-  padding:18px 25px;
-  font-size:14px;
-}
+  /* FAQ */
+  .faqHeader {
+    padding: 18px 25px;
+    font-size: 14px;
+  }
 
-.faqAnswer{
-  padding:0 25px;
-}
+  .faqAnswer {
+    padding: 0 25px;
+  }
 
 }

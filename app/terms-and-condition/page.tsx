@@ -112,7 +112,7 @@ export default function TermsPage() {
 
         <h2>CONTACT</h2>
         <p>
-          Email: kingfoxclothingstore@gmail.com <br />
+          Email: customercare@kingfoxclothing.com <br />
           Phone: +91 8129882245 <br />
           Address: MN’S Avenue, Calicut, Kerala – 673001
         </p>
