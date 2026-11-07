@@ -39,10 +39,18 @@ interface SceneProps {
 function GarmentScene({ spec, colorHex, view, layers, showZone, apiRef }: SceneProps) {
   const { scene } = useGLTF(spec.modelUrl);
   const group = useRef<THREE.Group>(null);
-  const { gl, scene: rootScene, camera } = useThree();
+  const { gl, scene: rootScene, camera, size } = useThree();
 
   const views = useMemo(() => viewsOf(spec), [spec]);
   const garment = useMemo(() => bakeGarment(scene, spec), [scene, spec]);
+
+  // Pull the camera back until the whole garment (arms out) fits the canvas,
+  // however narrow the viewer card is. 1.87 = 1 / (2·tan(fov/2)) for fov 30°.
+  const aspect = Math.max(0.2, size.width / size.height);
+  const fitDistance = Math.max(150, (Math.max(garment.sizeCm.x, garment.sizeCm.z) * 1.12 * 1.87) / aspect);
+  useEffect(() => {
+    camera.position.setLength(fitDistance);
+  }, [camera, fitDistance]);
 
   const surfaces3d = useMemo(() => {
     const out: Partial<Record<StudioView, THREE.BufferGeometry | null>> = {};
@@ -101,7 +109,7 @@ function GarmentScene({ spec, colorHex, view, layers, showZone, apiRef }: SceneP
         if (g) g.rotation.set(0, VIEW_BASES[v].rotationY, 0);
         // Canonical straight-on camera so snapshots don't depend on how the
         // user last orbited the preview.
-        camera.position.set(0, 0, 150);
+        camera.position.set(0, 0, fitDistance);
         camera.lookAt(0, 0, 0);
         gl.render(rootScene, camera);
         const url = gl.domElement.toDataURL("image/png");
@@ -114,7 +122,7 @@ function GarmentScene({ spec, colorHex, view, layers, showZone, apiRef }: SceneP
     return () => {
       apiRef.current = null;
     };
-  }, [apiRef, gl, rootScene, camera]);
+  }, [apiRef, gl, rootScene, camera, fitDistance]);
 
   useFrame((_s, delta) => {
     if (group.current) {
@@ -182,7 +190,7 @@ export default function GarmentViewer(props: SceneProps) {
       <OrbitControls
         enablePan={false}
         minDistance={70}
-        maxDistance={260}
+        maxDistance={420}
         minPolarAngle={Math.PI / 3}
         maxPolarAngle={(2 * Math.PI) / 3}
       />

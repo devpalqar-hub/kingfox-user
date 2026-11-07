@@ -4,10 +4,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Box,
+  Crop,
+  Droplet,
+  Hand,
   Image as ImageIcon,
+  Info,
+  Layers,
   PencilRuler,
+  Shirt,
   ShoppingCart,
+  SlidersHorizontal,
   Trash2,
   Type,
 } from "lucide-react";
@@ -35,6 +43,8 @@ import { useConfirm } from "@/context/ConfirmContext";
 import CostEstimateModal from "@/components/design-studio/modals/CostEstimateModal";
 import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmModal";
 import FrameEditor from "./FrameEditor";
+import GarmentThumb from "./GarmentThumb";
+import { GARMENT_IMAGES } from "@/lib/design-studio/garmentImages";
 import GarmentViewer, { type ViewerApi } from "./GarmentViewer";
 import s from "./studio.module.css";
 
@@ -401,7 +411,10 @@ export default function Studio({ categoryId }: { categoryId: string }) {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const editorMaxWidth = `min(100%, calc(62vh * ${(frame.widthMm / frame.heightMm).toFixed(3)}))`;
+  const garmentImage = GARMENT_IMAGES[spec.key]?.[view];
+  const editorAspect = garmentImage
+    ? garmentImage.width / garmentImage.height
+    : frame.widthMm / frame.heightMm;
 
   return (
     <div className={s.page}>
@@ -410,31 +423,34 @@ export default function Studio({ categoryId }: { categoryId: string }) {
           <button className={s.backBtn} onClick={handleBack}>
             <ArrowLeft size={15} /> Back
           </button>
-          <div>
-            <h1 className={s.title}>Customize {spec.label}</h1>
-            <p className={s.subtitle}>
-              Place your design inside the dashed boundary — that is exactly what gets printed.
-            </p>
-          </div>
-        </div>
-
-        <div className={s.viewTabs}>
-          {views.map((v) => {
-            const count = (layers[v] ?? []).length;
-            return (
-              <button
-                key={v}
-                className={`${s.viewTab} ${v === view ? s.viewTabActive : ""}`}
-                onClick={() => switchView(v)}
-              >
-                {VIEW_LABELS[v]}
-                {count > 0 && <span className={s.viewTabBadge}>{count}</span>}
-              </button>
-            );
-          })}
+          <span className={s.studioPill}>Design Studio</span>
+          <h1 className={s.title}>
+            <span className={s.titleMark}>Customize {spec.label}</span>
+          </h1>
+          <p className={s.subtitle}>
+            Place your design inside the dashed boundary — that is exactly what gets printed.
+          </p>
         </div>
 
         <div className={s.main}>
+          <nav className={s.viewTabs} aria-label="Garment side">
+            {views.map((v) => {
+              const count = (layers[v] ?? []).length;
+              const TabIcon = v === "front" || v === "back" ? Shirt : Hand;
+              return (
+                <button
+                  key={v}
+                  className={`${s.viewTab} ${v === view ? s.viewTabActive : ""}`}
+                  onClick={() => switchView(v)}
+                >
+                  <TabIcon size={22} />
+                  <span>{VIEW_LABELS[v]}</span>
+                  {count > 0 && <span className={s.viewTabBadge}>{count}</span>}
+                </button>
+              );
+            })}
+          </nav>
+
           <div className={s.stage}>
             <div className={s.paneToggle}>
               <button
@@ -453,32 +469,54 @@ export default function Studio({ categoryId }: { categoryId: string }) {
 
             {/* 2D boundary editor */}
             <section
-              className={`${s.card} ${s.pane} ${mobilePane !== "design" ? s.paneHiddenMobile : ""}`}
+              className={`${s.card} ${s.pane} ${s.printCard} ${mobilePane !== "design" ? s.paneHiddenMobile : ""}`}
             >
-              <h2 className={s.cardTitle}>{VIEW_LABELS[view]} — print area</h2>
-              <div className={s.editorWrap} style={{ maxWidth: editorMaxWidth }}>
-                <FrameEditor
-                  frame={frame}
-                  layers={current}
-                  background={colorHex}
-                  selectedId={selectedLayerId}
-                  onSelect={selectLayer}
-                  onPatch={updateLayer}
-                  onDelete={removeLayer}
-                />
+              <div className={s.cardHead}>
+                <h2 className={s.cardTitle}>
+                  <Crop size={18} /> Print Area
+                  <span
+                    className={s.infoDot}
+                    title="Artwork outside the dashed boundary is not printed."
+                  >
+                    <Info size={15} />
+                  </span>
+                </h2>
+                <span className={s.cardMeta}>
+                  {VIEW_LABELS[view]} ({zone.sizeMm[0] / 10} × {zone.sizeMm[1] / 10} cm)
+                </span>
+              </div>
+              <div className={s.printBody}>
+                <div className={s.toolsRow}>
+                  <button className={s.toolBtn} onClick={addText}>
+                    <Type size={20} /> <span>Add text</span>
+                  </button>
+                  <button className={s.toolBtn} onClick={() => fileRef.current?.click()}>
+                    <ImageIcon size={20} /> <span>Upload image</span>
+                  </button>
+                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={onUpload} />
+                </div>
+
+                <div className={s.editorArea}>
+                  <div
+                    className={s.editorWrap}
+                    style={{ "--aspect": editorAspect.toFixed(3) } as React.CSSProperties}
+                  >
+                    <FrameEditor
+                      frame={frame}
+                      image={garmentImage}
+                      layers={current}
+                      background={colorHex}
+                      selectedId={selectedLayerId}
+                      onSelect={selectLayer}
+                      onPatch={updateLayer}
+                      onDelete={removeLayer}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className={s.toolsRow}>
-                <button className={s.toolBtn} onClick={addText}>
-                  <Type size={15} /> Add text
-                </button>
-                <button className={s.toolBtn} onClick={() => fileRef.current?.click()}>
-                  <ImageIcon size={15} /> Upload image
-                </button>
-                <input ref={fileRef} type="file" accept="image/*" hidden onChange={onUpload} />
-              </div>
-
-              {selected && (
+              <div className={s.layerDock}>
+              {selected ? (
                 <div className={s.layerPanel}>
                   <div className={s.layerPanelHead}>
                     <span className={s.layerName}>{selected.name}</span>
@@ -490,15 +528,18 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                   {selected.type === "text" && (
                     <>
                       <label className={s.fieldLabel}>
-                        Text
+                        <span className={`${s.fieldName} ${s.fieldNameDesktopHidden}`}>Text</span>
                         <input
+                          aria-label="Text"
                           className={s.textInput}
                           value={(selected as TextLayer).text}
                           onChange={(e) => setText(e.target.value)}
                         />
                       </label>
                       <div className={s.fieldLabel}>
-                        Text color
+                        <span className={`${s.fieldName} ${s.fieldNameDesktopHidden}`}>
+                          Text color
+                        </span>
                         <div className={s.swatchRow}>
                           {TEXT_COLORS.map((c) => (
                             <button
@@ -525,7 +566,7 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                   )}
 
                   <label className={s.fieldLabel}>
-                    Size
+                    <span className={s.fieldName}>Size</span>
                     <input
                       className={s.slider}
                       type="range"
@@ -539,7 +580,7 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                     />
                   </label>
                   <label className={s.fieldLabel}>
-                    Rotation
+                    <span className={s.fieldName}>Rotate</span>
                     <input
                       className={s.slider}
                       type="range"
@@ -552,14 +593,32 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                     />
                   </label>
                 </div>
+              ) : (
+                <p className={s.dockHint}>
+                  Add text or upload an image, then tap it to change its size, colour and
+                  rotation.
+                </p>
               )}
+              </div>
             </section>
 
             {/* 3D preview */}
             <section
-              className={`${s.card} ${s.pane} ${mobilePane !== "preview" ? s.paneHiddenMobile : ""}`}
+              className={`${s.card} ${s.pane} ${s.previewCard} ${mobilePane !== "preview" ? s.paneHiddenMobile : ""}`}
             >
-              <h2 className={s.cardTitle}>3D preview</h2>
+              <div className={s.cardHead}>
+                <h2 className={s.cardTitle}>
+                  <Box size={18} /> 3D Preview
+                </h2>
+                <label className={s.zoneToggle}>
+                  <input
+                    type="checkbox"
+                    checked={showZone}
+                    onChange={(e) => setShowZone(e.target.checked)}
+                  />
+                  Show boundary
+                </label>
+              </div>
               <div className={s.viewerBox}>
                 <GarmentViewer
                   spec={spec}
@@ -570,21 +629,31 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                   apiRef={viewerApi}
                 />
               </div>
-              <label className={s.zoneToggle}>
-                <input
-                  type="checkbox"
-                  checked={showZone}
-                  onChange={(e) => setShowZone(e.target.checked)}
-                />
-                Show print boundary on the garment
-              </label>
+              <div className={s.thumbRow}>
+                {views.map((v) => (
+                  <button
+                    key={v}
+                    title={VIEW_LABELS[v]}
+                    aria-label={VIEW_LABELS[v]}
+                    className={`${s.thumb} ${v === view ? s.thumbActive : ""}`}
+                    onClick={() => switchView(v)}
+                  >
+                    <GarmentThumb image={GARMENT_IMAGES[spec.key]?.[v]} color={colorHex} />
+                  </button>
+                ))}
+              </div>
             </section>
           </div>
 
           {/* Options */}
-          <aside className={s.card}>
+          <aside className={`${s.card} ${s.optionsCard}`}>
+            <h2 className={`${s.cardTitle} ${s.optionsTitle}`}>
+              <SlidersHorizontal size={18} /> Customize Options
+            </h2>
             <div className={s.optionBlock}>
-              <span className={s.optionLabel}>Size</span>
+              <span className={s.optionLabel}>
+                <Shirt size={17} /> Size
+              </span>
               <div className={s.sizeGrid}>
                 {(uniqueSizes.length ? uniqueSizes : ["S", "M", "L", "XL"]).map((sz) => (
                   <button
@@ -601,7 +670,9 @@ export default function Studio({ categoryId }: { categoryId: string }) {
             </div>
 
             <div className={s.optionBlock}>
-              <span className={s.optionLabel}>Color</span>
+              <span className={s.optionLabel}>
+                <Droplet size={17} /> Color
+              </span>
               {colorsForSize.length ? (
                 <div className={s.swatchGrid}>
                   {colorsForSize.map((variant) => (
@@ -631,7 +702,9 @@ export default function Studio({ categoryId }: { categoryId: string }) {
             </div>
 
             <div className={s.optionBlock}>
-              <span className={s.optionLabel}>Quantity</span>
+              <span className={s.optionLabel}>
+                <Layers size={17} /> Quantity
+              </span>
               <div className={s.qtyRow}>
                 <button
                   className={s.qtyBtn}
@@ -654,8 +727,11 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                 <span className={s.priceValue}>{unitPrice ? `₹${total}` : "—"}</span>
               </div>
               <button className={s.primaryBtn} onClick={openEstimate} disabled={isCheckingOut}>
-                <ShoppingCart size={16} />
-                {isCheckingOut ? "Adding to cart…" : "Add to cart"}
+                <ShoppingCart size={17} />
+                <span className={s.primaryBtnText}>
+                  {isCheckingOut ? "Adding to cart…" : "Add to cart"}
+                </span>
+                <ArrowRight size={18} />
               </button>
               <button className={s.secondaryBtn} onClick={() => setIsClearOpen(true)}>
                 <Trash2 size={14} /> Clear design

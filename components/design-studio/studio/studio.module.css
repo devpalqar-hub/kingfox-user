@@ -1,91 +1,149 @@
-/* Design Studio — simple boundary-driven customiser. Light theme, mobile-first. */
+/* Design Studio — light, rounded, yellow-accent theme. Mobile-first. */
 
 .page {
+  --accent: #ffc933;
+  --accent-strong: #f5b800;
+  --accent-soft: #fff4cc;
+  --ink: #14141a;
+  --muted: #6b7280;
+  --line: #ececef;
+  --radius: 22px;
+
   min-height: 100vh;
-  background: #f7f7f8;
-  color: #111;
-  padding: 84px 14px 96px;
+  color: var(--ink);
+  padding: 12px 12px 84px;
+  background:
+    radial-gradient(520px 360px at 100% 0%, rgba(255, 201, 51, 0.32), transparent 70%),
+    radial-gradient(460px 340px at 0% 100%, rgba(255, 201, 51, 0.22), transparent 70%),
+    radial-gradient(380px 260px at 0% 18%, rgba(255, 201, 51, 0.12), transparent 70%),
+    #fafaf8;
 }
 
 .inner {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
 }
 
-/* ── Top bar ─────────────────────────────────────────── */
+/* ── Top bar + heading ───────────────────────────────── */
 .topBar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 10px 12px;
+  margin-bottom: 10px;
 }
 
 .backBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #d9d9de;
+  border: 1px solid var(--line);
   background: #fff;
-  color: #111;
-  border-radius: 8px;
-  padding: 8px 12px;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(20, 20, 26, 0.05);
+}
+
+.studioPill {
+  background: var(--accent);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.hero {
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
   margin: 0;
+  flex-basis: 100%;
+  font-size: clamp(24px, 6vw, 32px);
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* Brush-stroke underline in the accent colour. */
+.titleMark {
+  background: linear-gradient(transparent 68%, rgba(255, 201, 51, 0.85) 68%, rgba(255, 201, 51, 0.85) 92%, transparent 92%);
+  padding-right: 4px;
 }
 
 .subtitle {
-  margin: 0;
-  font-size: 12px;
-  color: #6b7280;
+  display: none;
+  margin: 8px 0 0;
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
 }
 
 /* ── View tabs ───────────────────────────────────────── */
 .viewTabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 10px;
+  min-width: 0;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 4px 2px 8px;
   -webkit-overflow-scrolling: touch;
 }
 
 .viewTab {
   flex: 0 0 auto;
-  border: 1px solid #d9d9de;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
   background: #fff;
-  color: #111;
+  color: var(--ink);
   border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(20, 20, 26, 0.06);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.viewTab:hover {
+  transform: translateY(-1px);
 }
 
 .viewTabActive {
-  background: #111;
-  border-color: #111;
+  background: var(--ink);
+  border-color: var(--ink);
   color: #fff;
+  box-shadow: 0 6px 16px rgba(20, 20, 26, 0.25);
 }
 
 .viewTabBadge {
   display: inline-block;
-  margin-left: 6px;
-  min-width: 17px;
-  padding: 0 4px;
+  min-width: 18px;
+  padding: 0 5px;
   border-radius: 999px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 10.5px;
-  line-height: 17px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
   text-align: center;
 }
 
@@ -93,23 +151,51 @@
 .main {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e7e7ea;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(236, 236, 239, 0.9);
+  border-radius: var(--radius);
   padding: 14px;
+  box-shadow: 0 10px 34px rgba(20, 20, 26, 0.07);
+  backdrop-filter: blur(6px);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .cardTitle {
-  margin: 0 0 10px;
-  font-size: 12px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.optionsTitle {
+  margin-bottom: 6px;
+}
+
+.cardMeta {
+  font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.infoDot {
+  display: inline-flex;
+  color: var(--muted);
+  cursor: help;
 }
 
 /* Stage holds the 2D editor and the 3D preview. On mobile they stack into the
@@ -134,10 +220,12 @@
 .paneToggle {
   display: flex;
   gap: 6px;
-  background: #ededf0;
-  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
   padding: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 10px rgba(20, 20, 26, 0.06);
 }
 
 .paneToggleBtn {
@@ -145,10 +233,10 @@
   border: none;
   background: transparent;
   color: #4b5563;
-  border-radius: 8px;
-  padding: 8px 0;
+  border-radius: 999px;
+  padding: 9px 0;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -157,68 +245,135 @@
 }
 
 .paneToggleActive {
-  background: #fff;
-  color: #111;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background: var(--accent);
+  color: var(--ink);
 }
 
 .editorWrap {
   margin: 0 auto;
+  max-width: min(100%, calc(62vh * var(--aspect, 1)));
+}
+
+.editorArea {
+  min-width: 0;
+}
+
+.printCard,
+.previewCard,
+.optionsCard {
+  min-width: 0;
+}
+
+.printBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.layerDock {
+  margin-top: 14px;
+}
+
+.dockHint {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px dashed #e0e0e6;
+  border-radius: 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: #fbfbfc;
+}
+
+.toolBtn span {
+  white-space: nowrap;
 }
 
 .viewerBox {
-  height: 420px;
-  background: linear-gradient(180deg, #ececf0, #dfdfe5);
-  border-radius: 10px;
+  position: relative;
+  height: 340px;
+  background:
+    radial-gradient(circle at 42% 38%, rgba(255, 201, 51, 0.28), transparent 52%),
+    linear-gradient(180deg, #f6f6f8, #ececf0);
+  border-radius: 16px;
   overflow: hidden;
 }
 
 .zoneToggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 7px;
   font-size: 12.5px;
+  font-weight: 600;
   color: #4b5563;
   user-select: none;
   cursor: pointer;
+  accent-color: var(--accent-strong);
+}
+
+/* View thumbnails under the 3D preview. */
+.thumbRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.thumb {
+  width: 62px;
+  height: 62px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: #f4f4f6;
+  cursor: pointer;
+  transition: border-color 0.12s ease, transform 0.12s ease;
+}
+
+.thumb:hover {
+  transform: translateY(-1px);
+}
+
+.thumbActive {
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
 }
 
 /* ── Tools ───────────────────────────────────────────── */
 .toolsRow {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .toolBtn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  border: 1px solid #d9d9de;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #e3e3e8;
   background: #fff;
-  color: #111;
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 13px 14px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
 }
 
 .toolBtn:hover {
-  border-color: #111;
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
 }
 
 /* Selected layer panel */
 .layerPanel {
-  margin-top: 12px;
-  border: 1px solid #e7e7ea;
-  border-radius: 10px;
-  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
   display: grid;
-  gap: 10px;
-  background: #fafafa;
+  gap: 12px;
+  background: #fbfbfc;
 }
 
 .layerPanelHead {
@@ -229,8 +384,8 @@
 }
 
 .layerName {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -243,46 +398,51 @@
   border: 1px solid #fecaca;
   background: #fff;
   color: #dc2626;
-  border-radius: 7px;
-  padding: 6px 10px;
+  border-radius: 999px;
+  padding: 6px 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .fieldLabel {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .textInput {
   width: 100%;
-  border: 1px solid #d9d9de;
-  border-radius: 7px;
-  padding: 8px 10px;
+  border: 1px solid #e3e3e8;
+  border-radius: 12px;
+  padding: 10px 12px;
   font-size: 14px;
-  color: #111;
+  color: var(--ink);
   background: #fff;
+}
+
+.textInput:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent-strong);
 }
 
 .slider {
   width: 100%;
-  accent-color: #111;
+  accent-color: var(--accent-strong);
 }
 
 .swatchRow {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
 
 .textSwatch {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   cursor: pointer;
   border: 1px solid #c9c9cf;
@@ -290,16 +450,16 @@
 }
 
 .textSwatchActive {
-  outline: 2px solid #2563eb;
-  outline-offset: 1.5px;
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
 }
 
 .colorInput {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: 1px solid #c9c9cf;
-  border-radius: 6px;
+  border-radius: 8px;
   background: none;
   cursor: pointer;
 }
@@ -308,45 +468,49 @@
 .sizeGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 8px;
 }
 
 .sizeBtn {
-  min-width: 42px;
-  padding: 8px 10px;
-  border: 1px solid #d9d9de;
+  min-width: 46px;
+  padding: 9px 12px;
+  border: 1px solid #e3e3e8;
   background: #fff;
-  color: #111;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--ink);
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(20, 20, 26, 0.04);
 }
 
 .sizeBtnActive {
-  background: #111;
-  border-color: #111;
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
+  font-weight: 800;
 }
 
 .swatchGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 11px;
+  padding: 3px;
 }
 
 .garmentSwatch {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid #c9c9cf;
+  border: 1px solid #d4d4da;
   cursor: pointer;
   padding: 0;
+  box-shadow: 0 2px 6px rgba(20, 20, 26, 0.12);
 }
 
 .garmentSwatchActive {
-  outline: 2.5px solid #2563eb;
-  outline-offset: 2px;
+  outline: 2.5px solid var(--accent-strong);
+  outline-offset: 3px;
 }
 
 .garmentSwatchOut {
@@ -357,49 +521,60 @@
 .qtyRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .qtyBtn {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #d9d9de;
+  width: 44px;
+  height: 40px;
+  border: 1px solid #e3e3e8;
   background: #fff;
-  color: #111;
-  border-radius: 7px;
-  font-size: 16px;
+  color: var(--ink);
+  border-radius: 12px;
+  font-size: 18px;
   font-weight: 700;
   cursor: pointer;
 }
 
+.qtyBtn:hover {
+  border-color: var(--accent-strong);
+}
+
 .qtyValue {
-  min-width: 26px;
+  min-width: 56px;
+  height: 40px;
+  line-height: 40px;
   text-align: center;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 15px;
+  border: 1px solid #e3e3e8;
+  border-radius: 12px;
+  background: #fff;
 }
 
 .optionBlock {
   display: grid;
-  gap: 8px;
-  padding: 10px 0;
-  border-bottom: 1px solid #efeff2;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f3;
 }
 
 .optionBlock:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
 .optionLabel {
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  color: #6b7280;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
 }
 
 .hint {
-  font-size: 12px;
+  font-size: 12.5px;
   color: #9ca3af;
   margin: 0;
 }
@@ -409,17 +584,17 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin: 4px 0 10px;
+  margin: 2px 0 12px;
 }
 
 .priceLabel {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 .priceValue {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
 }
 
 .primaryBtn {
@@ -427,15 +602,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   border: none;
-  background: #111;
-  color: #fff;
-  border-radius: 9px;
-  padding: 13px 16px;
-  font-size: 14px;
-  font-weight: 700;
+  background: var(--accent);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 16px 18px;
+  font-size: 16px;
+  font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(245, 184, 0, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(245, 184, 0, 0.45);
+}
+
+.primaryBtnText {
+  flex: 1;
+  text-align: left;
 }
 
 .primaryBtn:disabled {
@@ -449,15 +636,20 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid #d9d9de;
+  border: 1px solid #e3e3e8;
   background: #fff;
-  color: #111;
-  border-radius: 9px;
-  padding: 11px 16px;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 10px;
+}
+
+.secondaryBtn:hover {
+  border-color: #fecaca;
+  color: #dc2626;
 }
 
 /* ── Mobile sticky bar ───────────────────────────────── */
@@ -471,9 +663,10 @@
   align-items: center;
   gap: 12px;
   padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-  background: #fff;
-  border-top: 1px solid #e7e7ea;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 20px rgba(20, 20, 26, 0.08);
+  backdrop-filter: blur(8px);
 }
 
 .mobileBarPrice {
@@ -485,7 +678,7 @@
 }
 
 .mobileBarPrice .priceValue {
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .mobileBarBtn {
@@ -495,35 +688,72 @@
   justify-content: center;
   gap: 8px;
   border: none;
-  background: #111;
-  color: #fff;
-  border-radius: 9px;
-  padding: 13px 10px;
-  font-size: 14px;
-  font-weight: 700;
+  background: var(--accent);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 14px 10px;
+  font-size: 15px;
+  font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(245, 184, 0, 0.35);
 }
 
 .mobileBarBtn:disabled {
   opacity: 0.55;
 }
 
-/* ── Desktop ─────────────────────────────────────────── */
+/* ── Desktop: one fixed-height screen, nothing to scroll ─ */
 @media (min-width: 1000px) {
+  /* The site header (announcement bar + nav) is 147px tall; the studio takes
+     exactly the rest of the viewport. Very short windows fall back to scrolling. */
   .page {
-    padding: 96px 24px 48px;
+    height: calc(100dvh - 147px);
+    min-height: 600px;
+    padding: 14px 88px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
-  .main {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) 300px;
-    align-items: start;
+  .inner {
+    width: 100%;
+    max-width: 1640px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 
-  .paneToggle {
+  .topBar {
+    flex-wrap: nowrap;
+    margin-bottom: 12px;
+  }
+
+  .title {
+    flex-basis: auto;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
     display: none;
   }
 
-  .mobileBar {
+  .main {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: 92px minmax(0, 1.3fr) minmax(0, 1fr) 320px;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .main > * {
+    min-height: 0;
+  }
+
+  .paneToggle,
+  .mobileBar,
+  .thumbRow {
     display: none;
   }
 
@@ -538,7 +768,205 @@
     z-index: auto;
   }
 
-  .viewerBox {
-    height: 560px;
+  /* Side rail: one big button per garment side. */
+  .viewTabs {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 8px;
+    overflow: visible;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(236, 236, 239, 0.9);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 34px rgba(20, 20, 26, 0.07);
+    align-content: start;
+  }
+
+  .viewTab {
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 14px 4px;
+    border-radius: 16px;
+    font-size: 12px;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    box-shadow: 0 2px 8px rgba(20, 20, 26, 0.06);
+  }
+
+  .viewTabActive {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--ink);
+    box-shadow: 0 6px 16px rgba(245, 184, 0, 0.4);
+  }
+
+  .viewTabBadge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .viewTabActive .viewTabBadge {
+    background: var(--ink);
+  }
+
+  .card {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .cardHead {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f3;
+  }
+
+  /* Print area: tool rail on the left, picture fills the rest. */
+  .printBody {
+    flex: 1;
+    min-height: 0;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .toolsRow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    width: 76px;
+    flex: 0 0 76px;
+    align-content: start;
+  }
+
+  .toolBtn {
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 4px;
+    font-size: 12px;
+    line-height: 1.15;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(20, 20, 26, 0.05);
+  }
+
+  .toolBtn span {
+    white-space: normal;
+  }
+
+  .editorArea {
+    flex: 1;
+    min-height: 0;
+    container-type: size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Fit the picture to the available height (and width), whichever is smaller. */
+  .editorWrap {
+    margin: 0;
+    max-width: none;
+    width: min(100cqw, calc(100cqh * var(--aspect, 1)));
+  }
+
+  /* Fixed-height strip for the selected layer, so nothing jumps around. */
+  .layerDock {
+    flex: 0 0 124px;
+    margin-top: 10px;
+    min-height: 0;
+  }
+
+  .dockHint {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .layerPanel {
+    height: 100%;
+    padding: 10px 12px;
+    gap: 8px 16px;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+  }
+
+  .layerPanelHead {
+    grid-column: 1 / -1;
+  }
+
+  .layerPanel .fieldLabel {
+    grid-template-columns: 44px 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .layerPanel .fieldLabel:has(> .fieldNameDesktopHidden) {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldNameDesktopHidden {
+    display: none;
+  }
+
+  .layerPanel .swatchRow {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
+  .layerPanel .textSwatch {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+  }
+
+  .layerPanel .colorInput {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+  }
+
+  .layerPanel .textInput {
+    padding: 7px 10px;
+  }
+
+  .previewCard .viewerBox {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+
+  .optionsCard {
+    overflow-y: auto;
+  }
+
+  .optionBlock {
+    padding: 10px 0;
+    gap: 8px;
+  }
+
+  .primaryBtn {
+    padding: 14px 18px;
+  }
+}
+
+@media (min-width: 1000px) and (max-height: 820px) {
+  .viewTab {
+    padding: 10px 4px;
+  }
+
+  .layerDock {
+    flex-basis: 120px;
+  }
+
+  .optionBlock {
+    padding: 7px 0;
   }
 }

@@ -43,3 +43,18 @@ Open the workspace and use a high-contrast image to check:
 2. Check the bake looks right (no collapsed mesh, correct facing).
 3. Move `centerCm` / `sizeMm` until the dashed rectangle sits where the print
    should go on every view you enable.
+
+## 2D garment pictures
+
+The 2D editor shows a static picture of the chosen side (front, back, left or
+right sleeve) with the dashed print boundary drawn on it. The pictures live in
+`public/design-studio/garments/<garment>-<view>.png` (white, shaded, transparent
+background; tinted to the garment colour in `FrameEditor`) and their boundary
+positions in `garmentImages.ts`.
+
+They are rendered from the 3D models with an orthographic camera straight down
+each view axis, so the boundary is the exact `printZones.ts` rectangle projected
+onto the picture. **If you change a model or a print zone, regenerate the
+pictures and `garmentImages.ts`** (render each garment/view with an
+orthographic camera, white material, transparent clear colour; rect =
+zone centre ± size/2 expressed as fractions of the view-space bounds).
