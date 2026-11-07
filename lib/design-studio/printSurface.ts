@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { PrintZone, StudioView } from "./printZones";
+import { VIEW_BASES, type PrintZone, type StudioView } from "./printZones";
 
 // Grid spacing of the print surface, in cm. 0.25 cm = 2.5 mm.
 const STEP_CM = 0.25;
@@ -11,9 +11,10 @@ const SAMPLE_EPS = 1e-4;
  * Builds the surface the print is drawn on: a height-field that follows the
  * OUTERMOST fabric under the print rectangle.
  *
- * For every point of the rectangle we look straight along the view axis and
- * take the outermost garment surface, so the result does not depend on how the
- * mesh is triangulated, whether it has an inner lining, or on folds/overhangs.
+ * For every point of the rectangle we look straight along the view axis
+ * (±Z for front/back, ±X for the sleeves) and take the outermost garment
+ * surface, so the result does not depend on how the mesh is triangulated,
+ * whether it has an inner lining, or on folds/overhangs.
  * u/v map 1:1 onto the 2D frame:
  *   u = 0..1 left→right and v = 0..1 bottom→top, as the viewer sees it.
  *
@@ -25,8 +26,8 @@ export function buildPrintSurface(
   zone: PrintZone,
   view: StudioView,
 ): THREE.BufferGeometry | null {
-  const dirZ = view === "front" ? 1 : -1;
-  const [cx, cy] = zone.centerCm;
+  const { out, right } = VIEW_BASES[view];
+  const [ca, cb] = zone.centerCm; // a = along viewer-right, b = up (world Y)
   const w = zone.sizeMm[0] / 10;
   const h = zone.sizeMm[1] / 10;
 
@@ -34,52 +35,57 @@ export function buildPrintSurface(
   const ny = Math.ceil(h / STEP_CM) + 1;
   const dx = w / (nx - 1);
   const dy = h / (ny - 1);
-  // World x of grid column i. The viewer's "right" is +X from the front and -X from the back.
-  const worldX = (i: number) => cx + dirZ * (-w / 2 + i * dx);
-  const worldY = (j: number) => cy - h / 2 + j * dy;
+  const gridA = (i: number) => ca - w / 2 + i * dx;
+  const gridB = (j: number) => cb - h / 2 + j * dy;
 
   const src = garment.index ? garment.toNonIndexed() : garment;
   const pos = src.getAttribute("position");
 
-  const xLo = cx - w / 2;
-  const xHi = cx + w / 2;
-  const yLo = cy - h / 2;
-  const yHi = cy + h / 2;
+  const aLo = ca - w / 2;
+  const aHi = ca + w / 2;
+  const bLo = cb - h / 2;
+  const bHi = cb + h / 2;
+
+  // World → view space: a = dot(p, right), b = p.y, d = dot(p, out).
+  const toA = (x: number, y: number, z: number) => right[0] * x + right[1] * y + right[2] * z;
+  const toD = (x: number, y: number, z: number) => out[0] * x + out[1] * y + out[2] * z;
 
   // Outermost distance along the view axis at every grid vertex.
   const depth = new Float32Array(nx * ny).fill(-Infinity);
 
   for (let t = 0; t < pos.count; t += 3) {
-    const ax = pos.getX(t), ay = pos.getY(t), az = pos.getZ(t) * dirZ;
-    const bx = pos.getX(t + 1), by = pos.getY(t + 1), bz = pos.getZ(t + 1) * dirZ;
-    const qx = pos.getX(t + 2), qy = pos.getY(t + 2), qz = pos.getZ(t + 2) * dirZ;
+    const x0 = pos.getX(t), y0 = pos.getY(t), z0 = pos.getZ(t);
+    const x1 = pos.getX(t + 1), y1 = pos.getY(t + 1), z1 = pos.getZ(t + 1);
+    const x2 = pos.getX(t + 2), y2 = pos.getY(t + 2), z2 = pos.getZ(t + 2);
 
-    const tMinX = Math.min(ax, bx, qx), tMaxX = Math.max(ax, bx, qx);
-    const tMinY = Math.min(ay, by, qy), tMaxY = Math.max(ay, by, qy);
-    if (tMaxX < xLo || tMinX > xHi || tMaxY < yLo || tMinY > yHi) continue;
+    const ax = toA(x0, y0, z0), ay = y0, az = toD(x0, y0, z0);
+    const bx = toA(x1, y1, z1), by = y1, bz = toD(x1, y1, z1);
+    const qx = toA(x2, y2, z2), qy = y2, qz = toD(x2, y2, z2);
+
+    const tMinA = Math.min(ax, bx, qx), tMaxA = Math.max(ax, bx, qx);
+    const tMinB = Math.min(ay, by, qy), tMaxB = Math.max(ay, by, qy);
+    if (tMaxA < aLo || tMinA > aHi || tMaxB < bLo || tMinB > bHi) continue;
 
     const det = (by - qy) * (ax - qx) + (qx - bx) * (ay - qy);
     if (Math.abs(det) < 1e-9) continue; // edge-on in this projection
 
-    // Grid columns covered by this triangle. Columns run +X from the front and -X from the back.
-    const colA = dirZ > 0 ? (tMinX - xLo) / dx : (xHi - tMinX) / dx;
-    const colB = dirZ > 0 ? (tMaxX - xLo) / dx : (xHi - tMaxX) / dx;
-    const lo = Math.max(0, Math.floor(Math.min(colA, colB)) - 1);
-    const hi = Math.min(nx - 1, Math.ceil(Math.max(colA, colB)) + 1);
-    const j0 = Math.max(0, Math.floor((tMinY - yLo) / dy) - 1);
-    const j1 = Math.min(ny - 1, Math.ceil((tMaxY - yLo) / dy) + 1);
+    // Grid columns / rows covered by this triangle.
+    const lo = Math.max(0, Math.floor((tMinA - aLo) / dx) - 1);
+    const hi = Math.min(nx - 1, Math.ceil((tMaxA - aLo) / dx) + 1);
+    const j0 = Math.max(0, Math.floor((tMinB - bLo) / dy) - 1);
+    const j1 = Math.min(ny - 1, Math.ceil((tMaxB - bLo) / dy) + 1);
 
     for (let j = j0; j <= j1; j++) {
-      const py = worldY(j);
+      const pb = gridB(j);
       for (let i = lo; i <= hi; i++) {
-        const px = worldX(i);
-        const l1 = ((by - qy) * (px - qx) + (qx - bx) * (py - qy)) / det;
-        const l2 = ((qy - ay) * (px - qx) + (ax - qx) * (py - qy)) / det;
+        const pa = gridA(i);
+        const l1 = ((by - qy) * (pa - qx) + (qx - bx) * (pb - qy)) / det;
+        const l2 = ((qy - ay) * (pa - qx) + (ax - qx) * (pb - qy)) / det;
         const l3 = 1 - l1 - l2;
         if (l1 < -SAMPLE_EPS || l2 < -SAMPLE_EPS || l3 < -SAMPLE_EPS) continue;
-        const z = l1 * az + l2 * bz + l3 * qz;
+        const d = l1 * az + l2 * bz + l3 * qz;
         const idx = j * nx + i;
-        if (z > depth[idx]) depth[idx] = z;
+        if (d > depth[idx]) depth[idx] = d;
       }
     }
   }
@@ -117,9 +123,12 @@ export function buildPrintSurface(
     for (let i = 0; i < nx; i++) {
       const idx = j * nx + i;
       const d = depth[idx];
-      positions[idx * 3] = worldX(i);
-      positions[idx * 3 + 1] = worldY(j);
-      positions[idx * 3 + 2] = (d === -Infinity ? 0 : d + LIFT_CM) * dirZ;
+      const a = gridA(i);
+      const dd = d === -Infinity ? 0 : d + LIFT_CM;
+      // View space → world: p = right*a + Y*b + out*d.
+      positions[idx * 3] = right[0] * a + out[0] * dd;
+      positions[idx * 3 + 1] = gridB(j) + right[1] * a + out[1] * dd;
+      positions[idx * 3 + 2] = right[2] * a + out[2] * dd;
       uvs[idx * 2] = i / (nx - 1);
       uvs[idx * 2 + 1] = j / (ny - 1);
     }

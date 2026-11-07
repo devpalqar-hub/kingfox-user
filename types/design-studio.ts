@@ -4,8 +4,9 @@ export interface DesignProject {
   designs: {
     front: Layer[];
     back: Layer[];
-    sleeve?: Layer[];
-    neck?: Layer[];
+    /** Sleeve prints, as the viewer sees the garment's front. */
+    left: Layer[];
+    right: Layer[];
   };
   future3DConfig?: Future3DConfig;
 }

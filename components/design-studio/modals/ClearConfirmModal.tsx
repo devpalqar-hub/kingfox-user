@@ -2,6 +2,7 @@
 
 import { X, Trash2 } from 'lucide-react';
 import { useDesignStore } from '@/stores/design-studio/useDesignStore';
+import { VIEW_LABELS } from '@/lib/design-studio/printZones';
 import styles from './CostEstimateModal.module.css';
 
 interface ClearConfirmModalProps {
@@ -41,7 +42,7 @@ export default function ClearConfirmModal({ onClose }: ClearConfirmModalProps) {
             onClick={handleClearView}
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #333', color: '#fff' }}
           >
-            Clear {activeView === 'front' ? 'Front' : 'Back'} Only
+            Clear {VIEW_LABELS[activeView]} Only
           </button>
           
           <button 
