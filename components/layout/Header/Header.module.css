@@ -10,11 +10,7 @@
 }
 
 .announcementBar {
-<<<<<<< HEAD
   background-color: #1E3A22;
-=======
-  background-color: #352c01;
->>>>>>> origin/production
   color: #fff;
   padding: 10px 0;
   text-align: center;
@@ -54,13 +50,9 @@
 }
 
 .mainHeader {
-<<<<<<< HEAD
-  padding: 20px 40px;
-=======
   width: 100%;
   box-sizing: border-box;
   padding: 20px clamp(16px, 3vw, 40px);
->>>>>>> origin/production
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -69,19 +61,11 @@
 }
 
 .homeNav {
-<<<<<<< HEAD
   background: #fff1e3;
 }
 
 .innerNav {
   background: #fff;
-=======
-  background: #fbd5af;
-}
-
-.innerNav {
-  background: #fbd5af;
->>>>>>> origin/production
 }
 
 .logo {
@@ -884,29 +868,8 @@
     height: 40px;
   }
 
-<<<<<<< HEAD
-  .digitWrap {
-    height: 22px;
-  }
-
-  .digitCell {
-    height: 22px;
-    font-size: 12px;
-    padding: 0 6px;
-  }
-
-  .voucherCount {
-    gap: 4px;
-    padding: 2px 4px;
-  }
-
-  .announcementBar span {
-    max-width: 90%;
-    word-break: break-word;
-=======
   .logoText {
     font-size: 16px;
->>>>>>> origin/production
   }
 
   .iconActions {
@@ -927,22 +890,9 @@
     padding: 5px 12px;
   }
 
-<<<<<<< HEAD
-  .logoText {
-    display: block;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 1px;
-  }
-
-  .iconActions {
-    grid-column: 4;
-    gap: 12px;
-=======
   .announcementBar span {
     max-width: 90%;
     word-break: break-word;
->>>>>>> origin/production
   }
 
   .marquee {
@@ -958,10 +908,6 @@
     padding: 2px 4px;
   }
 
-<<<<<<< HEAD
-  .hideOnMobile {
-    display: none !important;
-=======
   .digitWrap {
     --cell-height: 22px;
     height: var(--cell-height);
@@ -981,7 +927,6 @@
   .searchBox {
     width: 92%;
     padding: 12px 16px;
->>>>>>> origin/production
   }
 }
 
@@ -1003,8 +948,6 @@
   .iconActions {
     gap: 12px;
   }
-<<<<<<< HEAD
-=======
 }
 
 @media (max-width: 360px) {
@@ -1025,5 +968,4 @@
   .iconActions {
     gap: 10px;
   }
->>>>>>> origin/production
 }
