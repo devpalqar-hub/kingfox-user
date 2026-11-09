@@ -37,9 +37,11 @@ const initialProject: DesignProject = {
   projectId: 'new-project',
   apparelConfig: {
     categoryId: 'oversized-tee',
-    colorName: 'Black',
-    colorHex: '#000000',
-    size: 'M',
+    // Size and colour are mandatory and come from the backend per garment, so
+    // nothing is pre-selected: the customer has to choose.
+    colorName: '',
+    colorHex: '',
+    size: '',
     quantity: 1,
   },
   designs: {
@@ -63,7 +65,19 @@ export const useDesignStore = create<DesignState>((set, get) => ({
     set((state) => ({
       project: {
         ...state.project,
-        apparelConfig: { ...state.project.apparelConfig, categoryId },
+        apparelConfig:
+          categoryId === state.project.apparelConfig.categoryId
+            ? state.project.apparelConfig
+            : {
+                ...state.project.apparelConfig,
+                categoryId,
+                // Every garment has its own sizes and colours.
+                size: '',
+                colorHex: '',
+                colorName: '',
+                customDesignVariantId: undefined,
+                basePrice: undefined,
+              },
         // A different garment has different print frames, so old layer
         // positions are meaningless — start the design fresh.
         designs:
@@ -77,15 +91,19 @@ export const useDesignStore = create<DesignState>((set, get) => ({
 
   setApparelSize: (size) =>
     set((state) => {
-      const variant = state.availableVariants.find(
-        (v) => v.colorCode === state.project.apparelConfig.colorHex && v.size === size
-      );
+      const { colorHex, colorName } = state.project.apparelConfig;
+      // Each size has its own colours: keep the chosen colour only if this size has it.
+      const variant = size
+        ? state.availableVariants.find((v) => v.colorCode === colorHex && v.size === size)
+        : undefined;
       return {
         project: {
           ...state.project,
           apparelConfig: {
             ...state.project.apparelConfig,
             size,
+            colorHex: variant ? colorHex : '',
+            colorName: variant ? colorName : '',
             customDesignVariantId: variant?.id,
             basePrice: variant?.sellingPrice,
           },

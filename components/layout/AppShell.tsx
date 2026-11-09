@@ -11,7 +11,12 @@ import BottomNav from "@/components/BottomNav";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideFooter = pathname?.startsWith("/design-studio/workspace");
+  const isCouponPage = pathname?.startsWith("/coupons");
+  // The design studio workspace is a full-screen tool: no site chrome around it.
+  const isStudioWorkspace = pathname?.startsWith("/design-studio/workspace");
+  const hideFooter = isStudioWorkspace || isCouponPage;
+  const hideHeader = isStudioWorkspace || isCouponPage;
+  const hideBottomNav = isStudioWorkspace || isCouponPage;
 
   return (
     <ToastProvider>
