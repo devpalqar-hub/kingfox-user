@@ -22,10 +22,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <ToastProvider>
       <ConfirmProvider>
         <AuthProvider>
-          <Header />
+          {!hideHeader && <Header />}
           {children}
           {!hideFooter && <Footer />}
-          <BottomNav />
+          {!hideBottomNav && <BottomNav />}
         </AuthProvider>
       </ConfirmProvider>
     </ToastProvider>

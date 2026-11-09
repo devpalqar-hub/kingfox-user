@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import type { Layer, TextLayer } from "@/types/design-studio";
+import type { GarmentImage } from "@/lib/design-studio/garmentImages";
 import {
   drawFrame,
   preloadLayerImages,
@@ -11,6 +12,8 @@ import {
 
 interface Props {
   frame: FrameSpec;
+  /** Static picture of this side of the garment, with the boundary placed on it. */
+  image?: GarmentImage;
   layers: Layer[];
   /** Garment colour, shown behind the artwork so contrast is judged correctly. */
   background: string;
@@ -23,6 +26,19 @@ interface Props {
 const MIN_MM = 5;
 
 /**
+ * The garment picture is multiplied over its colour, so a pure black garment
+ * would hide every fold and seam. Very dark colours are lifted slightly so the
+ * shape stays readable while still looking black.
+ */
+export function garmentTint(hex: string): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const lift = (c: number) => Math.max(c, 44);
+  return `rgb(${lift((n >> 16) & 255)}, ${lift((n >> 8) & 255)}, ${lift(n & 255)})`;
+}
+
+/**
  * The 2D frame. It is the print rectangle itself (1 unit = 1 mm), drawn with
  * the same drawFrame() that produces the 3D decal texture, so the boundary the
  * user sees is exactly the printable area. Layers are dragged with the layer
@@ -30,6 +46,7 @@ const MIN_MM = 5;
  */
 export default function FrameEditor({
   frame,
+  image,
   layers,
   background,
   selectedId,
@@ -69,12 +86,17 @@ export default function FrameEditor({
     preloadLayerImages(layers).then(() => {
       if (cancelled) return;
       const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-      drawFrame(canvas, frame, layers, { scale: pxPerMm * dpr, background });
+      // With a garment picture behind it the frame is transparent; the
+      // garment colour already shows through.
+      drawFrame(canvas, frame, layers, {
+        scale: pxPerMm * dpr,
+        background: image ? undefined : background,
+      });
     });
     return () => {
       cancelled = true;
     };
-  }, [frame, layers, pxPerMm, background]);
+  }, [frame, layers, pxPerMm, background, image]);
 
   const clamp = (layer: Pick<Layer, "width" | "height">, x: number, y: number) => ({
     // Keep the layer's centre inside the print boundary so nothing can be lost.
@@ -151,20 +173,74 @@ export default function FrameEditor({
     resize.current = null;
   };
 
+  const [rl, rt, rw, rh] = image?.rect ?? [0, 0, 1, 1];
+
   return (
     <div style={{ width: "100%" }}>
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: image ? `${image.width} / ${image.height}` : undefined,
+          isolation: "isolate",
+          background: image ? "#f1f2f4" : undefined,
+          borderRadius: image ? 16 : 0,
+        }}
+      >
+        {image && (
+          <>
+            {/* Garment colour, cut to the garment's silhouette… */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: garmentTint(background),
+                WebkitMaskImage: `url(${image.src})`,
+                maskImage: `url(${image.src})`,
+                WebkitMaskSize: "100% 100%",
+                maskSize: "100% 100%",
+              }}
+            />
+            {/* …with the shaded render multiplied on top for folds and seams. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={image.src}
+              alt=""
+              draggable={false}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                mixBlendMode: "multiply",
+                pointerEvents: "none",
+              }}
+            />
+          </>
+        )}
       <div
         ref={wrapRef}
         onPointerDown={() => onSelect(null)}
         style={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: `${frame.widthMm} / ${frame.heightMm}`,
+          position: image ? "absolute" : "relative",
+          ...(image
+            ? {
+                left: `${rl * 100}%`,
+                top: `${rt * 100}%`,
+                width: `${rw * 100}%`,
+                height: `${rh * 100}%`,
+              }
+            : {
+                width: "100%",
+                aspectRatio: `${frame.widthMm} / ${frame.heightMm}`,
+              }),
           outline: "2px dashed #2563eb",
           outlineOffset: 0,
           borderRadius: 2,
-          background:
-            "repeating-conic-gradient(#ececec 0% 25%, #fff 0% 50%) 50% / 16px 16px",
+          background: image
+            ? "transparent"
+            : "repeating-conic-gradient(#ececec 0% 25%, #fff 0% 50%) 50% / 16px 16px",
           touchAction: "none",
           userSelect: "none",
           overflow: "visible",
@@ -250,10 +326,7 @@ export default function FrameEditor({
             );
           })}
       </div>
-      <p style={{ margin: "6px 0 0", fontSize: 12, color: "#6b7280" }}>
-        Print area {frame.widthMm / 10} × {frame.heightMm / 10} cm — artwork outside the
-        dashed boundary is not printed.
-      </p>
+      </div>
     </div>
   );
 }

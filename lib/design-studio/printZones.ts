@@ -73,8 +73,8 @@ export const GARMENTS: Record<string, GarmentSpec> = {
       front: { centerCm: [0, 6], sizeMm: [280, 360] },
       back: { centerCm: [0, 6], sizeMm: [280, 360] },
       // Mid-sleeve band (|x| ≈ 28–34 cm): y ≈ 5–13, z centre ≈ −2.
-      left: { centerCm: [-2, 9], sizeMm: [70, 70] },
-      right: { centerCm: [2, 9], sizeMm: [70, 70] },
+      left: { centerCm: [-2, 12], sizeMm: [70, 70] },
+      right: { centerCm: [2, 12], sizeMm: [70, 70] },
     },
   },
   oversized: {
@@ -87,8 +87,8 @@ export const GARMENTS: Record<string, GarmentSpec> = {
       front: { centerCm: [0, 6], sizeMm: [300, 380] },
       back: { centerCm: [0, 6], sizeMm: [300, 380] },
       // Upper drop-shoulder sleeve (|x| ≈ 31–39 cm): y ≈ 7–14, z centre ≈ +0.5.
-      left: { centerCm: [0.5, 10.5], sizeMm: [70, 70] },
-      right: { centerCm: [-0.5, 10.5], sizeMm: [70, 70] },
+      left: { centerCm: [0.5, 12.5], sizeMm: [70, 70] },
+      right: { centerCm: [-0.5, 12.5], sizeMm: [70, 70] },
     },
   },
   polo: {
@@ -102,8 +102,8 @@ export const GARMENTS: Record<string, GarmentSpec> = {
       back: { centerCm: [0, 4], sizeMm: [260, 320] },
       // Sleeve faces measured from the baked mesh: outer shell y ≈ 4–17 cm,
       // z centre ≈ −3 cm (sleeves angle slightly backwards).
-      left: { centerCm: [-3, 10.5], sizeMm: [80, 80] },
-      right: { centerCm: [3, 10.5], sizeMm: [80, 80] },
+      left: { centerCm: [-3, 13.5], sizeMm: [80, 80] },
+      right: { centerCm: [3, 13.5], sizeMm: [80, 80] },
     },
   },
   hoodie: {
@@ -116,8 +116,8 @@ export const GARMENTS: Record<string, GarmentSpec> = {
       front: { centerCm: [0, 6], sizeMm: [280, 300] },
       back: { centerCm: [0, 4], sizeMm: [280, 360] },
       // Upper arm of the A-pose sleeve (|x| ≈ 28–36 cm): y ≈ 1–9, z centre ≈ +3.
-      left: { centerCm: [3, 5], sizeMm: [80, 80] },
-      right: { centerCm: [-3, 5], sizeMm: [80, 80] },
+      left: { centerCm: [3, 8], sizeMm: [80, 80] },
+      right: { centerCm: [-3, 8], sizeMm: [80, 80] },
     },
   },
   longsleeve: {
@@ -130,8 +130,8 @@ export const GARMENTS: Record<string, GarmentSpec> = {
       front: { centerCm: [0, 4], sizeMm: [280, 360] },
       back: { centerCm: [0, 4], sizeMm: [280, 360] },
       // Upper arm of the A-pose sleeve (|x| ≈ 29–38 cm): y ≈ 2–10, z centre ≈ −1.6.
-      left: { centerCm: [-1.6, 6], sizeMm: [80, 80] },
-      right: { centerCm: [1.6, 6], sizeMm: [80, 80] },
+      left: { centerCm: [-1.6, 9], sizeMm: [80, 80] },
+      right: { centerCm: [1.6, 9], sizeMm: [80, 80] },
     },
   },
 };

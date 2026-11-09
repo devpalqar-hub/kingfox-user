@@ -4,12 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Box,
   Crop,
   Hand,
   Image as ImageIcon,
+  Info,
+  Layers,
   PencilRuler,
+  Shirt,
   ShoppingCart,
+  SlidersHorizontal,
   Trash2,
   Type,
   X,
@@ -38,6 +43,8 @@ import { useConfirm } from "@/context/ConfirmContext";
 import CostEstimateModal from "@/components/design-studio/modals/CostEstimateModal";
 import ClearConfirmModal from "@/components/design-studio/modals/ClearConfirmModal";
 import FrameEditor from "./FrameEditor";
+import GarmentThumb from "./GarmentThumb";
+import { GARMENT_IMAGES } from "@/lib/design-studio/garmentImages";
 import GarmentViewer, { type ViewerApi } from "./GarmentViewer";
 import s from "./studio.module.css";
 
@@ -677,31 +684,34 @@ export default function Studio({ categoryId }: { categoryId: string }) {
           <button className={s.backBtn} onClick={handleBack}>
             <ArrowLeft size={15} /> Back
           </button>
-          <div>
-            <h1 className={s.title}>Customize {spec.label}</h1>
-            <p className={s.subtitle}>
-              Place your design inside the dashed boundary — that is exactly what gets printed.
-            </p>
-          </div>
-        </div>
-
-        <div className={s.viewTabs}>
-          {views.map((v) => {
-            const count = (layers[v] ?? []).length;
-            return (
-              <button
-                key={v}
-                className={`${s.viewTab} ${v === view ? s.viewTabActive : ""}`}
-                onClick={() => switchView(v)}
-              >
-                {VIEW_LABELS[v]}
-                {count > 0 && <span className={s.viewTabBadge}>{count}</span>}
-              </button>
-            );
-          })}
+          <span className={s.studioPill}>Design Studio</span>
+          <h1 className={s.title}>
+            <span className={s.titleMark}>Customize {spec.label}</span>
+          </h1>
+          <p className={s.subtitle}>
+            Place your design inside the dashed boundary — that is exactly what gets printed.
+          </p>
         </div>
 
         <div className={s.main}>
+          <nav className={s.viewTabs} aria-label="Garment side">
+            {views.map((v) => {
+              const count = (layers[v] ?? []).length;
+              const TabIcon = v === "front" || v === "back" ? Shirt : Hand;
+              return (
+                <button
+                  key={v}
+                  className={`${s.viewTab} ${v === view ? s.viewTabActive : ""}`}
+                  onClick={() => switchView(v)}
+                >
+                  <TabIcon size={22} />
+                  <span>{VIEW_LABELS[v]}</span>
+                  {count > 0 && <span className={s.viewTabBadge}>{count}</span>}
+                </button>
+              );
+            })}
+          </nav>
+
           <div className={s.stage}>
             <div className={s.paneToggle}>
               <button
@@ -720,7 +730,7 @@ export default function Studio({ categoryId }: { categoryId: string }) {
 
             {/* 2D boundary editor */}
             <section
-              className={`${s.card} ${s.pane} ${mobilePane !== "design" ? s.paneHiddenMobile : ""}`}
+              className={`${s.card} ${s.pane} ${s.printCard} ${mobilePane !== "design" ? s.paneHiddenMobile : ""}`}
             >
               <div className={s.cardHead}>
                 <h2 className={s.cardTitle}>
@@ -772,13 +782,26 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                   rotation.
                 </p>
               )}
+              </div>
             </section>
 
             {/* 3D preview */}
             <section
-              className={`${s.card} ${s.pane} ${mobilePane !== "preview" ? s.paneHiddenMobile : ""}`}
+              className={`${s.card} ${s.pane} ${s.previewCard} ${mobilePane !== "preview" ? s.paneHiddenMobile : ""}`}
             >
-              <h2 className={s.cardTitle}>3D preview</h2>
+              <div className={s.cardHead}>
+                <h2 className={s.cardTitle}>
+                  <Box size={18} /> 3D Preview
+                </h2>
+                <label className={s.zoneToggle}>
+                  <input
+                    type="checkbox"
+                    checked={showZone}
+                    onChange={(e) => setShowZone(e.target.checked)}
+                  />
+                  Show boundary
+                </label>
+              </div>
               <div className={s.viewerBox}>
                 <GarmentViewer
                   spec={spec}
@@ -789,14 +812,19 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                   apiRef={viewerApi}
                 />
               </div>
-              <label className={s.zoneToggle}>
-                <input
-                  type="checkbox"
-                  checked={showZone}
-                  onChange={(e) => setShowZone(e.target.checked)}
-                />
-                Show print boundary on the garment
-              </label>
+              <div className={s.thumbRow}>
+                {views.map((v) => (
+                  <button
+                    key={v}
+                    title={VIEW_LABELS[v]}
+                    aria-label={VIEW_LABELS[v]}
+                    className={`${s.thumb} ${v === view ? s.thumbActive : ""}`}
+                    onClick={() => switchView(v)}
+                  >
+                    <GarmentThumb image={GARMENT_IMAGES[spec.key]?.[v]} color={colorHex} />
+                  </button>
+                ))}
+              </div>
             </section>
           </div>
 
