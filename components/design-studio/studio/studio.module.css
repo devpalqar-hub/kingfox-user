@@ -707,9 +707,9 @@
   /* The site header (announcement bar + nav) is 147px tall; the studio takes
      exactly the rest of the viewport. Very short windows fall back to scrolling. */
   .page {
-    height: calc(100dvh - 147px);
+    height: calc(100dvh - var(--site-header, 0px));
     min-height: 600px;
-    padding: 14px 88px 18px 24px;
+    padding: 14px 24px 18px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -969,4 +969,425 @@
   .optionBlock {
     padding: 7px 0;
   }
+}
+
+/* ── Sheets (full-screen panels opened from the mobile bottom bar) ── */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: #fafaf8;
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.sheetClose {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sheetBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.sheetFoot {
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.sheetAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  border: 1px solid var(--accent-strong);
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sheet .layerPanel {
+  background: #fff;
+  padding: 14px;
+  gap: 16px;
+}
+
+.sheet .optionBlock {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.sheet .optionBlock:last-child {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+
+.sheet .textInput {
+  font-size: 16px; /* stops iOS zooming into the field */
+}
+
+.barTool {
+  flex: 0 0 auto;
+  width: 56px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.barToolActive {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+@media (min-width: 1000px) {
+  .sheet,
+  .barTool {
+    display: none;
+  }
+}
+
+/* ── Phone / tablet: also one fixed-height screen ─────── */
+@media (max-width: 999px) {
+  .page {
+    width: 100%;
+    height: calc(100dvh - var(--site-header, 0px));
+    min-height: 460px;
+    padding: max(8px, env(safe-area-inset-top)) 10px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .inner {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topBar {
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .backBtn {
+    padding: 6px 11px;
+  }
+
+  .studioPill {
+    display: none;
+  }
+
+  .title {
+    flex: 1;
+    flex-basis: auto;
+    min-width: 0;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .titleMark {
+    background: none;
+  }
+
+  .main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .viewTabs {
+    flex: 0 0 auto;
+    gap: 6px;
+    padding: 2px 2px 6px;
+  }
+
+  /* All four sides side by side, icon over label. */
+  .viewTabs {
+    overflow: visible;
+  }
+
+  .viewTab {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 7px 2px;
+    border-radius: 14px;
+    font-size: 11px;
+    line-height: 1.1;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .viewTabActive {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--ink);
+    box-shadow: 0 4px 12px rgba(245, 184, 0, 0.4);
+  }
+
+  .viewTabBadge {
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    min-width: 16px;
+    line-height: 16px;
+    font-size: 10px;
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .viewTab svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .paneToggle {
+    flex: 0 0 auto;
+    margin-bottom: 8px;
+  }
+
+  .paneToggleBtn {
+    padding: 7px 0;
+  }
+
+  .pane {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card {
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .cardHead {
+    margin-bottom: 8px;
+  }
+
+  .cardTitle {
+    font-size: 15px;
+  }
+
+  .cardMeta {
+    font-size: 12px;
+  }
+
+  .printBody {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .toolsRow,
+  .layerDock,
+  .optionsCard,
+  .thumbRow {
+    display: none;
+  }
+
+  .editorArea {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    container-type: size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .editorWrap {
+    margin: 0;
+    max-width: none;
+    width: min(100cqw, calc(100cqh * var(--aspect, 1)));
+  }
+
+  .viewerBox {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+
+  .mobileBar {
+    position: static;
+    flex: 0 0 auto;
+    margin: 0 -10px;
+    padding: 6px 10px calc(8px + env(safe-area-inset-bottom));
+    gap: 6px;
+    z-index: auto;
+  }
+
+  .mobileBarBtn {
+    padding: 14px 8px;
+    font-size: 14.5px;
+    white-space: nowrap;
+  }
+}
+
+/* ── Required size → colour steps ─────────────────────── */
+.stepNotice {
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  border: 1px solid #f5dc8a;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5a4500;
+}
+
+.stepNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  flex: 0 0 22px;
+}
+
+.stepDone {
+  background: #16a34a;
+  color: #fff;
+}
+
+.required {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.chosenName {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.optionLocked {
+  opacity: 0.55;
+}
+
+.optionInvalid {
+  border-radius: 14px;
+  box-shadow: 0 0 0 2px #ef4444;
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.primaryBtnIncomplete,
+.mobileBarBtnIncomplete {
+  background: #e9e9ee;
+  color: #4b5563;
+  box-shadow: none;
+}
+
+.primaryBtnIncomplete:hover:not(:disabled) {
+  box-shadow: none;
+  transform: none;
+}
+
+.barToolAlert {
+  position: relative;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.barDot {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.55; }
+}
+
+/* Full-screen workspace: no floating buttons over the tool. */
+:global(body):has(.page) :global([class*="whatsappButton"]) {
+  display: none !important;
+}
+
+/* The site reserves room at the top of the body for its header; the workspace
+   has no header, so give that space back. */
+:global(body):has(.page) {
+  padding-top: 0 !important;
 }

@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Box,
   Crop,
-  Droplet,
   Hand,
   Image as ImageIcon,
   Info,
@@ -18,6 +17,7 @@ import {
   SlidersHorizontal,
   Trash2,
   Type,
+  X,
 } from "lucide-react";
 import type { ImageLayer, Layer, TextLayer } from "@/types/design-studio";
 import {
@@ -80,6 +80,7 @@ export default function Studio({ categoryId }: { categoryId: string }) {
     calculatePricing,
     changeApparelColor,
     setApparelSize,
+    setApparelCategory,
     setApparelQuantity,
     setAvailableVariants,
     availableVariants,
@@ -90,6 +91,28 @@ export default function Studio({ categoryId }: { categoryId: string }) {
   const [isEstimateOpen, setIsEstimateOpen] = useState(false);
   const [isClearOpen, setIsClearOpen] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [sheet, setSheet] = useState<null | "text" | "image" | "options">(null);
+  const [invalid, setInvalid] = useState<null | "size" | "color">(null);
+
+  // The studio fills exactly the space below the site header, so measure where
+  // the header ends instead of assuming its height.
+  const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = pageRef.current;
+    if (!el) return;
+    const measure = () =>
+      el.style.setProperty(
+        "--site-header",
+        `${Math.round(el.getBoundingClientRect().top + window.scrollY)}px`,
+      );
+    measure();
+    const timers = [setTimeout(measure, 300), setTimeout(measure, 1500)];
+    window.addEventListener("resize", measure);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const viewerApi = useRef<ViewerApi | null>(null);
@@ -113,23 +136,51 @@ export default function Studio({ categoryId }: { categoryId: string }) {
   const selected = current.find((l) => l.id === selectedLayerId) ?? null;
 
   // ── Variants (size / colour / price) ──────────────────────────────────────
+  const [variantsState, setVariantsState] = useState<"loading" | "ready" | "error">("loading");
+
+  // Make the store match this garment (a different garment starts with no size
+  // or colour chosen — each has its own).
   useEffect(() => {
+    setApparelCategory(categoryId);
+  }, [categoryId, setApparelCategory]);
+
+  useEffect(() => {
+    let cancelled = false;
     const fetchVariants = async () => {
+      setAvailableVariants([]);
+      setVariantsState("loading");
       try {
         const shirtType = categoryToShirtType[categoryId] || "HALF_SLEEVE";
         const data = await getCustomDesignTypesAPI(shirtType);
-        if (data[shirtType]) setAvailableVariants(data[shirtType]);
+        if (cancelled) return;
+        setAvailableVariants(data[shirtType] ?? []);
+        setVariantsState("ready");
       } catch (error) {
         console.error("Failed to fetch custom design types", error);
+        if (!cancelled) setVariantsState("error");
       }
     };
     fetchVariants();
+    return () => {
+      cancelled = true;
+    };
   }, [categoryId, setAvailableVariants]);
+
+  // On phones, start by asking for the mandatory size and colour.
+  useEffect(() => {
+    const { size: chosen } = useDesignStore.getState().project.apparelConfig;
+    if (!chosen && window.matchMedia("(max-width: 999px)").matches) setSheet("options");
+  }, [categoryId]);
 
   const uniqueSizes = Array.from(new Set(availableVariants.map((v) => v.size)));
   const colorsForSize = availableVariants.filter(
     (v) => v.size === project.apparelConfig.size,
   );
+  const size = project.apparelConfig.size;
+  const variantId = project.apparelConfig.customDesignVariantId;
+  const hasSize = Boolean(size);
+  const hasColor = Boolean(variantId);
+  const selectionDone = hasSize && hasColor;
   const colorHex = project.apparelConfig.colorHex || "#f5f5f5";
   const unitPrice = project.apparelConfig.basePrice ?? 0;
   const quantity = project.apparelConfig.quantity || 1;
@@ -405,7 +456,23 @@ export default function Studio({ categoryId }: { categoryId: string }) {
     }
   };
 
+  // Size, then colour, are mandatory. On phones the Options sheet is where they
+  // are chosen, so a failed check brings it up.
+  const requireSelection = (): boolean => {
+    if (selectionDone) return true;
+    if (!hasSize) {
+      showToast("Please select a size first.", "error");
+      setInvalid("size");
+    } else {
+      showToast(`Please select a color for size ${size}.`, "error");
+      setInvalid("color");
+    }
+    if (window.matchMedia("(max-width: 999px)").matches) setSheet("options");
+    return false;
+  };
+
   const openEstimate = () => {
+    if (!requireSelection()) return;
     calculatePricing();
     setIsEstimateOpen(true);
   };
@@ -416,107 +483,7 @@ export default function Studio({ categoryId }: { categoryId: string }) {
     ? garmentImage.width / garmentImage.height
     : frame.widthMm / frame.heightMm;
 
-  return (
-    <div className={s.page}>
-      <div className={s.inner}>
-        <div className={s.topBar}>
-          <button className={s.backBtn} onClick={handleBack}>
-            <ArrowLeft size={15} /> Back
-          </button>
-          <span className={s.studioPill}>Design Studio</span>
-          <h1 className={s.title}>
-            <span className={s.titleMark}>Customize {spec.label}</span>
-          </h1>
-          <p className={s.subtitle}>
-            Place your design inside the dashed boundary — that is exactly what gets printed.
-          </p>
-        </div>
-
-        <div className={s.main}>
-          <nav className={s.viewTabs} aria-label="Garment side">
-            {views.map((v) => {
-              const count = (layers[v] ?? []).length;
-              const TabIcon = v === "front" || v === "back" ? Shirt : Hand;
-              return (
-                <button
-                  key={v}
-                  className={`${s.viewTab} ${v === view ? s.viewTabActive : ""}`}
-                  onClick={() => switchView(v)}
-                >
-                  <TabIcon size={22} />
-                  <span>{VIEW_LABELS[v]}</span>
-                  {count > 0 && <span className={s.viewTabBadge}>{count}</span>}
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className={s.stage}>
-            <div className={s.paneToggle}>
-              <button
-                className={`${s.paneToggleBtn} ${mobilePane === "design" ? s.paneToggleActive : ""}`}
-                onClick={() => setMobilePane("design")}
-              >
-                <PencilRuler size={15} /> Design
-              </button>
-              <button
-                className={`${s.paneToggleBtn} ${mobilePane === "preview" ? s.paneToggleActive : ""}`}
-                onClick={() => setMobilePane("preview")}
-              >
-                <Box size={15} /> 3D Preview
-              </button>
-            </div>
-
-            {/* 2D boundary editor */}
-            <section
-              className={`${s.card} ${s.pane} ${s.printCard} ${mobilePane !== "design" ? s.paneHiddenMobile : ""}`}
-            >
-              <div className={s.cardHead}>
-                <h2 className={s.cardTitle}>
-                  <Crop size={18} /> Print Area
-                  <span
-                    className={s.infoDot}
-                    title="Artwork outside the dashed boundary is not printed."
-                  >
-                    <Info size={15} />
-                  </span>
-                </h2>
-                <span className={s.cardMeta}>
-                  {VIEW_LABELS[view]} ({zone.sizeMm[0] / 10} × {zone.sizeMm[1] / 10} cm)
-                </span>
-              </div>
-              <div className={s.printBody}>
-                <div className={s.toolsRow}>
-                  <button className={s.toolBtn} onClick={addText}>
-                    <Type size={20} /> <span>Add text</span>
-                  </button>
-                  <button className={s.toolBtn} onClick={() => fileRef.current?.click()}>
-                    <ImageIcon size={20} /> <span>Upload image</span>
-                  </button>
-                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={onUpload} />
-                </div>
-
-                <div className={s.editorArea}>
-                  <div
-                    className={s.editorWrap}
-                    style={{ "--aspect": editorAspect.toFixed(3) } as React.CSSProperties}
-                  >
-                    <FrameEditor
-                      frame={frame}
-                      image={garmentImage}
-                      layers={current}
-                      background={colorHex}
-                      selectedId={selectedLayerId}
-                      onSelect={selectLayer}
-                      onPatch={updateLayer}
-                      onDelete={removeLayer}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className={s.layerDock}>
-              {selected ? (
+  const layerPanel = selected ? (
                 <div className={s.layerPanel}>
                   <div className={s.layerPanelHead}>
                     <span className={s.layerName}>{selected.name}</span>
@@ -593,7 +560,223 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                     />
                   </label>
                 </div>
-              ) : (
+
+  ) : null;
+
+  const sizeHint =
+    variantsState === "loading"
+      ? "Loading sizes…"
+      : variantsState === "error"
+        ? "Couldn't load sizes. Please refresh the page."
+        : "No sizes are available for this product right now.";
+
+  const optionFields = (
+    <>
+      <div className={`${s.optionBlock} ${invalid === "size" && !hasSize ? s.optionInvalid : ""}`}>
+        <span className={s.optionLabel}>
+          <span className={`${s.stepNum} ${hasSize ? s.stepDone : ""}`}>{hasSize ? "✓" : "1"}</span>
+          Select size
+          {!hasSize && <span className={s.required}>Required</span>}
+        </span>
+        {uniqueSizes.length ? (
+          <div className={s.sizeGrid}>
+            {uniqueSizes.map((sz) => (
+              <button
+                key={sz}
+                className={`${s.sizeBtn} ${size === sz ? s.sizeBtnActive : ""}`}
+                onClick={() => {
+                  setApparelSize(sz);
+                  setInvalid(null);
+                }}
+              >
+                {sz}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className={s.hint}>{sizeHint}</p>
+        )}
+      </div>
+
+      <div
+        className={`${s.optionBlock} ${!hasSize ? s.optionLocked : ""} ${
+          invalid === "color" && !hasColor ? s.optionInvalid : ""
+        }`}
+      >
+        <span className={s.optionLabel}>
+          <span className={`${s.stepNum} ${hasColor ? s.stepDone : ""}`}>{hasColor ? "✓" : "2"}</span>
+          Select color
+          {hasColor ? (
+            <span className={s.chosenName}>{project.apparelConfig.colorName}</span>
+          ) : (
+            hasSize && <span className={s.required}>Required</span>
+          )}
+        </span>
+        {!hasSize ? (
+          <p className={s.hint}>Choose a size first — the colors available depend on the size.</p>
+        ) : colorsForSize.length ? (
+          <div className={s.swatchGrid}>
+            {colorsForSize.map((variant) => (
+              <button
+                key={variant.id}
+                title={`${variant.color}${variant.outOfStock ? " (Out of stock)" : ""}`}
+                aria-label={variant.color}
+                className={`${s.garmentSwatch} ${
+                  project.apparelConfig.colorHex === variant.colorCode ? s.garmentSwatchActive : ""
+                } ${variant.outOfStock ? s.garmentSwatchOut : ""}`}
+                style={{ background: variant.colorCode }}
+                onClick={() => {
+                  if (variant.outOfStock) {
+                    showToast("This color is out of stock in the selected size.", "error");
+                  } else {
+                    changeApparelColor(variant.colorCode, variant.color);
+                    setInvalid(null);
+                  }
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className={s.hint}>No colors are available in size {size}. Try another size.</p>
+        )}
+      </div>
+
+      <div className={s.optionBlock}>
+        <span className={s.optionLabel}>
+          <Layers size={17} /> Quantity
+        </span>
+        <div className={s.qtyRow}>
+          <button
+            className={s.qtyBtn}
+            onClick={() => setApparelQuantity(Math.max(1, quantity - 1))}
+          >
+            −
+          </button>
+          <span className={s.qtyValue}>{quantity}</span>
+          <button className={s.qtyBtn} onClick={() => setApparelQuantity(quantity + 1)}>
+            +
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  const stepNotice = !selectionDone ? (
+    <p className={s.stepNotice}>
+      {!hasSize
+        ? "Start here: choose your size, then your color."
+        : `Now choose a color for size ${size}.`}
+    </p>
+  ) : null;
+
+  const addLabel = isCheckingOut
+    ? "Adding to cart…"
+    : !hasSize
+      ? "Select a size"
+      : !hasColor
+        ? "Select a color"
+        : "Add to cart";
+
+  return (
+    <div className={s.page} ref={pageRef}>
+      <div className={s.inner}>
+        <div className={s.topBar}>
+          <button className={s.backBtn} onClick={handleBack}>
+            <ArrowLeft size={15} /> Back
+          </button>
+          <span className={s.studioPill}>Design Studio</span>
+          <h1 className={s.title}>
+            <span className={s.titleMark}>Customize {spec.label}</span>
+          </h1>
+          <p className={s.subtitle}>
+            Place your design inside the dashed boundary — that is exactly what gets printed.
+          </p>
+        </div>
+
+        <div className={s.main}>
+          <nav className={s.viewTabs} aria-label="Garment side">
+            {views.map((v) => {
+              const count = (layers[v] ?? []).length;
+              const TabIcon = v === "front" || v === "back" ? Shirt : Hand;
+              return (
+                <button
+                  key={v}
+                  className={`${s.viewTab} ${v === view ? s.viewTabActive : ""}`}
+                  onClick={() => switchView(v)}
+                >
+                  <TabIcon size={22} />
+                  <span>{VIEW_LABELS[v]}</span>
+                  {count > 0 && <span className={s.viewTabBadge}>{count}</span>}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className={s.stage}>
+            <div className={s.paneToggle}>
+              <button
+                className={`${s.paneToggleBtn} ${mobilePane === "design" ? s.paneToggleActive : ""}`}
+                onClick={() => setMobilePane("design")}
+              >
+                <PencilRuler size={15} /> Design
+              </button>
+              <button
+                className={`${s.paneToggleBtn} ${mobilePane === "preview" ? s.paneToggleActive : ""}`}
+                onClick={() => setMobilePane("preview")}
+              >
+                <Box size={15} /> 3D Preview
+              </button>
+            </div>
+
+            {/* 2D boundary editor */}
+            <section
+              className={`${s.card} ${s.pane} ${s.printCard} ${mobilePane !== "design" ? s.paneHiddenMobile : ""}`}
+            >
+              <div className={s.cardHead}>
+                <h2 className={s.cardTitle}>
+                  <Crop size={18} /> Print Area
+                  <span
+                    className={s.infoDot}
+                    title="Artwork outside the dashed boundary is not printed."
+                  >
+                    <Info size={15} />
+                  </span>
+                </h2>
+                <span className={s.cardMeta}>
+                  {VIEW_LABELS[view]} ({zone.sizeMm[0] / 10} × {zone.sizeMm[1] / 10} cm)
+                </span>
+              </div>
+              <div className={s.printBody}>
+                <div className={s.toolsRow}>
+                  <button className={s.toolBtn} onClick={addText}>
+                    <Type size={20} /> <span>Add text</span>
+                  </button>
+                  <button className={s.toolBtn} onClick={() => fileRef.current?.click()}>
+                    <ImageIcon size={20} /> <span>Upload image</span>
+                  </button>
+                </div>
+
+                <div className={s.editorArea}>
+                  <div
+                    className={s.editorWrap}
+                    style={{ "--aspect": editorAspect.toFixed(3) } as React.CSSProperties}
+                  >
+                    <FrameEditor
+                      frame={frame}
+                      image={garmentImage}
+                      layers={current}
+                      background={colorHex}
+                      selectedId={selectedLayerId}
+                      onSelect={selectLayer}
+                      onPatch={updateLayer}
+                      onDelete={removeLayer}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={s.layerDock}>
+              {layerPanel ?? (
                 <p className={s.dockHint}>
                   Add text or upload an image, then tap it to change its size, colour and
                   rotation.
@@ -650,74 +833,8 @@ export default function Studio({ categoryId }: { categoryId: string }) {
             <h2 className={`${s.cardTitle} ${s.optionsTitle}`}>
               <SlidersHorizontal size={18} /> Customize Options
             </h2>
-            <div className={s.optionBlock}>
-              <span className={s.optionLabel}>
-                <Shirt size={17} /> Size
-              </span>
-              <div className={s.sizeGrid}>
-                {(uniqueSizes.length ? uniqueSizes : ["S", "M", "L", "XL"]).map((sz) => (
-                  <button
-                    key={sz}
-                    className={`${s.sizeBtn} ${
-                      project.apparelConfig.size === sz ? s.sizeBtnActive : ""
-                    }`}
-                    onClick={() => setApparelSize(sz)}
-                  >
-                    {sz}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className={s.optionBlock}>
-              <span className={s.optionLabel}>
-                <Droplet size={17} /> Color
-              </span>
-              {colorsForSize.length ? (
-                <div className={s.swatchGrid}>
-                  {colorsForSize.map((variant) => (
-                    <button
-                      key={variant.id}
-                      title={`${variant.color}${variant.outOfStock ? " (Out of stock)" : ""}`}
-                      aria-label={variant.color}
-                      className={`${s.garmentSwatch} ${
-                        project.apparelConfig.colorHex === variant.colorCode
-                          ? s.garmentSwatchActive
-                          : ""
-                      } ${variant.outOfStock ? s.garmentSwatchOut : ""}`}
-                      style={{ background: variant.colorCode }}
-                      onClick={() => {
-                        if (variant.outOfStock) {
-                          showToast("This color is out of stock in the selected size.", "error");
-                        } else {
-                          changeApparelColor(variant.colorCode, variant.color);
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className={s.hint}>Select a size to see available colors.</p>
-              )}
-            </div>
-
-            <div className={s.optionBlock}>
-              <span className={s.optionLabel}>
-                <Layers size={17} /> Quantity
-              </span>
-              <div className={s.qtyRow}>
-                <button
-                  className={s.qtyBtn}
-                  onClick={() => setApparelQuantity(Math.max(1, quantity - 1))}
-                >
-                  −
-                </button>
-                <span className={s.qtyValue}>{quantity}</span>
-                <button className={s.qtyBtn} onClick={() => setApparelQuantity(quantity + 1)}>
-                  +
-                </button>
-              </div>
-            </div>
+            {stepNotice}
+            {optionFields}
 
             <div className={s.optionBlock}>
               <div className={s.priceRow}>
@@ -726,11 +843,13 @@ export default function Studio({ categoryId }: { categoryId: string }) {
                 </span>
                 <span className={s.priceValue}>{unitPrice ? `₹${total}` : "—"}</span>
               </div>
-              <button className={s.primaryBtn} onClick={openEstimate} disabled={isCheckingOut}>
+              <button
+                className={`${s.primaryBtn} ${!selectionDone ? s.primaryBtnIncomplete : ""}`}
+                onClick={openEstimate}
+                disabled={isCheckingOut}
+              >
                 <ShoppingCart size={17} />
-                <span className={s.primaryBtnText}>
-                  {isCheckingOut ? "Adding to cart…" : "Add to cart"}
-                </span>
+                <span className={s.primaryBtnText}>{addLabel}</span>
                 <ArrowRight size={18} />
               </button>
               <button className={s.secondaryBtn} onClick={() => setIsClearOpen(true)}>
@@ -741,17 +860,151 @@ export default function Studio({ categoryId }: { categoryId: string }) {
         </div>
       </div>
 
-      {/* Mobile sticky bar */}
+      <input ref={fileRef} type="file" accept="image/*" hidden onChange={onUpload} />
+
+      {/* Mobile bottom bar */}
       <div className={s.mobileBar}>
-        <div className={s.mobileBarPrice}>
-          <span className={s.priceLabel}>Total</span>
-          <span className={s.priceValue}>{unitPrice ? `₹${total}` : "—"}</span>
-        </div>
-        <button className={s.mobileBarBtn} onClick={openEstimate} disabled={isCheckingOut}>
-          <ShoppingCart size={16} />
-          {isCheckingOut ? "Adding…" : "Add to cart"}
+        <button
+          className={`${s.barTool} ${selected?.type === "text" ? s.barToolActive : ""}`}
+          onClick={() => setSheet("text")}
+        >
+          <Type size={20} />
+          <span>Text</span>
+        </button>
+        <button
+          className={`${s.barTool} ${selected?.type === "image" ? s.barToolActive : ""}`}
+          onClick={() => setSheet("image")}
+        >
+          <ImageIcon size={20} />
+          <span>Image</span>
+        </button>
+        <button
+          className={`${s.barTool} ${!selectionDone ? s.barToolAlert : ""}`}
+          onClick={() => setSheet("options")}
+        >
+          <SlidersHorizontal size={20} />
+          <span>{selectionDone ? "Options" : "Size & color"}</span>
+          {!selectionDone && <i className={s.barDot} />}
+        </button>
+        <button
+          className={`${s.mobileBarBtn} ${!selectionDone ? s.mobileBarBtnIncomplete : ""}`}
+          onClick={openEstimate}
+          disabled={isCheckingOut}
+        >
+          {isCheckingOut
+            ? "Adding…"
+            : !selectionDone
+              ? addLabel
+              : unitPrice
+                ? `Add to cart · ₹${total}`
+                : "Add to cart"}
         </button>
       </div>
+
+      {sheet && (
+        <div className={s.sheet} role="dialog" aria-modal="true">
+          <div className={s.sheetHead}>
+            <h2 className={s.cardTitle}>
+              {sheet === "text" && (
+                <>
+                  <Type size={18} /> Text
+                </>
+              )}
+              {sheet === "image" && (
+                <>
+                  <ImageIcon size={18} /> Image
+                </>
+              )}
+              {sheet === "options" && (
+                <>
+                  <SlidersHorizontal size={18} />{" "}
+                  {selectionDone ? "Customize Options" : "Choose size & color"}
+                </>
+              )}
+            </h2>
+            <button className={s.sheetClose} aria-label="Close" onClick={() => setSheet(null)}>
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className={s.sheetBody}>
+            {sheet === "text" && (
+              <>
+                <button className={s.sheetAction} onClick={addText}>
+                  <Type size={18} /> Add text
+                </button>
+                {selected?.type === "text" ? (
+                  layerPanel
+                ) : (
+                  <p className={s.dockHint}>
+                    Tap &ldquo;Add text&rdquo;, then change the wording, colour, size and rotation
+                    here. Drag it on the garment to place it.
+                  </p>
+                )}
+              </>
+            )}
+
+            {sheet === "image" && (
+              <>
+                <button className={s.sheetAction} onClick={() => fileRef.current?.click()}>
+                  <ImageIcon size={18} /> Upload image
+                </button>
+                {selected?.type === "image" ? (
+                  layerPanel
+                ) : (
+                  <p className={s.dockHint}>
+                    Upload a picture, then change its size and rotation here. Drag it on the
+                    garment to place it.
+                  </p>
+                )}
+              </>
+            )}
+
+            {sheet === "options" && (
+              <>
+                {stepNotice}
+                {optionFields}
+                <div className={s.optionBlock}>
+                  <div className={s.priceRow}>
+                    <span className={s.priceLabel}>
+                      {unitPrice ? `₹${unitPrice} × ${quantity}` : "Select size & color"}
+                    </span>
+                    <span className={s.priceValue}>{unitPrice ? `₹${total}` : "—"}</span>
+                  </div>
+                  <button
+                    className={s.secondaryBtn}
+                    onClick={() => {
+                      setSheet(null);
+                      setIsClearOpen(true);
+                    }}
+                  >
+                    <Trash2 size={14} /> Clear design
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className={s.sheetFoot}>
+            <button
+              className={`${s.primaryBtn} ${
+                sheet === "options" && !selectionDone ? s.primaryBtnIncomplete : ""
+              }`}
+              onClick={() => {
+                if (sheet === "options" && !selectionDone) {
+                  setInvalid(hasSize ? "color" : "size");
+                  return;
+                }
+                setSheet(null);
+              }}
+            >
+              <span className={s.primaryBtnText} style={{ textAlign: "center" }}>
+                {sheet === "options" && !selectionDone ? addLabel : "Done"}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {isEstimateOpen && (
         <CostEstimateModal
