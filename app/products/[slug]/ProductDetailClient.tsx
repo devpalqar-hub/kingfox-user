@@ -355,6 +355,23 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
     return [...romanSizes, ...numericSizes];
   }, [product]);
 
+  // XS, S, M, L are hidden from the storefront UI; all other sizes
+  // (XL, XXL, 3XL+, numeric sizes, etc.) remain selectable.
+  const HIDDEN_SIZES = ["XS", "S", "M", "L"];
+  const visibleSizes = useMemo(
+    () => sizes.filter((size) => !HIDDEN_SIZES.includes(size)),
+    [sizes],
+  );
+
+  // If every available size is hidden (XS/S/M/L only), there's nothing to
+  // show in the size selector, so auto-pick a default size to keep
+  // variant/color/cart logic working behind the scenes.
+  useEffect(() => {
+    if (!selectedSize && sizes.length && !visibleSizes.length) {
+      setSelectedSize(sizes[0]);
+    }
+  }, [sizes, visibleSizes, selectedSize]);
+
   const colors = useMemo(() => {
     const colorEntries =
       product?.variants
@@ -773,65 +790,69 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
 
           <p className={styles.description}>{product?.description}</p>
           {/* Size Selection */}
-          <div className={styles.section}>
-            <div className={styles.labelRow}>
-              <span className={styles.label}>SELECT SIZE</span>
+          {visibleSizes.length > 0 && (
+            <div className={styles.section}>
+              <div className={styles.labelRow}>
+                <span className={styles.label}>SELECT SIZE</span>
 
-              {product.sizeChart && (
-                <span
-                  className={styles.sizeGuide}
-                  onClick={() => {
-                    setCurrentSizeChartIndex(0);
-                    setShowSizeChart(true);
-                  }}
-                >
-                  SIZE CHART
-                </span>
-              )}
-            </div>
-            <div className={styles.sizeGrid}>
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => {
-                    setSelectedSize(size);
+                {product.sizeChart && (
+                  <span
+                    className={styles.sizeGuide}
+                    onClick={() => {
+                      setCurrentSizeChartIndex(0);
+                      setShowSizeChart(true);
+                    }}
+                  >
+                    SIZE CHART
+                  </span>
+                )}
+              </div>
+              <div className={styles.sizeGrid}>
+                {visibleSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => {
+                      setSelectedSize(size);
 
-                    const colorExists = product?.variants.some(
-                      (v) =>
-                        v.size === size &&
-                        v.color?.toLowerCase() === selectedColor?.toLowerCase(),
-                    );
-
-                    if (!colorExists) {
-                      const firstVariant = product?.variants.find(
-                        (v) => v.size === size,
+                      const colorExists = product?.variants.some(
+                        (v) =>
+                          v.size === size &&
+                          v.color?.toLowerCase() ===
+                            selectedColor?.toLowerCase(),
                       );
-                      setSelectedColor(firstVariant?.color || null);
-                    }
 
-                    const variant = product?.variants.find(
-                      (v) =>
-                        v.size === size &&
-                        v.color?.toLowerCase() === selectedColor?.toLowerCase(),
-                    );
+                      if (!colorExists) {
+                        const firstVariant = product?.variants.find(
+                          (v) => v.size === size,
+                        );
+                        setSelectedColor(firstVariant?.color || null);
+                      }
 
-                    if (variant?.images?.length) {
-                      setActiveImg(variant.images[0]);
-                    } else if (variant?.image) {
-                      setActiveImg(variant.image);
+                      const variant = product?.variants.find(
+                        (v) =>
+                          v.size === size &&
+                          v.color?.toLowerCase() ===
+                            selectedColor?.toLowerCase(),
+                      );
+
+                      if (variant?.images?.length) {
+                        setActiveImg(variant.images[0]);
+                      } else if (variant?.image) {
+                        setActiveImg(variant.image);
+                      }
+                    }}
+                    className={
+                      selectedSize === size
+                        ? styles.sizeBtnActive
+                        : styles.sizeBtn
                     }
-                  }}
-                  className={
-                    selectedSize === size
-                      ? styles.sizeBtnActive
-                      : styles.sizeBtn
-                  }
-                >
-                  {size}
-                </button>
-              ))}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           {/* Color Selection */}
           <div className={styles.section}>
             <p className={styles.label}>

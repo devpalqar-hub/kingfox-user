@@ -6,11 +6,11 @@
   top: 0;
   left: 0;
   z-index: 1000;
-  background: #F8EEE4;
+  background: #ffffff;
 }
 
 .announcementBar {
-  background-color: #352c01;
+  background-color: #000000;
   color: #fff;
   padding: 10px 0;
   text-align: center;
@@ -61,11 +61,11 @@
 }
 
 .homeNav {
-  background: #fbd5af;
+  background: #ffffff;
 }
 
 .innerNav {
-  background: #fbd5af;
+  background: #ffffff;
 }
 
 .logo {
