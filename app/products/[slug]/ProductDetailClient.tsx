@@ -58,6 +58,14 @@ const isVideoUrl = (url?: string | null) => {
   return /\.(mp4|mov|webm|m4v|ogv|ogg)$/i.test(pathname);
 };
 
+// Variants flagged disableOnline are hidden from the storefront entirely.
+const withOnlineVariants = (
+  p: ProductDetailType | null,
+): ProductDetailType | null =>
+  p
+    ? { ...p, variants: p.variants.filter((v) => !v.disableOnline) }
+    : p;
+
 const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const router = useRouter();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -65,7 +73,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductDetailType | null>(
-    initialProduct,
+    withOnlineVariants(initialProduct),
   );
   const metaSections = product?.metaInfo || [];
   const { user, token, logout, loading } = useAuth();
@@ -128,7 +136,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
   } | null>(null);
 
   useEffect(() => {
-    setProduct(initialProduct);
+    setProduct(withOnlineVariants(initialProduct));
   }, [initialProduct]);
 
   useEffect(() => {
@@ -145,7 +153,7 @@ const ProductDetailClient = ({ initialProduct }: ProductDetailClientProps) => {
           : await getProductById(String(initialProduct.id));
 
         if (isMounted) {
-          setProduct(nextProduct);
+          setProduct(withOnlineVariants(nextProduct));
         }
       } catch (error) {
         console.error("Failed to refresh product state", error);

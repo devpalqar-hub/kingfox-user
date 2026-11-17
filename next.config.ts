@@ -1,4 +1,7 @@
+import path from "path";
+
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -8,6 +11,9 @@ const nextConfig = {
       },
     ],
     unoptimized: true,
+  },
+  turbopack: {
+    root: path.resolve(__dirname),
   },
 };
 

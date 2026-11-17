@@ -29,6 +29,7 @@ export interface Variant {
   isWishlisted?: boolean;
   isAddedInCart?: boolean;
   totalStock?: number;
+  disableOnline?: boolean;
 }
 export interface SizeChart {
   id: number;
