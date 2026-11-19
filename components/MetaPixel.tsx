@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const pixelId = "1266045331995359";
+export const pixelId = "1266045331995359";
 
 export default function MetaPixel() {
   const pathname = usePathname();

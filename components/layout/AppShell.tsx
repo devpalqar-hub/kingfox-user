@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer/Footer";
 import { ToastProvider } from "@/context/ToastContext";
 import { ConfirmProvider } from "@/context/ConfirmContext";
 import BottomNav from "@/components/BottomNav";
+import MetaPixelUserSync from "@/components/MetaPixelUserSync";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <ToastProvider>
       <ConfirmProvider>
         <AuthProvider>
+          <MetaPixelUserSync />
           {!hideHeader && <Header />}
           {children}
           {!hideFooter && <Footer />}
