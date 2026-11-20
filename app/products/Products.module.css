@@ -28,19 +28,6 @@
   margin-bottom: 30px;
 }
 
-.sortSelect {
-  height: 50px;
-  width: 100%;
-  padding: 16px 18px;
-  background-color: #111;
-  color: #fff;
-  border-radius: 12px;
-  border: none;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-}
-
 .filterHeader {
   font-size: 14px;
   font-weight: 800;
@@ -438,9 +425,13 @@
   text-align: center;
 }
 
-.noProductsIcon {
-  font-size: 40px;
-  opacity: 0.6;
+.noProductsImage {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  object-fit: contain;
 }
 
 .noProductsWrapper h3 {

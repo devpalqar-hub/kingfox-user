@@ -15,6 +15,7 @@ import { getNewArrivals } from "@/services/product.service";
 import { getAllCategories } from "@/services/category.service";
 import { getReviewsByProductId } from "@/services/review.service";
 import ProductCard from "@/components/productcard/productcard";
+import SortDropdown from "@/components/SortDropdown/SortDropdown";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton/ProductCardSkeleton";
 import InfiniteScrollProducts from "@/components/InfiniteScrollProducts/InfiniteScrollProducts";
 
@@ -389,26 +390,17 @@ const NewArrivals = () => {
 
             {/* SORT */}
             <div className={styles.sortBox}>
-              <select
-                className={styles.sortSelect}
-                value={sortBy || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSortBy(
-                    value === ""
-                      ? null
-                      : (value as
-                          | "newly_arrived"
-                          | "low_to_high"
-                          | "high_to_low"),
-                  );
+              <SortDropdown
+                value={sortBy}
+                onChange={(value) => {
+                  setSortBy(value);
                   setPage(1);
                 }}
-              >
-                <option value="">Sort By</option>
-                <option value="low_to_high">Price: Low to High</option>
-                <option value="high_to_low">Price: High to Low</option>
-              </select>
+                options={[
+                  { value: "low_to_high", label: "Price: Low to High" },
+                  { value: "high_to_low", label: "Price: High to Low" },
+                ]}
+              />
             </div>
 
             <div className={styles.filterSection}>
@@ -559,7 +551,12 @@ const NewArrivals = () => {
                 ))
               ) : products.length === 0 ? (
                 <div className={styles.noProductsWrapper}>
-                  <div className={styles.noProductsIcon}>🛍️</div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/fallback.webp"
+                    alt="No products found"
+                    className={styles.noProductsImage}
+                  />
                   <h3>No products found</h3>
                   <p>Try adjusting filters or explore new arrivals</p>
                 </div>

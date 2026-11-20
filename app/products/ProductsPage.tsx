@@ -7,6 +7,7 @@ import LoginModal from "@/app/auth/login/page";
 import InfiniteScrollProducts from "@/components/InfiniteScrollProducts/InfiniteScrollProducts";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton/ProductCardSkeleton";
 import ProductCard from "@/components/productcard/productcard";
+import SortDropdown from "@/components/SortDropdown/SortDropdown";
 import { useToast } from "@/context/ToastContext";
 import { getAllCategories } from "@/services/category.service";
 import { getProducts } from "@/services/product.service";
@@ -525,21 +526,15 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
           </button>
 
           <div className={styles.sortBox}>
-            <select
-              className={styles.sortSelect}
-              value={sortBy || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSortBy(
-                  value === "" ? null : (value as Exclude<SortOption, null>),
-                );
-              }}
-            >
-              <option value="">Sort By</option>
-              <option value="newly_arrived">New Arrival</option>
-              <option value="low_to_high">Price: Low to High</option>
-              <option value="high_to_low">Price: High to Low</option>
-            </select>
+            <SortDropdown
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                { value: "newly_arrived", label: "New Arrival" },
+                { value: "low_to_high", label: "Price: Low to High" },
+                { value: "high_to_low", label: "Price: High to Low" },
+              ]}
+            />
           </div>
 
           <div className={styles.filterSection}>
@@ -693,7 +688,12 @@ const ProductsPage = ({ initialData }: ProductsPageProps) => {
               ))
             ) : products.length === 0 ? (
               <div className={styles.noProductsWrapper}>
-                <div className={styles.noProductsIcon}>SHOP</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/fallback2.webp"
+                  alt="No products found"
+                  className={styles.noProductsImage}
+                />
                 <h3>No products found</h3>
                 <p>Try adjusting filters or explore new arrivals</p>
               </div>
