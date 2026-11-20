@@ -553,7 +553,7 @@ const NewArrivals = () => {
                 <div className={styles.noProductsWrapper}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/fallback.webp"
+                    src="/fallback2.webp"
                     alt="No products found"
                     className={styles.noProductsImage}
                   />
